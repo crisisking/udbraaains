@@ -302,7 +302,94 @@ burb_dict = {'suburb=dakerstown':(0,0),
              'suburb=rolt+heights':(8,1),
              'suburb=pescoside':(9,1),
              
+             'suburb=peddlesden+village':(0,2),
+             'suburb=chudleyton':(1,2),
+             'suburb=darvall+heights':(2,2),
+             'suburb=eastonwood':(3,2),
+             'suburb=brooke+hills':(4,2),
+             'suburb=shearbank':(5,2),
+             'suburb=huntley+heights':(6,2),
+             'suburb=santlerville':(7,2),
+             'suburb=gibsonton':(8,2),
+             'suburb=dunningwood':(9,2),
              
+             'suburb=dunell+hills':(0,3),
+             'suburb=west+becktown':(1,3),
+             'suburb=east+becktown':(2,3),
+             'suburb=richmond+hills':(3,3),
+             'suburb=ketchelbank':(4,3),
+             'suburb=roachtown':(5,3),
+             'suburb=randallbank':(6,3),
+             'suburb=heytown':(7,3),
+             'suburb=spracklingbank':(8,3),
+             'suburb=paynerton':(9,3),
+
+             'suburb=owsleybank':(0,4),
+             'suburb=molebank':(1,4),
+             'suburb=lukinswood':(2,4),
+             'suburb=havercroft':(3,4),
+             'suburb=barrville':(4,4),
+             'suburb=ridleybank':(5,4),
+             'suburb=pimbank':(6,4),
+             'suburb=pappardville':(7,4),
+             'suburb=pitneybank':(8,4),
+             'suburb=starlingtown':(9,4),
+
+             'suburb=grigg+heights':(0,5),
+             'suburb=reganbank':(1,5),
+             'suburb=lerwill+heights':(2,5),
+             'suburb=shore+hills':(3,5),
+             'suburb=galbraith+hills':(4,5),
+             'suburb=stanbury+village':(5,5),
+             'suburb=roftwood':(6,5),
+             'suburb=edgecombe':(7,5),
+             'suburb=pegton':(8,5),
+             'suburb=dentonside':(9,5),
+
+             'suburb=crooketon':(0,6),
+             'suburb=mornington':(1,6),
+             'suburb=north+blythville':(2,6),
+             'suburb=brooksville':(3,6),
+             'suburb=mockridge+heights':(4,6),
+             'suburb=shackleville':(5,6),
+             'suburb=tollyton':(6,6),
+             'suburb=crowbank':(7,6),
+             'suburb=vinetown':(8,6),
+             'suburb=houldenbank':(9,6),
+
+             'suburb=nixbank':(0,7),
+             'suburb=wykewood':(1,7),
+             'suburb=south+blythville':(2,7),
+             'suburb=greentown':(3,7),
+             'suburb=tapton':(4,7),
+             'suburb=kempsterbank':(5,7),
+             'suburb=wray+heights':(6,7),
+             'suburb=gulsonside':(7,7),
+             'suburb=osmondville':(8,7),
+             'suburb=penny+heights':(9,7),
+
+             'suburb=foulkes+village':(0,8),
+             'suburb=ruddlebank':(1,8),
+             'suburb=lockettside':(2,8),
+             'suburb=dartside':(3,8),
+             'suburb=kinch+heights':(4,8),
+             'suburb=west+grayside':(5,8),
+             'suburb=east+grayside':(6,8),
+             'suburb=scarletwood':(7,8),
+             'suburb=pennville':(8,8),
+             'suburb=fryerbank':(9,8),
+             
+             'suburb=new+arkham':(0,9),
+             'suburb=old+arkham':(1,9),
+             'suburb=spicer+hills':(2,9),
+             'suburb=williamsville':(3,9),
+             'suburb=buttonville':(4,9),
+             'suburb=wyke+hills':(5,9),
+             'suburb=hollomstown':(6,9),
+             'suburb=danversbank':(7,9),
+             'suburb=whittenside':(8,9),
+             'suburb=miltown':(9,9)}
+
 
 class UDRequestHandler(RequestHandler) :
     foo = 1;
@@ -360,6 +447,9 @@ class UDRequestHandler(RequestHandler) :
         # print(data_data);
         def U(x) : return self.process_datum(x)
         map(U, data_data);
+
+    def get_suburb_data(self, coords) :
+        return
         
     def handle_data(self):
         print("my_handle_data");
@@ -387,7 +477,7 @@ class UDRequestHandler(RequestHandler) :
             print("bad suburb " + self.my_path[1]);
             self.send_response(501);
             return
-        
+        get_suburb_data(burb_dict[self.my_path[1]]);
 
     def handle_udbrain(self) :
 #        print(self.body);
