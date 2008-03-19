@@ -476,7 +476,7 @@ function exchangeData() {
 	GM_xmlhttpRequest({
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
-		url: 'http://65.78.27.242:8989/udb'+qs,
+		url: 'http://65.78.27.242:50609/udb'+qs,
 		headers: {
 			"Accept": "text/html",
 			"Content-type": "application/x-www-form-urlencoded",

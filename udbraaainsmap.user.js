@@ -312,7 +312,7 @@ function getDataRaw(suburbsArr) {
 
 	    GM_xmlhttpRequest({
 			method: 'GET',
-			url: 'http://65.78.27.242:8989/ud_xml?'+query,
+			url: 'http://65.78.27.242:50609/ud_xml?'+query,
 			onload: function(xhr) {
 				var l = xhr.responseText.split('\n');
 				for (var i = 0; i < l.length ; i++)
