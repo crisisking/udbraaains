@@ -31,8 +31,8 @@ Subclasses of RequestHandler only have to override the handle_data() method
 
 import asynchat, asyncore, socket, SimpleHTTPServer, select, urllib
 import posixpath, sys, cgi, cStringIO, os, traceback, shutil
+import pickle
 import mutex
-from Numeric import zeros
 
 class CI_dict(dict):
     """Dictionary with case-insensitive keys
@@ -256,7 +256,7 @@ class UDMapEntry :
         self.outdoor_survivors = 0;
         self.cade_time = datetime.utcnow();
         self.cade_user = 0;
-        self.cade_level = 0;
+        self.cade_level = -1;
         self.ruin_time = datetime.utcnow();
         self.ruin_user = 0;
         self.ruin = 0;
@@ -264,16 +264,38 @@ class UDMapEntry :
     def dump(self) :
         print(" " + str(self.position) + " " + str(self.indoor_zombies) + " " + str(self.indoor_survivors) + " " + str(self.indoor_time) + " " + str(self.indoor_user));
         print("    " + str(self.outdoor_zombies) + " " + str(self.outdoor_survivors) + " " + str(self.outdoor_time) + " " + str(self.outdoor_user));
+        print("    " + str(self.cade_level) + " " + str(self.cade_time) + " " + str(self.cade_user));
 
 class UDMap :
     def __init__(self) :
         self.map_data = {};
-#        self.map_mutex = mutex.mutex();
+        self.map_mutex = mutex.mutex();
         for i in range(10000) :
             self.map_data[i] = UDMapEntry(i);
+        self.load();
 
+    def load(self) :
+        try:
+            f = open("udmap.dat", "r");
+            self.map_data = pickle.load(f);
+            f.close();
+        except IOError:
+            print("couldn't load saved data");
+        return
+        
     def get(self, p) :
         return self.map_data[p];
+
+    def save_locked(self) :
+        print "saving map"
+        f = open("udmap.dat", "w");
+        pickle.dump(self.map_data, f);
+        f.close()
+        return
+
+    def save(self) :
+        self.map_mutex.lock(UDMap.save_locked, self);
+        self.map_mutex.unlock();
 
 #    def set(x,y,data) :
 #        
@@ -391,6 +413,10 @@ burb_dict = {'suburb=dakerstown':(0,0),
              'suburb=miltown':(9,9)}
 
 
+def age(now, before) :
+    delta = now - before;
+    return str(delta.seconds + 86400*delta.days)
+
 class UDRequestHandler(RequestHandler) :
     foo = 1;
 
@@ -402,8 +428,9 @@ class UDRequestHandler(RequestHandler) :
             return
         try:
             datum = map(int, p);
+#            print(datum)
             if datum[0] < 0 or datum[0] > 9999 :
-                print("error - bad datum location " + datum[0]);
+                print("error - bad datum location " + str(datum[0]));
                 self.send_response(501);
                 return
             M = ud_map.get(datum[0]);
@@ -411,22 +438,26 @@ class UDRequestHandler(RequestHandler) :
             if datum[1] == 1 :
                 # barricades
                 M.cade_level = datum[2];
-                M.cade_timestamp = self.timestamp;
+                M.cade_time = self.timestamp;
                 M.cade_user = self.userid;
             elif datum[1] == 2 :
                 # outdoor zombies
                 M.outdoor_zombies = datum[2];
-                M.outdoor_timestamp = self.timestamp;
+                M.outdoor_time = self.timestamp;
                 M.outdoor_user = self.userid;
             elif datum[1] == 3 :
                 # indoor zombies
                 M.indoor_zombies = datum[2];
-                M.indoor_timestamp = self.timestamp;
+                M.indoor_time = self.timestamp;
                 M.indoor_user = self.userid;
             elif datum[1] == 4 :
                 M.ruin = datum[2];
-                M.ruin_timestamp = self.timestamp;
+                M.ruin_time = self.timestamp;
                 M.ruin_user = self.userid;
+            elif datum[1] == 5 :
+                M.indoor_survivors = datum[2];
+                M.indoor_time = self.timestamp;
+                M.indoor_user = self.userid;
             else :
                 print("bad field " + datum[1]);
                 self.send_response(501);
@@ -449,10 +480,24 @@ class UDRequestHandler(RequestHandler) :
         map(U, data_data);
 
     def get_suburb_data(self, coords) :
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain");
+        self.end_headers()
+        for x in range(10) :
+            for y in range(10) :
+                coord = y + coords[1]*10 + 100*x + coords[0]*1000;
+                M = ud_map.get(coord);
+                report = [str(coord), age(self.timestamp, M.cade_time), "1", str(M.cade_level),
+                          age(self.timestamp, M.indoor_time), str(M.indoor_zombies),
+                          age(self.timestamp, M.outdoor_time), str(M.outdoor_zombies),
+                          age(self.timestamp, M.ruin_time), str(M.ruin),
+                          str(M.indoor_survivors)];
+                self.wfile.write(":".join(report) + "\n");
+#        self.end_headers
         return
         
     def handle_data(self):
-        print("my_handle_data");
+        self.timestamp = datetime.utcnow();
         self.my_path = self.path.split('?');
         if len(self.my_path) == 0 :
             print("error - no path");
@@ -477,14 +522,41 @@ class UDRequestHandler(RequestHandler) :
             print("bad suburb " + self.my_path[1]);
             self.send_response(501);
             return
-        get_suburb_data(burb_dict[self.my_path[1]]);
+        self.get_suburb_data(burb_dict[self.my_path[1]]);
 
+    def respond_with_data(self) :
+        if len(self.my_path) < 2 :
+            return
+        squares = self.my_path[1].split('&');
+        try:
+            squares = map(int, squares);
+        except ValueError:
+            print("bad location request " + squares);
+            self.send_response(501);
+            return
+        response = ['0.666'];
+        for x in squares :
+            if x < 0 or x > 9999 :
+                print("bad location " + str(x))
+                self.send_response(501);
+                return
+            M = ud_map.get(x);
+            #            M.dump()
+            if M.cade_level != -1 :
+                response.append(str(x)+':'+age(self.timestamp, M.cade_time)+':1:'+str(M.cade_level)+':'+age(self.timestamp, M.indoor_time)+':'+str(M.indoor_survivors))
+        self.wfile.write("|".join(response))
+#        print(self.wfile)
+#        self.wfile.print('bork')
+#        print(response)
+#        print("|".join(response))
+#        print(response.join('|'));
+        return
+        
     def handle_udbrain(self) :
 #        print(self.body);
 #        print(self.path);
 #        print(self.body.getvalue('user').split(':'));
 #        print(self.body.getvalue('data').split('|'));
-        self.timestamp = datetime.utcnow();
         #        user_data = self.body.getvalue('user');
         if not self.body.has_key('user') :
             print("error - no user field");
@@ -519,6 +591,7 @@ class UDRequestHandler(RequestHandler) :
                 return
 
             self.handle_incoming_data();
+            self.respond_with_data();
             
         except ValueError:
             print("bad data");
@@ -538,4 +611,5 @@ if __name__=="__main__":
     try:
         asyncore.loop(timeout=2)
     except KeyboardInterrupt:
+        ud_map.save()
         print "Crtl+C pressed. Shutting down."

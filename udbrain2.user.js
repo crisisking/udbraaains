@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          UDBrain2
+// @name          UDBrain
 // @namespace     http://alloscomp.com/udbrain/
 // @description	Reports and downloads metadata for Urban Dead
 // @include       http://*urbandead.com/map.cgi*
@@ -56,7 +56,6 @@ function getCoords() {
 	var out = new Array(x,y);
 	return out;
 }
-
 
 /**
 * Determines 'cade status of building based on description
@@ -159,8 +158,10 @@ function displayData(estr) {
 	var inputs = document.getElementsByTagName("input");
 	for(var i=0; i<inputs.length; i++) {
 		if(coords = re.exec(inputs[i].value)) {
-			inputs[i+1].value += "\n("+convertCadeLevelToShort(entry[3])+")";
-			var agestr = "Barricade data is "+convertAge(entry[1])+" old.\n";
+			inputs[i+1].value += "\n("+convertCadeLevelToShort(entry[3])+")"+
+				"("+entry[5]+")";
+			var agestr = "Barricade data is "+convertAge(entry[1])+" old.\n"+
+				"Survivor data is "+convertAge(entry[4])+" old.\n";
 			inputs[i+1].title = agestr;
 			inputs[i+1].alt = agestr;
 			return 0;
@@ -252,6 +253,34 @@ function countLocalZeds() {
 	return 0;
 }
 
+function countSurvivors() {
+	var query = "//div";
+	var textblob = document.evaluate(query, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+	if (textblob.snapshotLength) {
+		var bs = textblob.snapshotItem(0).innerHTML;
+		var matches = bs.match(/There\sis\sa\scrowd\sof\s(\d+)\ssurvivors\sgathered\shere/);
+		var survivor_count = '0';
+		if(matches) {
+			survivor_count = matches[1];
+//			alert(matches[1]);
+//				array[i] = [ coords, 2, matches[1] ].join(':');
+		} else {
+			var m1 = bs.match(/(.*?)<br><br>/);
+			var m2 = m1[1].match(/<a\shref="profile.cgi\?id=(\d+)/g);
+			if (m2)
+				survivor_count = m2.length;
+			else
+				survivor_count = 0;
+//			alert(m2.length);
+//			alert(m1[1]);
+		}
+//		alert(survivor_count);
+		return(survivor_count);
+	}
+	else
+		return(0);
+}
+
 /**
 * Counts zombies on nearby blocks.
 * 
@@ -334,6 +363,7 @@ function playerLocation() {
 	return 0;
 }
 
+
 /**
 * Creates Revive Request IFRAME
 **/
@@ -396,6 +426,8 @@ function exchangeData() {
 			qs += convertCoordsToBXY([ncoords[1],ncoords[2]]) + '&';
 	}
 	qs = qs.replace(/\&$/,'');
+	qs = qs + '&' + convertCoordsToBXY(gCoords);
+	// alert(qs);
 	
 	// Begin the post array
 	var postarr = [];
@@ -410,9 +442,11 @@ function exchangeData() {
 	if(gPlayerLocation == 3) { 
 		// Count zeds in this building
 		postarr.push([ convertCoordsToBXY(coords), '3', countLocalZeds() ].join(':'));
+		postarr.push([ convertCoordsToBXY(coords), '5', countSurvivors() ].join(':'));
 	}
 	
 	postarr.push(countRuins());
+
 	// Outside a building or empty square
 	if(gPlayerLocation <= 2) {
 		// Count zeds on this and other blocks
@@ -428,8 +462,8 @@ function exchangeData() {
 	// Make connection to server
 	GM_xmlhttpRequest({
 		method: 'POST',
-//		url: 'http://localhost:8081/udb'+qs,
-		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
+//		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
+		url: 'http://localhost:8081/udb'+qs,
 		headers: {
 			"Accept": "text/html",
 			"Content-type": "application/x-www-form-urlencoded",
@@ -439,7 +473,7 @@ function exchangeData() {
 		data: encodeURI(data),
 		onload: function(xhr) {
 			// Debugging: print response
-			//divAdd("response: "+xhr.responseText);
+			// divAdd("response: "+xhr.responseText);
 			
 			// If Error, throw alert box
 			if(xhr.responseText.match(/Error:/))
