@@ -131,19 +131,19 @@ function removeLoadDiv() {
 function insertData(xml_data, raw_data) {
 	//    var info = response.split(':');
 	var info = raw_data;
-	if (xml_data[1] != -1 && xml_data[1] < raw_data[1])
+	if (xml_data[1] != -1 && xml_data[1]*1 < raw_data[1]*1)
 	{
 		info[1] = xml_data[1];
 		info[3] = xml_data[3];
 	}
 	/*
-	if (xml_data[4] != -1 && xml_data[4] < raw_data[4])
+	if (xml_data[4] != -1 && xml_data[4]*1 < raw_data[4]*1)
 	{
 		info[4] = xml_data[4];
 		info[5] = xml_data[5];
 	}
 	*/
-	if (xml_data[6] != -1 && xml_data[6] < raw_data[6])
+	if (xml_data[6] != -1 && xml_data[6]*1 < raw_data[6]*1)
 	{
 		info[6] = xml_data[6];
 		info[7] = xml_data[7];
@@ -167,7 +167,7 @@ function insertData(xml_data, raw_data) {
 // 		div.style.paddingLeft = '1px';
 // 		div.style.paddingRight = '1px';
 		var blockBorder;
-        if(info[1]<=ONEDAY) {
+        if(info[1]*1<=ONEDAY) {
 		blockBorder = borderNew;
 	}
         else {
@@ -180,7 +180,7 @@ function insertData(xml_data, raw_data) {
 		'"><b>' +convertCadeLevelToShort(info[3])+ '</b></span>';
 	if ((info[9]==1)) { // Ruined
 		blockBorder;
-		if(info[8]<=ONEDAY) { blockBorder = borderNew; }
+		if(info[8]*1<=ONEDAY) { blockBorder = borderNew; }
 		else                { blockBorder = borderOld; }
 		bDiv += '&nbsp;<span title="' +convertAge(info[8])+ '" '+
 			'style="color: #ffffff; padding: 0px 1px; border: ' +blockBorder+ '; '+
@@ -189,7 +189,7 @@ function insertData(xml_data, raw_data) {
 	}
 	if((info[4]!=-1)&&(info[10] == 0 || info[5]>0)) { // Zombies inside
 	    	blockBorder;
-	    	if(info[4]<=ONEDAY) { blockBorder = borderNew; }
+	    	if(info[4]*1<=ONEDAY) { blockBorder = borderNew; }
         		else { blockBorder = borderOld; }
             bDiv += '&nbsp;<span title="' +convertAge(info[4])+ '" '+
                 'style="color: #ffffff; padding: 0px 1px; border: ' +blockBorder+ '; '+
@@ -198,7 +198,7 @@ function insertData(xml_data, raw_data) {
 	    }
 	if((info[4]!=-1)&&(info[10]>0)) { // Zombies inside
 	    	blockBorder;
-	    	if(info[4]<=ONEDAY) { blockBorder = borderNew; }
+	    	if(info[4]*1<=ONEDAY) { blockBorder = borderNew; }
         		else { blockBorder = borderOld; }
             bDiv += '&nbsp;<span title="' +convertAge(info[4])+ '" '+
                 'style="color: #000000; padding: 0px 1px; border: ' +blockBorder+ '; '+
@@ -207,7 +207,7 @@ function insertData(xml_data, raw_data) {
 	    }
 	    if((info[6]!=-1)&&(info[7]>0)) { // Zombies outside
 	    	blockBorder;
-	    	if(info[6]<=ONEDAY) { blockBorder = borderNew; }
+	    	if(info[6]*1<=ONEDAY) { blockBorder = borderNew; }
         		else { blockBorder = borderOld; }
             bDiv += '&nbsp;<span title="' +convertAge(info[6])+ '" '+
                 'style="color: #ffffff; padding: 0px 1px; border: ' +blockBorder+ '; '+
