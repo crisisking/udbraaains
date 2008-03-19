@@ -232,6 +232,7 @@ class Server(asyncore.dispatcher):
         try:
             conn, addr = self.accept()
         except socket.error:
+            print("error");
             self.log_info ('warning: server accept() threw an exception', 'warning')
             return
         except TypeError:
@@ -606,8 +607,8 @@ class UDRequestHandler(RequestHandler) :
         
 if __name__=="__main__":
     # launch the server on the specified port
-    port = 8989;
-    s=Server('192.168.2.126',port,UDRequestHandler)
+    port = 50609;
+    s=Server('',port,UDRequestHandler)
     print "SimpleAsyncHTTPServer running on port %s" %port
     try:
         asyncore.loop(timeout=2)
