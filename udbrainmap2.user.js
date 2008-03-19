@@ -128,8 +128,26 @@ function removeLoadDiv() {
 *  0   1   2        3         4      5   6       7
 * bxy:age:dataType:dataValue:zInAge:zIn:zOutAge:zOut
 **/
-function insertData(response) {
-    var info = response.split(':');
+function insertData(xml_data, raw_data) {
+	//    var info = response.split(':');
+	var info = raw_data;
+	if (xml_data[1] != -1 && xml_data[1] < raw_data[1])
+	{
+		info[1] = xml_data[1];
+		info[3] = xml_data[3];
+	}
+	/*
+	if (xml_data[4] != -1 && xml_data[4] < raw_data[4])
+	{
+		info[4] = xml_data[4];
+		info[5] = xml_data[5];
+	}
+	*/
+	if (xml_data[6] != -1 && xml_data[6] < raw_data[6])
+	{
+		info[6] = xml_data[6];
+		info[7] = xml_data[7];
+	}
 
     // Coordinate wrong OR no data for that block
     if((info[0]>9999||info[0]<0)||(info[1]<0))
@@ -169,7 +187,7 @@ function insertData(response) {
 			'background-color: ' +'#ff0000'+ '; '+
 			'"><b>' +'R'+ '</b></span>';
 	}
-	if((info[4]!=-1)&&(info[5]>=0)) { // Zombies inside
+	if((info[4]!=-1)&&(info[10] == 0 || info[5]>0)) { // Zombies inside
 	    	blockBorder;
 	    	if(info[4]<=ONEDAY) { blockBorder = borderNew; }
         		else { blockBorder = borderOld; }
@@ -177,6 +195,15 @@ function insertData(response) {
                 'style="color: #ffffff; padding: 0px 1px; border: ' +blockBorder+ '; '+
             	'background-color: ' +buildingBackgroundColor+ '; '+
         	    '">I:<b>' +info[5]+ '</b></span>';
+	    }
+	if((info[4]!=-1)&&(info[10]>0)) { // Zombies inside
+	    	blockBorder;
+	    	if(info[4]<=ONEDAY) { blockBorder = borderNew; }
+        		else { blockBorder = borderOld; }
+            bDiv += '&nbsp;<span title="' +convertAge(info[4])+ '" '+
+                'style="color: #000000; padding: 0px 1px; border: ' +blockBorder+ '; '+
+            	'background-color: ' +'#00ff00'+ '; '+
+        	    '">S:<b>' +info[10]+ '</b></span>';
 	    }
 	    if((info[6]!=-1)&&(info[7]>0)) { // Zombies outside
 	    	blockBorder;
@@ -265,9 +292,10 @@ function getCoordinates() {
     return coordinates;
 }
 
-//******************************************************************************
-//* XML Part
-//******************************************************************************
+
+function displayData(data) {
+	
+}
 
 function getDataRaw(suburbsArr) {
 	var loadStr = '';
@@ -275,6 +303,7 @@ function getDataRaw(suburbsArr) {
 		loadStr += suburbsArr[i]+' ';
 	}
 	var loaded = 0;
+	var data = new Array();
 	for(var i=0; i < suburbsArr.length; i++) {
 
 		var suburbQuery = suburbsArr[i].replace(/\s/g,'+');
@@ -287,18 +316,24 @@ function getDataRaw(suburbsArr) {
 			onload: function(xhr) {
 				var l = xhr.responseText.split('\n');
 				for (var i = 0; i < l.length ; i++)
-					insertData(l[i]);
+				{
+					var sp = l[i].split(':');
+					data[sp[0]] = l[i];
+//					data.add(sp[0], l[i]);
+				}
+//				insertData(l[i]);
 				loaded++;
 			}
 		});
 	}
+	return(data);
 }
 
 
 /**
 * Get UDBrain data in XML
 **/
-function getDataXML(suburbsArr) {
+function getDataXML(suburbsArr, raw_data) {
 	var loadStr = '';
 	for(var i=0; i < suburbsArr.length; i++) {
 		loadStr += suburbsArr[i]+' ';
@@ -308,16 +343,15 @@ function getDataXML(suburbsArr) {
 	for(var i=0; i < suburbsArr.length; i++) {
 
 		var suburbQuery = suburbsArr[i].replace(/\s/g,'+');
-	    query = 'suburb=' + suburbQuery;
+		query = 'suburb=' + suburbQuery;
 	    //divAdd(query);
-
-	    GM_xmlhttpRequest({
+		GM_xmlhttpRequest({
 			method: 'GET',
 			url: 'http://www.alloscomp.com/udbrain/dump.xml?'+query,
 			onload: function(xhr) {
 
-	            var parser = new DOMParser();
-	            var responseXML = parser.parseFromString(xhr.responseText, "text/xml");
+	            		var parser = new DOMParser();
+				var responseXML = parser.parseFromString(xhr.responseText, "text/xml");
 	            //divAdd(responseXML.getElementsByTagName("name")[0].textContent);
 	            var blocks = responseXML.getElementsByTagName("building");
 
@@ -343,8 +377,13 @@ function getDataXML(suburbsArr) {
 			                zIn = reports[k].getElementsByTagName("value")[0].textContent;
 		                } // another report type?
 					}
-					insertData(bxy +':'+ bAge +':1:'+ bLvl +':'+ zInAge +':'+ zIn +':'+ zOutAge +':'+ zOut);
+
+//				insertData(bxy +':'+ bAge +':1:'+ bLvl +':'+ zInAge +':'+ zIn +':'+ zOutAge +':'+ zOut);
+				if (raw_data[bxy])
+				{
+					insertData([bxy,bAge,1,bLvl,zInAge,zIn,zOutAge,zOut], raw_data[bxy].split(':'));
 				}
+			}
 				loaded++;
 				if(loaded >= suburbsArr.length) { removeLoadDiv(); }
 			}
@@ -397,7 +436,13 @@ window.addEventListener(
 
 		// Get data using suburb(s)
 		var suburbNames = getSuburbs();
-		if(suburbNames != -1) { getDataRaw(suburbNames); }
+		if(suburbNames != -1) {
+			raw_data = getDataRaw(suburbNames);
+			getDataXML(suburbNames, raw_data);
+//			getDataRaw(suburbNames, xml_data);
+//			displayData(raw_data);
+//			combo_data = mergeData(raw_data, xml_data);
+		}
 
 		//divAdd('['+getSuburbs().join('_')+']');
 	},

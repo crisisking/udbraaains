@@ -1,14 +1,10 @@
 // ==UserScript==
-// @name          UDBrain
-// @namespace     http://alloscomp.com/udbrain/
-// @description	Reports and downloads metadata for Urban Dead
+// @name          UDBrain2
+// @namespace     http://code.google.com/p/udbraaains/
+// @description   Reports and downloads metadata for Urban Dead
 // @include       http://*urbandead.com/map.cgi*
 // ==/UserScript==
 
-/** 
-* For support, email webmaster@alloscomp.com with UDBrain in the subject
-* Or visit http://www.alloscomp.com/forums/ 
- **/
 
 version = "0.666";
 
@@ -254,10 +250,20 @@ function countLocalZeds() {
 }
 
 function countSurvivors() {
-	var query = "//div";
-	var textblob = document.evaluate(query, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-	if (textblob.snapshotLength) {
-		var bs = textblob.snapshotItem(0).innerHTML;
+	var textblob = document.evaluate("//div[contains(@class,'gt')]", document, null, XPathResult.ANY_TYPE, null);
+	var bso = textblob.iterateNext();
+/*var alertText = 'Level 2 headings in this document are:\n'
+
+var i = 0;
+while (bso) {
+  alertText += 'number'+i+'\n';
+  alertText += bso.innerHTML + '\n';
+  bso = textblob.iterateNext();
+}
+alert(alertText);*/
+	if (bso) {
+		var bs = ''+bso.innerHTML;
+//		alert(bs+'\n');
 		var matches = bs.match(/There\sis\sa\scrowd\sof\s(\d+)\ssurvivors\sgathered\shere/);
 		var survivor_count = '0';
 		if(matches) {
@@ -265,7 +271,11 @@ function countSurvivors() {
 //			alert(matches[1]);
 //				array[i] = [ coords, 2, matches[1] ].join(':');
 		} else {
+//			alert(textblob.snapshotItem(1).textContent);
+			
 			var m1 = bs.match(/(.*?)<br><br>/);
+			if (!m1)
+				m1 = [0, bs];
 			var m2 = m1[1].match(/<a\shref="profile.cgi\?id=(\d+)/g);
 			if (m2)
 				survivor_count = m2.length;
@@ -278,7 +288,10 @@ function countSurvivors() {
 		return(survivor_count);
 	}
 	else
+	{
+//		alert("not found");
 		return(0);
+	}
 }
 
 /**

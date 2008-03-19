@@ -241,23 +241,24 @@ class Server(asyncore.dispatcher):
         # on the incoming connexion
         self.handler(conn,addr,self)
 
-from datetime import datetime
+from datetime import datetime,timedelta
 
 class UDMapEntry :
     def __init__(self, p) :
+        long_ago = datetime.utcnow() - timedelta(100,100,100);
         self.position = p;
-        self.indoor_time = datetime.utcnow();
+        self.indoor_time = long_ago;
         self.indoor_user = 0;
         self.indoor_zombies = 0;
         self.indoor_survivors = 0;
-        self.outdoor_time = datetime.utcnow();
+        self.outdoor_time = long_ago;
         self.outdoor_user = 0;
         self.outdoor_zombies = 0;
         self.outdoor_survivors = 0;
-        self.cade_time = datetime.utcnow();
+        self.cade_time = long_ago;
         self.cade_user = 0;
         self.cade_level = -1;
-        self.ruin_time = datetime.utcnow();
+        self.ruin_time = long_ago;
         self.ruin_user = 0;
         self.ruin = 0;
 
