@@ -324,7 +324,7 @@ burb_dict = {'suburb=dakerstown':(0,0),
              'suburb=raines+hills':(6,1),
              'suburb=pashenton':(7,1),
              'suburb=rolt+heights':(8,1),
-             'suburb=pescoside':(9,1),
+             'suburb=pescodside':(9,1),
              
              'suburb=peddlesden+village':(0,2),
              'suburb=chudleyton':(1,2),
