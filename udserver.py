@@ -606,8 +606,8 @@ class UDRequestHandler(RequestHandler) :
         
 if __name__=="__main__":
     # launch the server on the specified port
-    port = 8081
-    s=Server('',port,UDRequestHandler)
+    port = 8989;
+    s=Server('192.168.2.126',port,UDRequestHandler)
     print "SimpleAsyncHTTPServer running on port %s" %port
     try:
         asyncore.loop(timeout=2)

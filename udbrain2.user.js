@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          UDBrain2
+// @name          UDBraaains
 // @namespace     http://code.google.com/p/udbraaains/
 // @description   Reports and downloads metadata for Urban Dead
 // @include       http://*urbandead.com/map.cgi*
@@ -476,7 +476,7 @@ function exchangeData() {
 	GM_xmlhttpRequest({
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
-		url: 'http://localhost:8081/udb'+qs,
+		url: 'http://65.78.27.242:8989/udb'+qs,
 		headers: {
 			"Accept": "text/html",
 			"Content-type": "application/x-www-form-urlencoded",

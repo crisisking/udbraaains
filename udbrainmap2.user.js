@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name           UDBrainMap
+// @name           UDBraaainsMap
 // @namespace      -
 // @description    View UDBrain data in Red Rum map
 // @include        http://redrum.soul-fantasy.net/map.php?*suburb*
@@ -312,7 +312,7 @@ function getDataRaw(suburbsArr) {
 
 	    GM_xmlhttpRequest({
 			method: 'GET',
-			url: 'http://localhost:8081/ud_xml?'+query,
+			url: 'http://65.78.27.242:8989/ud_xml?'+query,
 			onload: function(xhr) {
 				var l = xhr.responseText.split('\n');
 				for (var i = 0; i < l.length ; i++)
