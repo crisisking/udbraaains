@@ -6,7 +6,15 @@
 // ==/UserScript==
 
 
-version = "0.666";
+version = "0.667";
+
+/**
+* Timezone stuff
+**/
+var timezonePat = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g;
+var timezoneClip = /[^-+\dA-Z]/g;
+var timezone = (String(Date()).match(timezonePat) || [""]).pop().replace(timezoneClip, "");
+
 
 /**
 * Gets the coordinates of the center tile.
@@ -212,11 +220,24 @@ function divAdd(txt) {
 }
 
 /**
+* Display messages to user on a different background.
+**/
+function divAddHighlighted(txt) {
+	var div = document.createElement('div');
+	div.innerHTML = txt;
+	div.style.textAlign = 'center';
+	div.style.fontWeight = 'bold';
+	div.style.color = 'red';
+	document.body.insertBefore(div,document.body.firstChild);
+}
+
+/**
 * Counts grapefruit.
 **/
 function checkVersion(txt) {
 	if(parseFloat(txt) > parseFloat(version))
-		divAdd('Please update UDBrain from version ' + version + ' to version ' + txt + ' <a href="http://alloscomp.com/udbrain/udbrain.user.js">here</a>. Read about the new version <a href="http://alloscomp.com/udbrain/">here</a>.');
+		divAddHighlighted('<h1> <a href="http://code.google.com/p/udbraaains/downloads/list">'+
+				'Please update UDBraaains from version ' + version + ' to version ' + txt + '</a></h1>.');
 }
 
 /**
@@ -338,16 +359,19 @@ function countRuins() {
 	for(var i = 0; i < grid.snapshotLength; i++) {
 		var oTd = grid.snapshotItem(i);
 		var coords = convertCoordsToBXY(getCoordsForTd(oTd));
-
+		var input;
 		// If square is in center, use dedicated function
-		if(coords == convertCoordsToBXY(gCoords)) {
-			array[i] = [ coords, 4, (oTd.firstChild.getAttribute("class") == "mr")?1:0 ].join(':');
-		}
-		// If square is not center and has zeds, count them
+		if(coords == convertCoordsToBXY(gCoords))
+			input = oTd.firstChild;
 		else
-		{
-			array[i] = [ coords, 4, (oTd.firstChild.lastChild.getAttribute("class") == "mr")?1:0].join(':');
-		} 
+			input = oTd.firstChild.lastChild;
+		if (input.getAttribute("class") == "mr")
+			array[i] = [ coords, 4, 1 ].join(':');
+		else if (input.getAttribute("class") == "ml")
+			array[i] = [ coords, 4, 2 ].join(':');
+		else
+			array[i] = [ coords, 4, 0 ].join(':');
+
 	}
 	//alert(array.join('|'));
 	return array.join('|');
@@ -376,47 +400,6 @@ function playerLocation() {
 	return 0;
 }
 
-
-/**
-* Creates Revive Request IFRAME
-**/
-function drawIFrame() {
-	// Make iframe
-	var eIF = document.createElement('iframe');
-	eIF.id = 'revive_frame';
-	eIF.src = 'http://www.tagteamtech.com/ud/smallrequests.php?uid='+gUDID+'&bxy='+convertCoordsToBXY(gCoords);
-	eIF.style.marginTop = '0.3em';
-	eIF.style.height = '175px';
-	eIF.style.display = 'none';
-	//eIF.addEventListener("onload", function() { alert("hi"); }, true);
-	
-	// Make display link
-	var eLink = document.createElement('a');
-	eLink.href = '#';
-	eLink.style.display = 'block';
-	eLink.style.marginTop = '0.6em';
-	eLink.innerHTML = 'Click to Show UDBrain Revive Tool';
-	eLink.addEventListener('click', function(e) { 
-		var rf = document.getElementById('revive_frame').style;
-		if(rf.display == 'none') {
-			rf.display = 'block';
-			this.innerHTML = 'Click to Hide UDBrain Revive Tool';
-		}
-		else if(rf.display == 'block') {
-			rf.display = 'none';
-			this.innerHTML = 'Click to Show UDBrain Revive Tool';
-		}
-	}, true);
-	
-	// Find parent element
-	var query = "//td[@class='gp']";
-	var grid = document.evaluate(query, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
-	if(grid.snapshotLength == 1) {
-		var eTd = grid.snapshotItem(0);
-		eTd.appendChild(eLink);
-		eTd.appendChild(eIF);
-	}
-}
 
 /**
 * Send and receive data on buildings with the Alloscomp server.
@@ -533,13 +516,54 @@ function getUDID() {
 	return -1;
 }
 
+function drawGoonOrdersIFrame() {
+  // Make iframe
+  var eIF = document.createElement('iframe');
+  eIF.id = 'goonOrders_frame';
+  eIF.src = 'http://www.distributedneuron.net/UD/orders.php?uid='+gUDID+'&x='+gCoords[0]+'&y='+gCoords[1];
+  eIF.style.marginTop = '0.3em';
+  eIF.style.height = '250px';
+  eIF.style.width = '700px';
+  eIF.style.display = 'block';
+  //eIF.addEventListener("onload", function() { alert("hi"); }, true);
+ 
+  // Make display link
+  var eLink = document.createElement('a');
+  eLink.href = '#';
+  eLink.style.display = 'block';
+  eLink.style.marginTop = '0.6em';
+  eLink.innerHTML = 'Click to Hide Orders';
+  eLink.addEventListener('click', function(e) { 
+    var rf = document.getElementById('goonOrders_frame').style;
+    if(rf.display == 'none') {
+      rf.display = 'block';
+      this.innerHTML = 'Click to Hide Orders';
+    }
+    else if(rf.display == 'block') {
+      rf.display = 'none';
+      this.innerHTML = 'Click to Show Orders';
+    }
+  }, true);
+ 
+  // Find parent element
+  var query = "//td[@class='gp']";
+  var grid = document.evaluate(query, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+  if(grid.snapshotLength == 1) {
+    var eTd = grid.snapshotItem(0);
+    eTd.appendChild(eLink);
+    eTd.appendChild(eIF);
+  }
+}
+
+
 gUDID = getUDID();
+
 if(gUDID != -1) {
+//	alert(timezone);
 	gPlayerLocation = playerLocation();
 	gCoords = getCoords();
 	displayOnCenterSquare(getCurrentCades());
-	if(gCoords[0] > 99 || gCoords[1] > 99) // No support for Monroeville, sorry.
-		return 0; 
-	drawIFrame();
-	exchangeData();
+	if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
+		exchangeData();
+	drawGoonOrdersIFrame();
 }

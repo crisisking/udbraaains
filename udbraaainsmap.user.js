@@ -31,9 +31,12 @@
 var buildingBackgroundColor = '#001100';
 var borderOld = '2px solid #aaaaaa'; // inset outset ridge
 var borderNew = '3px double #ffffff';
+var borderNewBlack = '3px double #000000';
 var zedColor = '#00cc00';
 var zedBorder = '2px solid ' +zedColor;
 var ONEDAY = 86400;
+var version = '0.667';
+var update_link = "http://code.google.com/p/udbraaains/downloads/list";
 
 //******************************************************************************
 //* Helper functions
@@ -186,6 +189,14 @@ function insertData(xml_data, raw_data) {
 			'style="color: #ffffff; padding: 0px 1px; border: ' +blockBorder+ '; '+
 			'background-color: ' +'#ff0000'+ '; '+
 			'"><b>' +'R'+ '</b></span>';
+	} else if (info[9]==2) { // Powered
+		blockBorder;
+		if(info[8]*1<=ONEDAY) { blockBorder = borderNewBlack; }
+		else                { blockBorder = borderOld; }
+		bDiv += '&nbsp;<span title="' +convertAge(info[8])+ '" '+
+			'style="color: #000000; padding: 0px 1px; border: ' +blockBorder+ '; '+
+			'background-color: ' +'#ffff00'+ '; '+
+			'"><b>' +'P'+ '</b></span>';
 	}
 	if((info[4]!=-1)&&(info[10] == 0 || info[5]>0)) { // Zombies inside
 	    	blockBorder;
@@ -315,7 +326,12 @@ function getDataRaw(suburbsArr) {
 			url: 'http://65.78.27.242:50609/ud_xml?'+query,
 			onload: function(xhr) {
 				var l = xhr.responseText.split('\n');
-				for (var i = 0; i < l.length ; i++)
+				if (l[0] != version)
+				{
+					alert("Get a new version, now:\n" + update_link);
+					window.location = update_link;
+				}
+				for (var i = 1; i < l.length ; i++)
 				{
 					var sp = l[i].split(':');
 					data[sp[0]] = l[i];
