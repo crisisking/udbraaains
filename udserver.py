@@ -33,6 +33,15 @@ import asynchat, asyncore, socket, SimpleHTTPServer, select, urllib
 import posixpath, sys, cgi, cStringIO, os, traceback, shutil
 import pickle
 import mutex
+import threading
+import time, shutil
+from datetime import datetime,timedelta
+
+
+snapshot_interval = 600;
+port = 50609;
+version = '0.667';
+min_version = '0.666';
 
 class CI_dict(dict):
     """Dictionary with case-insensitive keys
@@ -242,8 +251,6 @@ class Server(asyncore.dispatcher):
         # on the incoming connexion
         self.handler(conn,addr,self)
 
-from datetime import datetime,timedelta
-
 class UDMapEntry :
     def __init__(self, p) :
         long_ago = datetime.utcnow() - timedelta(100,100,100);
@@ -290,19 +297,46 @@ class UDMap :
 
     def save_locked(self) :
         print "saving map"
-        f = open("udmap.dat", "w");
-        pickle.dump(self.map_data, f);
-        f.close()
+        try:
+            f = open("udmap.dat", "w");
+            pickle.dump(self.map_data, f);
+            f.close()
+        except IOError:
+            print("couldn't save!!!!\n");
+        self.map_mutex.unlock();
         return
 
     def save(self) :
         self.map_mutex.lock(UDMap.save_locked, self);
+
+    def save_snapshot_locked(self) :
+        try:
+            shutil.copyfile('udmap.dat', 'logs/udmap-'+str(datetime.utcnow())+'.dat');
+        except IOError:
+            print("couldn't copy file");
         self.map_mutex.unlock();
+
+    def save_snapshot(self) :
+        self.map_mutex.lock(UDMap.save_snapshot_locked, self);
+#        self.save();
 
 #    def set(x,y,data) :
 #        
         
 ud_map = UDMap();    
+
+
+class SnapshotThread ( threading.Thread ):
+    def run ( self ):
+        global snapshot_interval;
+        self.go = True;
+        time.sleep(snapshot_interval);
+        while self.go :
+            ud_map.save_snapshot();
+            time.sleep(snapshot_interval);
+
+    def stop_saving ( self ) :
+        self.go = False;
 
 burb_dict = {'suburb=dakerstown':(0,0),
              'suburb=jensentown':(1,0),
@@ -355,7 +389,7 @@ burb_dict = {'suburb=dakerstown':(0,0),
              'suburb=barrville':(4,4),
              'suburb=ridleybank':(5,4),
              'suburb=pimbank':(6,4),
-             'suburb=pappardville':(7,4),
+             'suburb=peppardville':(7,4),
              'suburb=pitneybank':(8,4),
              'suburb=starlingtown':(9,4),
 
@@ -418,6 +452,9 @@ burb_dict = {'suburb=dakerstown':(0,0),
 def age(now, before) :
     delta = now - before;
     return str(delta.seconds + 86400*delta.days)
+
+db_submit_dict = {};
+last_ip_limit_reset_time = datetime.utcnow();
 
 class UDRequestHandler(RequestHandler) :
     foo = 1;
@@ -485,6 +522,7 @@ class UDRequestHandler(RequestHandler) :
         self.send_response(200)
         self.send_header("Content-type", "text/plain");
         self.end_headers()
+        self.wfile.write(version+"\n");
         for x in range(10) :
             for y in range(10) :
                 coord = y + coords[1]*10 + 100*x + coords[0]*1000;
@@ -511,6 +549,9 @@ class UDRequestHandler(RequestHandler) :
         elif self.my_path[0] == '/udb' :
             self.handle_udbrain();
             return
+        elif self.my_path[0] == '/udbq' :
+            self.handle_udbrain_query();
+            return
         else :
             self.send_response(404);
             return
@@ -527,16 +568,17 @@ class UDRequestHandler(RequestHandler) :
         self.get_suburb_data(burb_dict[self.my_path[1]]);
 
     def respond_with_data(self) :
+        global version
         if len(self.my_path) < 2 :
             return
         squares = self.my_path[1].split('&');
         try:
             squares = map(int, squares);
         except ValueError:
-            print("bad location request " + squares);
+            print("bad location request " + str(squares));
             self.send_response(501);
             return
-        response = ['0.666'];
+        response = ['v' + version];
         for x in squares :
             if x < 0 or x > 9999 :
                 print("bad location " + str(x))
@@ -546,20 +588,56 @@ class UDRequestHandler(RequestHandler) :
             #            M.dump()
             if M.cade_level != -1 :
                 response.append(str(x)+':'+age(self.timestamp, M.cade_time)+':1:'+str(M.cade_level)+':'+age(self.timestamp, M.indoor_time)+':'+str(M.indoor_survivors))
+        self.send_response(200);
+        self.end_headers();
         self.wfile.write("|".join(response))
-#        print(self.wfile)
-#        self.wfile.print('bork')
-#        print(response)
-#        print("|".join(response))
-#        print(response.join('|'));
+        self.wfile.write('\n');
         return
-        
+
+    def handle_udbrain_query(self) :
+        global version
+        # we send more information here than we do in respond_with_data:
+        if len(self.my_path) < 2 :
+            return
+        squares = self.my_path[1].split('&');
+        try:
+            squares = map(int, squares);
+        except ValueError:
+            print("bad location request " + str(squares));
+            self.send_response(501);
+            return
+        response = [version];
+        for x in squares :
+            if x < 0 or x > 9999 :
+                print("bad location " + str(x))
+                self.send_response(501);
+                return
+            M = ud_map.get(x);
+            #            M.dump()
+            response.append(str(x)+':'+age(self.timestamp, M.cade_time)+':'+str(M.cade_level)+':'+
+                            age(self.timestamp, M.indoor_time)+':'+str(M.indoor_survivors)+':'+
+                            str(M.indoor_zombies)+':'+age(self.timestamp, M.ruin_time)+':'+str(M.ruin));
+        self.send_response(200);
+        self.end_headers();
+        self.wfile.write("|".join(response))
+        self.wfile.write('\n');
+        return
+    
     def handle_udbrain(self) :
-#        print(self.body);
-#        print(self.path);
-#        print(self.body.getvalue('user').split(':'));
-#        print(self.body.getvalue('data').split('|'));
-        #        user_data = self.body.getvalue('user');
+        global min_version;
+        global last_ip_limit_reset_time;
+        if self.timestamp - last_ip_limit_reset_time > timedelta(1) :
+            db_submit_dict.clear();
+            last_ip_limit_reset_time = self.timestamp;
+        addr = self.client_address[0];
+        if not db_submit_dict.has_key(addr) :
+            db_submit_dict[addr] = 0;
+        db_submit_dict[addr] = db_submit_dict[addr] + 1;
+        if db_submit_dict[addr] > 800 :
+            print("error - too many submissions");
+            print(addr);
+            self.respond_with_data();
+            return
         if not self.body.has_key('user') :
             print("error - no user field");
             self.send_response(501);
@@ -569,7 +647,7 @@ class UDRequestHandler(RequestHandler) :
             print("error - wrong user data size");
             self.send_response(501);
             return
-        if user_data[1] != '0.666' :
+        if user_data[1] < min_version :
             print("wrong UDBrain version " + user_data[1]);
             self.send_response(501);
             return
@@ -581,13 +659,7 @@ class UDRequestHandler(RequestHandler) :
                 self.send_response(501);
                 return
             
-            if user_data[3] == '1' :
-                print "in street";
-            elif user_data[3] == '2' :
-                print "outside building";
-            elif user_data[3] == '3':
-                print "inside building";
-            else :
+            if not ( user_data[3] == '1' or  user_data[3] == '2' or user_data[3] == '3' ) :
                 print("bad location type " + user_data[3]);
                 self.send_response(501);
                 return
@@ -607,11 +679,14 @@ class UDRequestHandler(RequestHandler) :
         
 if __name__=="__main__":
     # launch the server on the specified port
-    port = 50609;
     s=Server('',port,UDRequestHandler)
     print "SimpleAsyncHTTPServer running on port %s" %port
+    st = SnapshotThread();
+    st.setDaemon(True);
+    st.start();
     try:
         asyncore.loop(timeout=2)
     except KeyboardInterrupt:
+        st.stop_saving();
         ud_map.save()
         print "Crtl+C pressed. Shutting down."
