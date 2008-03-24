@@ -303,9 +303,20 @@ function getCoordinates() {
     return coordinates;
 }
 
+var new_data;
+var old_data;
+var displayed = 0;
 
-function displayData(data) {
-	
+function displayData()
+{
+	displayed = 1;
+	for (var i in old_data)
+	{
+		if (new_data[i])
+		{
+			insertData(old_data[i], new_data[i]);
+		}
+	}
 }
 
 function getDataRaw(suburbsArr) {
@@ -318,10 +329,8 @@ function getDataRaw(suburbsArr) {
 	for(var i=0; i < suburbsArr.length; i++) {
 
 		var suburbQuery = suburbsArr[i].replace(/\s/g,'+');
-	    query = 'suburb=' + suburbQuery;
-	    //divAdd(query);
-
-	    GM_xmlhttpRequest({
+		query = 'suburb=' + suburbQuery;
+		GM_xmlhttpRequest({
 			method: 'GET',
 			url: 'http://65.78.27.242:50609/ud_xml?'+query,
 			onload: function(xhr) {
@@ -334,11 +343,15 @@ function getDataRaw(suburbsArr) {
 				for (var i = 1; i < l.length ; i++)
 				{
 					var sp = l[i].split(':');
-					data[sp[0]] = l[i];
-//					data.add(sp[0], l[i]);
+					data[sp[0]] = sp;
 				}
-//				insertData(l[i]);
 				loaded++;
+				if (loaded == suburbsArr.length)
+				{
+					new_data = data;
+					if (old_data && !displayed)
+						displayData();
+				}
 			}
 		});
 	}
@@ -349,13 +362,14 @@ function getDataRaw(suburbsArr) {
 /**
 * Get UDBrain data in XML
 **/
-function getDataXML(suburbsArr, raw_data) {
+function getDataXML(suburbsArr) {
 	var loadStr = '';
 	for(var i=0; i < suburbsArr.length; i++) {
 		loadStr += suburbsArr[i]+' ';
 	}
 	showLoadDiv('UDBrain ');
 	var loaded = 0;
+	var data = new Array();
 	for(var i=0; i < suburbsArr.length; i++) {
 
 		var suburbQuery = suburbsArr[i].replace(/\s/g,'+');
@@ -394,14 +408,21 @@ function getDataXML(suburbsArr, raw_data) {
 		                } // another report type?
 					}
 
-//				insertData(bxy +':'+ bAge +':1:'+ bLvl +':'+ zInAge +':'+ zIn +':'+ zOutAge +':'+ zOut);
+				data[bxy] = [bxy,bAge,1,bLvl,zInAge,zIn,zOutAge,zOut];
+				/*
 				if (raw_data[bxy])
 				{
 					insertData([bxy,bAge,1,bLvl,zInAge,zIn,zOutAge,zOut], raw_data[bxy].split(':'));
 				}
+				*/
 			}
 				loaded++;
-				if(loaded >= suburbsArr.length) { removeLoadDiv(); }
+				if(loaded >= suburbsArr.length) {
+					removeLoadDiv();
+					old_data = data;
+					if (new_data && !displayed)
+						displayData();
+				}
 			}
 		});
 	}
@@ -453,11 +474,8 @@ window.addEventListener(
 		// Get data using suburb(s)
 		var suburbNames = getSuburbs();
 		if(suburbNames != -1) {
-			raw_data = getDataRaw(suburbNames);
-			getDataXML(suburbNames, raw_data);
-//			getDataRaw(suburbNames, xml_data);
-//			displayData(raw_data);
-//			combo_data = mergeData(raw_data, xml_data);
+			getDataRaw(suburbNames);
+			getDataXML(suburbNames);
 		}
 
 		//divAdd('['+getSuburbs().join('_')+']');
