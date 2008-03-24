@@ -346,7 +346,7 @@ burb_dict = {'suburb=dakerstown':(0,0),
              'suburb=lamport+hills':(5,0),
              'suburb=chancelwood':(6,0),
              'suburb=earletown':(7,0),
-             'suburb=rhodebank':(8,0),
+             'suburb=rhodenbank':(8,0),
              'suburb=dulston':(9,0),
 
              'suburb=roywood':(0,1),
@@ -461,9 +461,11 @@ class UDRequestHandler(RequestHandler) :
 
     def process_datum(self, x) :
         p = x.split(':');
+        if len(x) == 0 : # ignore empty data
+            return
         if len(p) != 3 :
             print("error - bad datum size");
-            self.send_respone(501);
+            self.send_response(501);
             return
         try:
             datum = map(int, p);
