@@ -133,6 +133,8 @@ function convertCadeLevelToShort(cl) {
 * Convert [X,Y] array to database and report form.
 **/
 function convertCoordsToBXY(coords) {
+	if (coords == null)
+		return null;
 	return parseInt(coords[0]*100)+parseInt(coords[1]);
 }
 
@@ -183,7 +185,11 @@ function displayOnCenterSquare(cades) {
 		for(var i = 0; i < grid.snapshotLength; i++) {
 			var td = grid.snapshotItem(i);
 			if(td.innerHTML.indexOf("<form") < 0)
-				td.getElementsByTagName("input")[0].value += "\n("+convertCadeLevelToShort(cades)+")";
+			{
+				var inputs = td.getElementsByTagName("input");
+				if (inputs.length > 0)
+					inputs[0].value += "\n("+convertCadeLevelToShort(cades)+")";
+			}
 		}
 	}
 }
@@ -245,6 +251,10 @@ function checkVersion(txt) {
 **/
 function getCoordsForTd(oTd) {
 	if(oTd.innerHTML) {
+		if (!oTd.innerHTML.match(/<input/))
+		{
+			return null;
+		}
 		var matches = oTd.innerHTML.match(/(\d+)-(\d+)/);
 		if(matches) // if the TD contains coords, return them
 			return [ matches[1], matches[2] ];
@@ -260,13 +270,31 @@ function getCoordsForTd(oTd) {
 * Derived from code by Ben2
 **/
 function countLocalZeds() {
-	var query = "//td[contains(@class,' l') or contains(@class,'x')]//span[@class='fz']";
+	//	var query = "//td[contains(@class,' l') or contains(@class,'x')]//span[@class='fz']";
+	var query = "//td[contains(@class,' l') or contains(@class,'x')]";
 	var grid = document.evaluate(query, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-	if(grid.snapshotLength) {
-		var matches = grid.snapshotItem(0).innerHTML.match(/^(\d+)\s+zombie/);
-		if(matches)
-			return matches[1];
+	var el = 0;
+	divAdd('snapshot ' + grid.snapshotLength);
+	divAdd(' '+0+' '+grid.snapshotItem(0).innerHTML);
+	for (var i = 1; i < grid.snapshotLength ; i++)
+	{
+		divAdd(' '+i+' '+grid.snapshotItem(i).innerHTML);
+		if (!grid.snapshotItem(i).innerHTML.match(/<form/))
+			el = i;
 	}
+	divAdd('chose ' + el);
+	if(grid.snapshotLength) {
+		var matches = grid.snapshotItem(el).innerHTML.match(/(\d+)\s+zombie/);		
+		if(matches)
+		{
+			divAdd('local zombies : ' + matches[1]);
+			// alert(matches[1]);
+			return matches[1];
+		}
+		/*else
+			alert('no matches');*/
+	}
+	divAdd('0 local zombies');
 	return 0;
 }
 
@@ -329,7 +357,9 @@ function countZeds() {
 	for(var i = 0; i < grid.snapshotLength; i++) {
 		var oTd = grid.snapshotItem(i);
 		var coords = convertCoordsToBXY(getCoordsForTd(oTd));
-		
+		if (coords == null)
+			continue;
+
 		// If square is in center, use dedicated function
 		if(coords == convertCoordsToBXY(gCoords)) {
 			array[i] = [ coords, 2, countLocalZeds() ].join(':');
@@ -341,7 +371,7 @@ function countZeds() {
 			if(matches) {
 				array[i] = [ coords, 2, matches[1] ].join(':');
 			}
-		} 
+		}
 		
 		// Otherwise, assume zero
 		else {
@@ -359,18 +389,23 @@ function countRuins() {
 	for(var i = 0; i < grid.snapshotLength; i++) {
 		var oTd = grid.snapshotItem(i);
 		var coords = convertCoordsToBXY(getCoordsForTd(oTd));
+		if (!coords)
+			continue;
 		var input;
 		// If square is in center, use dedicated function
-		if(coords == convertCoordsToBXY(gCoords))
-			input = oTd.firstChild;
-		else
-			input = oTd.firstChild.lastChild;
-		if (input.getAttribute("class") == "mr")
-			array[i] = [ coords, 4, 1 ].join(':');
-		else if (input.getAttribute("class") == "ml")
-			array[i] = [ coords, 4, 2 ].join(':');
-		else
-			array[i] = [ coords, 4, 0 ].join(':');
+		var inputs = oTd.getElementsByTagName('input');
+		for (var j = 0; j < inputs.length ; j++)
+			if (inputs[j].getAttribute("type") == "submit")
+				input = inputs[j];
+		if (input && input.hasAttribute("class"))
+		{
+			if (input.getAttribute("class") == "mr")
+				array[i] = [ coords, 4, 1 ].join(':');
+			else if (input.getAttribute("class") == "ml")
+				array[i] = [ coords, 4, 2 ].join(':');
+			else
+				array[i] = [ coords, 4, 0 ].join(':');
+		}
 
 	}
 	//alert(array.join('|'));
@@ -451,7 +486,7 @@ function exchangeData() {
 	
 	// Build the post data string
 	var data = 'user='+[ gUDID, version, convertCoordsToBXY(coords), gPlayerLocation ].join(':')+'&data='+postarr.join('|');
-	
+
 	// Debugging: print query and data
 	//divAdd("qs: "+qs+"<br>data: "+data);
 	
