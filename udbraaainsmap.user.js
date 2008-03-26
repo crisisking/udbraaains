@@ -134,26 +134,21 @@ function removeLoadDiv() {
 function insertData(xml_data, raw_data) {
 	//    var info = response.split(':');
 	var info = raw_data;
-	if (xml_data[1] != -1 && xml_data[1]*1 < raw_data[1]*1)
+	if (xml_data)
 	{
-		info[1] = xml_data[1];
-		info[3] = xml_data[3];
+		if (xml_data[1] != -1 && xml_data[1]*1 < raw_data[1]*1)
+		{
+			info[1] = xml_data[1];
+			info[3] = xml_data[3];
+		}
+		if (xml_data[6] != -1 && xml_data[6]*1 < raw_data[6]*1)
+		{
+			info[6] = xml_data[6];
+			info[7] = xml_data[7];
+		}
+		// Coordinate wrong OR no data for that block
 	}
-	/*
-	if (xml_data[4] != -1 && xml_data[4]*1 < raw_data[4]*1)
-	{
-		info[4] = xml_data[4];
-		info[5] = xml_data[5];
-	}
-	*/
-	if (xml_data[6] != -1 && xml_data[6]*1 < raw_data[6]*1)
-	{
-		info[6] = xml_data[6];
-		info[7] = xml_data[7];
-	}
-
-    // Coordinate wrong OR no data for that block
-    if((info[0]>9999||info[0]<0)||(info[1]<0))
+	if((info[0]>9999||info[0]<0)||(info[1]<0))
 		return -1;
 
 	var isBuilding = true;
@@ -310,11 +305,12 @@ var displayed = 0;
 function displayData()
 {
 	displayed = 1;
-	for (var i in old_data)
+	for (var i in new_data)
 	{
+		var od = old_data[i];
 		if (new_data[i])
 		{
-			insertData(old_data[i], new_data[i]);
+			insertData(od, new_data[i]);
 		}
 	}
 }
@@ -326,6 +322,7 @@ function getDataRaw(suburbsArr) {
 	}
 	var loaded = 0;
 	var data = new Array();
+	showLoadDiv('braaains ');
 	for(var i=0; i < suburbsArr.length; i++) {
 
 		var suburbQuery = suburbsArr[i].replace(/\s/g,'+');
@@ -344,10 +341,12 @@ function getDataRaw(suburbsArr) {
 				{
 					var sp = l[i].split(':');
 					data[sp[0]] = sp;
+					//divAdd(l[i]);
 				}
 				loaded++;
 				if (loaded == suburbsArr.length)
 				{
+					removeLoadDiv();
 					new_data = data;
 					if (old_data && !displayed)
 						displayData();
@@ -474,8 +473,9 @@ window.addEventListener(
 		// Get data using suburb(s)
 		var suburbNames = getSuburbs();
 		if(suburbNames != -1) {
+			old_data = new Array();
 			getDataRaw(suburbNames);
-			getDataXML(suburbNames);
+			//getDataXML(suburbNames);
 		}
 
 		//divAdd('['+getSuburbs().join('_')+']');
