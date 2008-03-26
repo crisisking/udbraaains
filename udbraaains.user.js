@@ -275,11 +275,11 @@ function countLocalZeds() {
 	var grid = document.evaluate(query, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
 	var el = 0;
 	divAdd('snapshot ' + grid.snapshotLength);
-	divAdd(' '+0+' '+grid.snapshotItem(0).innerHTML);
+	divAdd(' '+0+' '+grid.snapshotItem(2).innerHTML);
 	for (var i = 1; i < grid.snapshotLength ; i++)
 	{
-		divAdd(' '+i+' '+grid.snapshotItem(i).innerHTML);
-		if (!grid.snapshotItem(i).innerHTML.match(/<form/))
+		//divAdd(' '+i+' '+grid.snapshotItem(i).innerHTML);
+		if (!grid.snapshotItem(i).innerHTML.match(/<form/) && grid.snapshotItem(i).innerHTML.match(/<input/))
 			el = i;
 	}
 	divAdd('chose ' + el);
