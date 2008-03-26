@@ -270,12 +270,15 @@ function getCoordsForTd(oTd) {
 * Derived from code by Ben2
 **/
 function countLocalZeds() {
+	//var bork = document.evaluate("//table", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+	//alert(bork.snapshotItem(1).innerHTML);
 	//	var query = "//td[contains(@class,' l') or contains(@class,'x')]//span[@class='fz']";
-	var query = "//td[contains(@class,' l') or contains(@class,'x')]";
+	// var query = "//td[contains(@class,' l') or contains(@class,'x')]";
+	var query = "//td[contains(@class,'b c')]";
 	var grid = document.evaluate(query, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
 	var el = 0;
 	divAdd('snapshot ' + grid.snapshotLength);
-	divAdd(' '+0+' '+grid.snapshotItem(2).innerHTML);
+	// divAdd(' '+0+' '+grid.snapshotItem(0).innerHTML);
 	for (var i = 1; i < grid.snapshotLength ; i++)
 	{
 		//divAdd(' '+i+' '+grid.snapshotItem(i).innerHTML);
@@ -596,6 +599,7 @@ gUDID = getUDID();
 if(gUDID != -1) {
 //	alert(timezone);
 	gPlayerLocation = playerLocation();
+	divAdd('player location ' +gPlayerLocation);
 	gCoords = getCoords();
 	displayOnCenterSquare(getCurrentCades());
 	if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
