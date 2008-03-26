@@ -277,7 +277,7 @@ function countLocalZeds() {
 	var query = "//td[contains(@class,'b c')]";
 	var grid = document.evaluate(query, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
 	var el = 0;
-	divAdd('snapshot ' + grid.snapshotLength);
+	//divAdd('snapshot ' + grid.snapshotLength);
 	// divAdd(' '+0+' '+grid.snapshotItem(0).innerHTML);
 	for (var i = 1; i < grid.snapshotLength ; i++)
 	{
@@ -285,19 +285,19 @@ function countLocalZeds() {
 		if (!grid.snapshotItem(i).innerHTML.match(/<form/) && grid.snapshotItem(i).innerHTML.match(/<input/))
 			el = i;
 	}
-	divAdd('chose ' + el);
+	//divAdd('chose ' + el);
 	if(grid.snapshotLength) {
 		var matches = grid.snapshotItem(el).innerHTML.match(/(\d+)\s+zombie/);		
 		if(matches)
 		{
-			divAdd('local zombies : ' + matches[1]);
+			// divAdd('local zombies : ' + matches[1]);
 			// alert(matches[1]);
 			return matches[1];
 		}
 		/*else
 			alert('no matches');*/
 	}
-	divAdd('0 local zombies');
+	// divAdd('0 local zombies');
 	return 0;
 }
 
@@ -599,7 +599,8 @@ gUDID = getUDID();
 if(gUDID != -1) {
 //	alert(timezone);
 	gPlayerLocation = playerLocation();
-	divAdd('player location ' +gPlayerLocation);
+	if (gPlayerLocation == 0)
+		divAdd('player location reported as 0 - minor bug - please report');
 	gCoords = getCoords();
 	displayOnCenterSquare(getCurrentCades());
 	if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
