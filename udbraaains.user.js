@@ -307,18 +307,11 @@ function countLocalZeds() {
 	return 0;
 }
 
+var gSurvivorIds;
+
 function countSurvivors() {
 	var textblob = document.evaluate("//div[contains(@class,'gt')]", document, null, XPathResult.ANY_TYPE, null);
 	var bso = textblob.iterateNext();
-/*var alertText = 'Level 2 headings in this document are:\n'
-
-var i = 0;
-while (bso) {
-  alertText += 'number'+i+'\n';
-  alertText += bso.innerHTML + '\n';
-  bso = textblob.iterateNext();
-}
-alert(alertText);*/
 	if (bso) {
 		var bs = ''+bso.innerHTML;
 //		alert(bs+'\n');
@@ -329,20 +322,27 @@ alert(alertText);*/
 //			alert(matches[1]);
 //				array[i] = [ coords, 2, matches[1] ].join(':');
 		} else {
-//			alert(textblob.snapshotItem(1).textContent);
 			
 			var m1 = bs.match(/(.*?)<br><br>/);
 			if (!m1)
 				m1 = [0, bs];
-			var m2 = m1[1].match(/<a\shref="profile.cgi\?id=(\d+)/g);
+			var m2 = m1[1].match(/<a\shref="profile.cgi\?id=\d+/g);
 			if (m2)
+			{
+				var survivor_ids = [];
 				survivor_count = m2.length;
+				for (var i = 0; i < m2.length; i++)
+				{
+					m3 = m2[i].match(/\d+/);
+					survivor_ids.push(m3);
+				}
+				gSurvivorIds = survivor_ids;
+			}
 			else
 				survivor_count = 0;
 //			alert(m2.length);
 //			alert(m1[1]);
 		}
-//		alert(survivor_count);
 		return(survivor_count);
 	}
 	else
@@ -434,6 +434,8 @@ function playerLocation() {
 		var oDiv = grid.snapshotItem(i);
 		if(oDiv.innerHTML.match(/The exertions of the day have numbed your clouded brain/))
 			return -1;
+		if(oDiv.innerHTML.match(/Exhausted, you can go no further/))
+			return -1;
 		if(oDiv.innerHTML.match(/You are inside/))
 			return 3;
 		if(oDiv.innerHTML.match(/^You are in the/))
@@ -499,6 +501,8 @@ function exchangeData() {
 	
 	// Build the post data string
 	var data = 'user='+[ gUDID, version, convertCoordsToBXY(coords), gPlayerLocation ].join(':')+'&data='+postarr.join('|');
+	if (gSurvivorIds)
+		data += '&survivors='+gSurvivorIds;
 
 	// Debugging: print query and data
 	//divAdd("qs: "+qs+"<br>data: "+data);
