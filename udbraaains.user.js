@@ -58,6 +58,12 @@ function getCoords() {
 		}
 	}
 	var out = new Array(x,y);
+	var sb = document.evaluate("//td[@class='sb']", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+	//divAdd(sb.snapshotItem(0).innerHTML);
+	if (sb.snapshotLength)
+	{
+		sb.snapshotItem(0).innerHTML += " <span style=\"color: 'red	'\"> ["+x+", "+y+"]</span>";
+	}
 	return out;
 }
 
@@ -426,7 +432,11 @@ function playerLocation() {
 	var grid = document.evaluate(query, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
 	for (var i = 0; i < grid.snapshotLength; i++) {
 		var oDiv = grid.snapshotItem(i);
+		if(oDiv.innerHTML.match(/The exertions of the day have numbed your clouded brain/))
+			return -1;
 		if(oDiv.innerHTML.match(/You are inside/))
+			return 3;
+		if(oDiv.innerHTML.match(/^You are in the/))
 			return 3;
 		if(oDiv.innerHTML.match(/You are standing outside/))
 			return 2;
@@ -599,11 +609,16 @@ gUDID = getUDID();
 if(gUDID != -1) {
 //	alert(timezone);
 	gPlayerLocation = playerLocation();
-	if (gPlayerLocation == 0)
-		divAdd('player location reported as 0 - minor bug - please report');
-	gCoords = getCoords();
-	displayOnCenterSquare(getCurrentCades());
-	if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
-		exchangeData();
-	drawGoonOrdersIFrame();
+	if (gPlayerLocation != -1)
+	{
+		if (gPlayerLocation == 0)
+		{
+			divAdd('player location reported as 0 - minor bug - please report');
+		}
+		gCoords = getCoords();
+		displayOnCenterSquare(getCurrentCades());
+		if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
+			exchangeData();
+		drawGoonOrdersIFrame();
+	}
 }
