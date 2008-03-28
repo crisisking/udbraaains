@@ -6,7 +6,7 @@
 // ==/UserScript==
 
 
-version = "0.667";
+version = "0.668";
 
 /**
 * Timezone stuff
