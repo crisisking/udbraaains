@@ -194,8 +194,12 @@ function displayData(estr) {
 	var inputs = document.getElementsByTagName("input");
 	for(var i=0; i<inputs.length; i++) {
 		if(coords = re.exec(inputs[i].value)) {
-			inputs[i+1].value += "\n("+convertCadeLevelToShort(entry[3])+")"+
-				"("+entry[5]+")";
+			var data_string = "\n("+convertCadeLevelToShort(entry[3])+")";
+			if (entry[4] < 3600*24*14) // we accept 2-week-old survivor data
+			{
+				data_string += "("+entry[5]+")";
+			}
+			inputs[i+1].value += data_string;
 			var agestr = "Barricade data is "+convertAge(entry[1])+" old.\n"+
 				"Survivor data is "+convertAge(entry[4])+" old.\n";
 			inputs[i+1].title = agestr;
@@ -553,7 +557,7 @@ function exchangeData() {
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
 //		url: 'http://127.0.0.1:50615/udb'+qs,
-		url: 'http://65.78.27.242:50609/udb'+qs,
+		url: 'http://godswr.ath.cx:50609/udb'+qs,
 		headers: {
 			"Accept": "text/html",
 			"Content-type": "application/x-www-form-urlencoded",
@@ -670,20 +674,82 @@ function createTastyTable() {
 		return;
 	}
 	newobj = document.createElement("p");
+	label = document.createElement("b");
+	label.appendChild(document.createTextNode("Easy Eating:"));
+	newobj.appendChild(label);
 	gTastyTable = document.createElement("table");
 	gTastyTable.setAttribute("name", "tasty_table");
 	newobj.appendChild(gTastyTable);
 	mt.appendChild(newobj);
 }
 
+function coordinatesToOffset(x,y) {
+	var delta_x = x-gCoords[0];
+	var delta_y = y-gCoords[1];
+	var outstr = "";
+	var mn = Math.min(Math.abs(delta_x), Math.abs(delta_y));
+	if (delta_x > 0 && delta_y > 0)
+	{
+		outstr += mn+" SE ";
+		delta_x -= mn;
+		delta_y -= mn;
+	}
+	if (delta_x > 0 && delta_y < 0)
+	{
+		outstr += mn+" NE ";
+		delta_x -= mn;
+		delta_y += mn;
+	}
+	if (delta_x < 0 && delta_y < 0)
+	{
+		outstr += mn+" NW ";
+		delta_x += mn;
+		delta_y += mn;
+	}
+	if (delta_x < 0 && delta_y > 0)
+	{
+		outstr += mn+" SW ";
+		delta_x += mn;
+		delta_y -= mn;
+	}
+	if (delta_x > 0)
+		outstr += delta_x + "E";
+	if (delta_x < 0)
+		outstr += (-delta_x) + "W";
+	if (delta_y > 0)
+		outstr += delta_y + "S";
+	if (delta_y < 0)
+		outstr += (-delta_y) + "N";
+	return outstr;
+}
+
+function isArray(testObject) {   
+	if (testObject[0]) return true;
+	return false;
+}
+
 function processTastyData(r) {
-	coord = document.createTextNode("["+r[1]+","+r[2]+"]");
+	//coord = document.createTextNode("["+r[1]+","+r[2]+"]");
+	coord = document.createTextNode(coordinatesToOffset(1*r[1], 1*r[2]));
 	cb = document.createElement("b");
 	cb.appendChild(coord);
 	addTastyRow([document.createTextNode(r[7]), cb]);
-	cades = document.createTextNode("  "+convertCadeLevelToShortish(r[3])+"("+convertAge(r[4])+")");
-	srv = document.createTextNode(r[5]+" srv. ("+convertAge(r[6])+")");
-	addTastyRow([cades, srv]);
+	cades = document.createTextNode(convertCadeLevelToShortish(r[3]));
+	ccol = document.createElement("span");
+	var cadeColor = "white";
+	if (r[3] == 1)
+		cadeColor = "#00FF00";
+	else if (r[3] == 2)
+		cadeColor = "#80FF00";
+	else if (r[3] == 3)
+		cadeColor = "yellow";
+	else if (r[3] == 4)
+		cadeColor = "orange";
+	ccol.setAttribute("style", "color: "+cadeColor);
+	ccol.appendChild(cades);
+	cadeAge = document.createTextNode("("+convertAge(r[4])+")");
+	srv = document.createTextNode(r[5]+" surv. ("+convertAge(r[6])+")");
+	addTastyRow([[ccol, cadeAge], srv]);
 }
 
 function addTastyRow(r) {
@@ -691,7 +757,13 @@ function addTastyRow(r) {
 	for (var i = 0; i < r.length ; i++)
 	{
 		elem = document.createElement("td");
-		elem.appendChild(r[i]);
+		if (isArray(r[i]))
+		{
+			for (var j = 0; j < r[i].length; j++)
+				elem.appendChild(r[i][j]);
+		}
+		else
+			elem.appendChild(r[i]);
 		//elem.appendChild(document.createTextNode(r[i]));
 		row.appendChild(elem);
 	}
