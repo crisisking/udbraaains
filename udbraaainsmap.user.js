@@ -35,7 +35,7 @@ var borderNewBlack = '3px double #000000';
 var zedColor = '#00cc00';
 var zedBorder = '2px solid ' +zedColor;
 var ONEDAY = 86400;
-var version = '0.668';
+var version = '0.671';
 var update_link = "http://code.google.com/p/udbraaains/downloads/list";
 
 //******************************************************************************
