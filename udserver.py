@@ -35,18 +35,23 @@ import pickle
 import mutex
 import threading
 import time, shutil
+import shelve
+
 from datetime import datetime,timedelta
 
-
-snapshot_interval = 600;
 real_run = True;
+
+my_shelf = shelve.open("udb_shelf",writeback=real_run);
+
+
+snapshot_interval = 1800;
 
 if real_run :
     port = 50609;
 else :
-    port = 50610;
+    port = 8080;
 
-version = '0.668';
+version = '0.671';
 min_version = '0.666';
 
 class CI_dict(dict):
@@ -168,13 +173,24 @@ class RequestHandler(asynchat.async_chat,
         """Begins serving a GET request"""
         # nothing more to do before handle_data()
         self.body = {}
+        self.GET_headers = {};
+        if len(self.path) > 0 :
+            h=self.path.split('?');
+            if len(h) > 1 :
+                h = h[1].split('&');
+                for H in h :
+                    p = H.split('=');
+                    if len(p) > 1 :
+                        self.GET_headers[p[0]]=p[1];
+                    else :
+                        self.GET_headers[p[0]]="";
         self.handle_data()
         
     def do_POST(self):
         """Begins serving a POST request. The request data must be readable
         on a file-like object called self.rfile"""
         ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
-        self.body = cgi.FieldStorage(fp=self.rfile,
+        self.body=cgi.FieldStorage(fp=self.rfile,
             headers=self.headers, environ = {'REQUEST_METHOD':'POST'},
             keep_blank_values = 1)
         self.handle_data()
@@ -303,6 +319,58 @@ building_class_dict = {"armoury" : (0,True),
                        "zoo1" : (34,True)}
                        
 
+class UDSurvivorDBEntry :
+    def __init__(self, i) :
+        self.id = i;
+        self.last_seen_time = 0;
+        self.location = 0;
+        self.last_seen_by = 0;
+        self.known = False;
+        self.color = '#000000';
+    def dump(self) :
+        print("player id " + str(self.id) + " last seen at " + str(self.location) + " ("+str(self.last_seen_time)+
+              " by "+str(self.last_seen_by)+") "+str(self.known)+" "+str(self.color));
+        
+
+class UDSurvivorDB :
+    def __init__(self) :
+        self.db = {};
+        self.db_mutex = mutex.mutex();
+        
+    def update_pos(self, id, timestamp, location, witness) :
+        if self.db.has_key(id) :
+            K = self.db[id];
+        else :
+            K = UDSurvivorDBEntry(id);
+            self.db[id] = K;
+        #K.dump();
+        K.last_seen_time = timestamp;
+        K.last_seen_location = location;
+        K.last_seen_by = witness;
+        return (id, K.known, K.color);
+
+    def know_survivor(self, id, color) :
+        if self.db.has_key(id) :
+            K = self.db[id];
+        else :
+            K = UDSurvivorDBEntry(id);
+            self.db[id] = K;
+        #K.dump();
+        K.known = True;
+        K.color = color;
+
+    def get_count(self) :
+        return len(self.db);
+
+
+if my_shelf.has_key("survivor_db") :
+    survivor_db = my_shelf["survivor_db"];
+    print("found surivor database with "+str(survivor_db.get_count())+" chars");
+else :
+    survivor_db = UDSurvivorDB();
+    my_shelf["survivor_db"] = survivor_db;
+    print("created survivor database");
+
 class UDMapEntry :
     def __init__(self, p) :
         long_ago = datetime.utcnow() - timedelta(100,100,100);
@@ -322,6 +390,7 @@ class UDMapEntry :
         self.ruin_user = 0;
         self.ruin = 0;
         self.building = 0;
+        self.ruin_change_time = long_ago;
 
     def dump(self) :
         print(" " + str(self.position) + " " + str(self.indoor_zombies) + " " + str(self.indoor_survivors) + " " + str(self.indoor_time) + " " + str(self.indoor_user));
@@ -334,12 +403,16 @@ import re;
 class UDMap :
     def __init__(self) :
         self.map_data = {};
+        self.building_names = {};
         self.map_mutex = mutex.mutex();
         for i in range(10000) :
             self.map_data[i] = UDMapEntry(i);
         self.load();
         self.load_types();
 
+    def building_name(self, pos) :
+        return self.building_names[pos];
+    
     def load_types(self) :
         try:
             line_pattern = re.compile('^(\w+)\s(\d+)\s(\d+)\s(.*)')
@@ -351,12 +424,45 @@ class UDMap :
                     xpos = int(r.groups()[1]);
                     ypos = int(r.groups()[2]);
                     self.map_data[xpos*100+ypos].building = cl;
+                    self.building_names[xpos*100+ypos] = r.groups()[3];
                 else :
                     print("parse error " + line)
             f.close();
         except IOError:
             print("couldn't load map data");            
 
+    def tasty_helper(self, x, y, t) :
+        if x < 0 or x > 99 or y < 0 or y > 99 :
+            return None;
+        M = self.map_data[x*100+y];
+        if M.cade_level != -1 and M.indoor_survivors > 0 and M.cade_level < 5 :
+            if t - M.indoor_time < timedelta(days = 1) :
+                return (x, y, M.cade_level, M.cade_time,
+                        M.indoor_survivors, M.indoor_time, self.building_names[x*100+y]);
+        return None;
+
+    def find_tasties(self, pos, current_time) :
+        y = pos % 100;
+        x = (pos - y)/100;
+        resp = [];
+        for d in range(1,9) :
+            for xo in range(-d,d) :
+                t = self.tasty_helper(x+xo, y-d, current_time);
+                if t != None :
+                    resp.append(t);
+                t = self.tasty_helper(x-xo, y+d, current_time);
+                if t != None :
+                    resp.append(t);
+                t = self.tasty_helper(x-d, y-xo, current_time);
+                if t != None :
+                    resp.append(t);
+                t = self.tasty_helper(x+d, y+xo, current_time);
+                if t != None :
+                    resp.append(t);
+            if len(resp) > 5 :
+                return resp;
+        return resp
+    
     def load(self) :
         try:
             f = open("udmap.dat", "r");
@@ -404,9 +510,14 @@ class SnapshotThread ( threading.Thread ):
     def run ( self ):
         global snapshot_interval;
         self.go = True;
-        time.sleep(snapshot_interval);
+        #time.sleep(snapshot_interval);
         while self.go :
             ud_map.save_snapshot();
+            # save a copy of the shelf :
+            try:
+                shutil.copyfile('udb_shelf', 'logs/udb_shelf-'+str(datetime.utcnow()));
+            except IOError:
+                print("couldn't copy file");
             time.sleep(snapshot_interval);
 
     def stop_saving ( self ) :
@@ -529,6 +640,7 @@ def age(now, before) :
 
 db_submit_dict = {};
 last_ip_limit_reset_time = datetime.utcnow();
+    
 
 class UDRequestHandler(RequestHandler) :
     foo = 1;
@@ -580,7 +692,10 @@ class UDRequestHandler(RequestHandler) :
                     # observed could have left immediately after being seen.
                     # So we just set the count to 0.
                     if self.timestamp - M.indoor_time > timedelta(seconds=60) :
-                        M.indoor_survivors = 0;                        
+                        M.indoor_survivors = 0;
+                if (M.ruin != datum[2]) :
+                    # ruin status has changed :
+                    M.ruin_change_time = self.timestamp;
                 M.ruin = datum[2];
                 M.ruin_time = self.timestamp;
                 M.ruin_user = self.userid;
@@ -598,6 +713,20 @@ class UDRequestHandler(RequestHandler) :
             self.udbrain_error("bad datum " + x);
             self.send_response(501);
             return
+
+
+    def handle_survivor_data(self, player_id, location) :
+        self.survivor_list = [];
+        if self.body.has_key('survivors') :
+            # print(self.body.getvalue('survivors'));
+            try:
+                survivor_id_list = map(int, self.body.getvalue('survivors').split(','));
+            except ValueError:
+                self.udbrain_error("bad survivor ids " + self.body.getvalue('survivors'));
+                return
+                
+            for x in survivor_id_list :
+                self.survivor_list.append(survivor_db.update_pos(x, self.timestamp, location, player_id));
         
     def handle_incoming_data(self) :
         if not self.body.has_key('data') :
@@ -636,6 +765,14 @@ class UDRequestHandler(RequestHandler) :
         cade_colors = {-1:'#ffffff', 1:'#800000', 2:'#ff0000', 3:'#aa3300',
                        4:'#ff8000', 5:'#ffff00', 6:'#00ff00', 7:'#00aa20',
                        8:'#008080', 9:'#0000ff'};
+        if not self.GET_headers.has_key('type') :
+            graph_type = 0;
+        else :
+            try:
+                graph_type = int(self.GET_headers['type']);
+            except ValueError:
+                graph_type = 0;
+        
         for sy in range(10) :
             self.wfile.write("<tr>\n");
             for sx in range(10) :
@@ -643,6 +780,7 @@ class UDRequestHandler(RequestHandler) :
                 self.wfile.write("<table border=1>\n");
                 for y in range(10) :
                     self.wfile.write("<tr>\n");
+                    row = "";
                     for x in range(10) :
                         M = ud_map.get(y + sy*10 + 100*x + sx*1000);
                         #M.dump()
@@ -650,20 +788,46 @@ class UDRequestHandler(RequestHandler) :
                             color = '#606060'
                         else :
                             color = '#ffffff';
-                        if self.timestamp - M.ruin_time < timedelta(days = 7) :
-                            if M.ruin == 1 :
-                                color = '#800000'
-                            elif M.cade_level != -1 :
-                                color = cade_colors[M.cade_level];
-                        self.wfile.write('<td width=5px style="height: 5px; background: ' + color +';">');
-                        self.wfile.write("</td>");
+                        if graph_type == 0 :
+                            if self.timestamp - M.ruin_time < timedelta(days = 7) :
+                                if M.ruin == 1 :
+                                    color = '#800000'
+                                elif M.cade_level != -1 :
+                                    # if the ruin status has changed after the
+                                    # last barricade update, we no longer have
+                                    # reliable information, so we leave it gray
+                                    if M.ruin_change_time < M.cade_time :
+                                        color = cade_colors[M.cade_level];
+                        elif graph_type == 1 :
+                            if self.timestamp - M.indoor_time < timedelta(days = 7) :
+                                if M.indoor_survivors == 0 :
+                                    color = '#000000';
+                                elif M.indoor_survivors == 1 :
+                                    color = '#00a000';
+                                elif M.indoor_survivors < 4 :
+                                    color = '#00ff00';
+                                elif M.indoor_survivors < 8 :
+                                    color = '#80ff00';
+                                elif M.indoor_survivors < 12 :
+                                    color = '#eeee00';
+                                elif M.indoor_survivors < 20 :
+                                    color = '#ff8000';
+                                elif M.indoor_survivors < 30 :
+                                    color = '#ff0000';
+                                elif M.indoor_survivors < 45 :
+                                    color = '#ff0080';
+                                else :
+                                    color = '#ff00ff';
+                        row = row + '<td width=5px style="height: 5px; background: ' + color +';"></td>';
+                        #self.wfile.write('<td width=5px style="height: 5px; background: ' + color +';">');
+                        #self.wfile.write("</td>");
+                    self.wfile.write(row)
                     self.wfile.write("</tr>\n");
                 self.wfile.write("</table>");
                 self.wfile.write("</td>\n");
             self.wfile.write("</tr>\n");
         self.wfile.write("</table>\n");
         self.wfile.write("</body></html>\n");
-        self.finish();
         
     def handle_data(self):
         self.timestamp = datetime.utcnow();
@@ -679,13 +843,33 @@ class UDRequestHandler(RequestHandler) :
             self.handle_udbrain_query();
         elif self.my_path[0] == '/udgraph' :
             self.handle_graph();
+        elif self.my_path[0] == '/udknowsurvivor' :
+            self.handle_know_survivor();
         else :
             self.send_response(404);
         self.finish();
 
+    def handle_know_survivor(self) :
+        if not self.GET_headers.has_key('id') :
+            self.udbrain_error("Need id");
+            self.send_response(501);
+            return
+        if not self.GET_headers.has_key('color') :
+            self.udbrain_error("Need color")
+            self.send_response(501);
+            return
+        try:
+            playerid = int(self.GET_headers['id']);
+        except ValueError:
+            self.udbrain_error("Bad id");
+            self.send_response(501);
+            return
+        survivor_db.know_survivor(playerid, self.GET_headers['color']);
+        self.send_response(200);
+
     def handle_udbrainmap(self) :
         if len(self.my_path) != 2 :
-            print("error - no request");
+            self.udbrain_error("error - no request");
             self.send_response(501);
             return
         if not burb_dict.has_key(self.my_path[1]) :
@@ -694,7 +878,7 @@ class UDRequestHandler(RequestHandler) :
             return
         self.get_suburb_data(burb_dict[self.my_path[1]]);
 
-    def respond_with_data(self) :
+    def respond_with_data(self, player) :
         global version
         if len(self.my_path) < 2 :
             return
@@ -715,6 +899,15 @@ class UDRequestHandler(RequestHandler) :
             #            M.dump()
             if M.cade_level != -1 :
                 response.append(str(x)+':'+age(self.timestamp, M.cade_time)+':1:'+str(M.cade_level)+':'+age(self.timestamp, M.indoor_time)+':'+str(M.indoor_survivors))
+        if player :
+            for x in self.survivor_list :
+                if x[1] :
+                    response.append("S:"+str(x[0])+":"+x[2]);
+            tasties = ud_map.find_tasties(self.user_pos, self.timestamp);
+            for x in tasties :
+                response.append("T:"+str(x[0])+":"+str(x[1])+":"+str(x[2])+":"+
+                                age(self.timestamp, x[3])+":"+str(x[4])+":"+
+                                age(self.timestamp, x[5])+":"+x[6]);
         self.send_response(200);
         self.end_headers();
         self.wfile.write("|".join(response))
@@ -772,7 +965,7 @@ class UDRequestHandler(RequestHandler) :
         db_submit_dict[addr] = db_submit_dict[addr] + 1;
         if db_submit_dict[addr] > 800 :
             self.udbrain_error("too many submissions");
-            self.respond_with_data();
+            self.respond_with_data(False);
             return
         if not self.body.has_key('user') :
             self.udbrain_error("no user field");
@@ -801,7 +994,8 @@ class UDRequestHandler(RequestHandler) :
                 return
 
             self.handle_incoming_data();
-            self.respond_with_data();
+            self.handle_survivor_data(self.userid, self.user_pos);
+            self.respond_with_data(True);
             
         except ValueError:
             self.udbrain_error("bad data");
@@ -815,7 +1009,7 @@ class UDRequestHandler(RequestHandler) :
         
 if __name__=="__main__":
     # launch the server on the specified port
-    s=Server('',port,UDRequestHandler)
+    s=Server('', port, UDRequestHandler)
     print "SimpleAsyncHTTPServer running on port %s" %port
     if real_run :
         st = SnapshotThread();
@@ -827,5 +1021,7 @@ if __name__=="__main__":
     except KeyboardInterrupt:
         if real_run :
             st.stop_saving();
+            print("syncing shelf");
+            my_shelf.close();
             ud_map.save()
         print "Crtl+C pressed. Shutting down."

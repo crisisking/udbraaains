@@ -6,7 +6,7 @@
 // ==/UserScript==
 
 
-version = "0.668";
+version = "0.671";
 
 /**
 * Timezone stuff
@@ -128,6 +128,30 @@ function convertCadeLevelToShort(cl) {
 		return "VSB";
 	if(cl == 7)
 		return "HeB";
+	if(cl == 8)
+		return "VHB";
+	if(cl == 9)
+		return "EHB";
+}
+
+/**
+* Mk abbrev. form -- 'cade stats.
+**/
+function convertCadeLevelToShortish(cl) {
+	if(cl == 1)
+		return "Open";
+	if(cl == 2)
+		return "Closed";
+	if(cl == 3)
+		return "Loosely";
+	if(cl == 4)
+		return "Light";
+	if(cl == 5)
+		return "QSB";
+	if(cl == 6)
+		return "VSB";
+	if(cl == 7)
+		return "Hevy";
 	if(cl == 8)
 		return "VHB";
 	if(cl == 9)
@@ -444,12 +468,29 @@ function playerLocation() {
 			return 2;
 		if(oDiv.innerHTML.match(/You are lying outside/))
 			return 2;
+		if(oDiv.innerHTML.match(/You are lying in a cemetery/))
+			return 2;
 		if(oDiv.innerHTML.match(/You are at/) || oDiv.innerHTML.match(/You are standing in/)) // TODO: Test
 			return 1;
 	}
 	return 0;
 }
 
+
+function colorSurvivor(spec) {
+	var id = spec[1];
+	var query = '//a[contains(@href, "id='+id+'")]';
+	var players = document.evaluate(query, document, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+	var pl = players.iterateNext();
+	if (pl) {
+		
+		pl.innerHTML = "<span style='color: "+
+				spec[2]+
+				"'><b>"+
+				pl.innerHTML+
+				"</b></span>";
+	}
+}
 
 /**
 * Send and receive data on buildings with the Alloscomp server.
@@ -511,6 +552,7 @@ function exchangeData() {
 	GM_xmlhttpRequest({
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
+//		url: 'http://127.0.0.1:50615/udb'+qs,
 		url: 'http://65.78.27.242:50609/udb'+qs,
 		headers: {
 			"Accept": "text/html",
@@ -541,6 +583,11 @@ function exchangeData() {
 				// Check to see if upgrade is needed
 				else if(version_matches)
 					checkVersion(version_matches[1]);
+
+				else if (arr[i].match(/^S:/))
+					colorSurvivor(arr[i].split(':'));
+				else if (arr[i].match(/^T:/))
+					processTastyData(arr[i].split(':'));
 				
 				// Handle the report
 				else
@@ -607,6 +654,49 @@ function drawGoonOrdersIFrame() {
   }
 }
 
+var gTastyTable;
+
+function createTastyTable() {
+	var T = document.getElementsByTagName('td');
+	var mt;
+	for (var i =0; i < T.length ; i++)
+	{
+		if (T[i].getAttribute('class') == 'cp')
+			mt = T[i];
+	}
+	if (!mt)
+	{
+		divAdd("couldn't add tasty table");
+		return;
+	}
+	newobj = document.createElement("p");
+	gTastyTable = document.createElement("table");
+	gTastyTable.setAttribute("name", "tasty_table");
+	newobj.appendChild(gTastyTable);
+	mt.appendChild(newobj);
+}
+
+function processTastyData(r) {
+	coord = document.createTextNode("["+r[1]+","+r[2]+"]");
+	cb = document.createElement("b");
+	cb.appendChild(coord);
+	addTastyRow([document.createTextNode(r[7]), cb]);
+	cades = document.createTextNode("  "+convertCadeLevelToShortish(r[3])+"("+convertAge(r[4])+")");
+	srv = document.createTextNode(r[5]+" srv. ("+convertAge(r[6])+")");
+	addTastyRow([cades, srv]);
+}
+
+function addTastyRow(r) {
+	row = document.createElement("tr");
+	for (var i = 0; i < r.length ; i++)
+	{
+		elem = document.createElement("td");
+		elem.appendChild(r[i]);
+		//elem.appendChild(document.createTextNode(r[i]));
+		row.appendChild(elem);
+	}
+	gTastyTable.appendChild(row);
+}
 
 gUDID = getUDID();
 
@@ -620,6 +710,7 @@ if(gUDID != -1) {
 			divAdd('player location reported as 0 - minor bug - please report');
 		}
 		gCoords = getCoords();
+		createTastyTable();
 		displayOnCenterSquare(getCurrentCades());
 		if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
 			exchangeData();
