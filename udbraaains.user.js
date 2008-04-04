@@ -6,7 +6,7 @@
 // ==/UserScript==
 
 
-version = "0.671";
+version = "0.673";
 
 /**
 * Timezone stuff
@@ -256,6 +256,8 @@ function divAdd(txt) {
 	div.innerHTML = txt;
 	div.style.textAlign = 'center';
 	div.style.fontWeight = 'bold';
+	div.style.background = '#565';
+	div.style.margin = '2px';
 	document.body.insertBefore(div,document.body.firstChild);
 }
 
@@ -484,15 +486,15 @@ function playerLocation() {
 function colorSurvivor(spec) {
 	var id = spec[1];
 	var query = '//a[contains(@href, "id='+id+'")]';
-	var players = document.evaluate(query, document, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-	var pl = players.iterateNext();
-	if (pl) {
-		
-		pl.innerHTML = "<span style='color: "+
-				spec[2]+
-				"'><b>"+
-				pl.innerHTML+
-				"</b></span>";
+	var players = document.evaluate(query, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+	for (var i = 0; i < players.snapshotLength; i++) {
+		var pl = players.snapshotItem(i);
+		var span = document.createElement('span');
+		span.setAttribute('style', 'color: '+spec[2]);
+		var bold = document.createElement('b');
+		span.appendChild(bold);
+		var old_child = pl.replaceChild(span, pl.firstChild);
+		bold.appendChild(old_child);
 	}
 }
 
@@ -556,7 +558,7 @@ function exchangeData() {
 	GM_xmlhttpRequest({
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
-//		url: 'http://127.0.0.1:50615/udb'+qs,
+//		url: 'http://127.0.0.1:8080/udb'+qs,
 		url: 'http://godswr.ath.cx:50609/udb'+qs,
 		headers: {
 			"Accept": "text/html",
@@ -592,13 +594,19 @@ function exchangeData() {
 					colorSurvivor(arr[i].split(':'));
 				else if (arr[i].match(/^T:/))
 					processTastyData(arr[i].split(':'));
-				
+				else if (arr[i].match(/^N:/))
+					processNews(arr[i]);
 				// Handle the report
 				else
 					displayData(arr[i]);
 			}
 		}
 	});
+}
+
+function processNews(line)
+{
+	divAdd(line.slice(2));
 }
 
 /**
@@ -619,15 +627,49 @@ function getUDID() {
 	return -1;
 }
 
+/* http://www.quirksmode.org/js/cookies.html */
+function createCookie(name,value,days) {
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime()+(days*24*60*60*1000));
+		var expires = "; expires="+date.toGMTString();
+	}
+	else var expires = "";
+	document.cookie = name+"="+value+expires+"; path=/";
+}
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for(var i=0;i < ca.length;i++) {
+		var c = ca[i];
+		while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	}
+	return null;
+}
+function eraseCookie(name) {
+	createCookie(name,"",-1);
+}
+/* end quirksmode */
+
+var szGoonOrderSrc;
+
 function drawGoonOrdersIFrame() {
   // Make iframe
   var eIF = document.createElement('iframe');
   eIF.id = 'goonOrders_frame';
-  eIF.src = 'http://www.distributedneuron.net/UD/orders.php?uid='+gUDID+'&x='+gCoords[0]+'&y='+gCoords[1];
-  eIF.style.marginTop = '0.3em';
-  eIF.style.height = '250px';
-  eIF.style.width = '700px';
+  szGoonOrderSrc = 'http://www.distributedneuron.net/UD/orders.php?uid='+gUDID+'&x='+gCoords[0]+'&y='+gCoords[1];
+  // check if we are actually going to display this
+  if ( readCookie('goonorders') == 'hidden' ) {
+  eIF.src = 'about:blank';
+  eIF.style.display = 'none';
+  } else {
+  eIF.src = szGoonOrderSrc;
   eIF.style.display = 'block';
+  }
+  eIF.style.marginTop = '0.3em';
+  eIF.style.height = '280px';
+  eIF.style.width = '100%';
   //eIF.addEventListener("onload", function() { alert("hi"); }, true);
  
   // Make display link
@@ -635,16 +677,27 @@ function drawGoonOrdersIFrame() {
   eLink.href = '#';
   eLink.style.display = 'block';
   eLink.style.marginTop = '0.6em';
-  eLink.innerHTML = 'Click to Hide Orders';
+  if ( readCookie('goonorders') == 'hidden' ) {
+    eLink.innerHTML = 'Click to Show Orders';
+  } else {
+    eLink.innerHTML = 'Click to Hide Orders';
+  }
   eLink.addEventListener('click', function(e) { 
     var rf = document.getElementById('goonOrders_frame').style;
     if(rf.display == 'none') {
       rf.display = 'block';
       this.innerHTML = 'Click to Hide Orders';
+      // go back to default (displayed) mode
+      eraseCookie('goonorders');
+      // load the orders
+      var eIF = document.getElementById("goonOrders_frame");
+      eIF.src = szGoonOrderSrc;
     }
     else if(rf.display == 'block') {
       rf.display = 'none';
       this.innerHTML = 'Click to Show Orders';
+      // remember this choice
+      createCookie('goonorders', 'hidden', 31);
     }
   }, true);
  
