@@ -36,23 +36,44 @@ import mutex
 import threading
 import time, shutil
 import shelve
-
+import string
 from datetime import datetime,timedelta
+
+# my modules
+from UDUserDB import UDUserDB, UDUserDBEntry
+
 
 real_run = True;
 
-my_shelf = shelve.open("udb_shelf",writeback=real_run);
+if real_run :
+    port = 50609;
+    shelf_mode = 'c';
+else :
+    port = 8080;
+    shelf_mode = 'r';
+
+
+my_shelf = shelve.open("udb_shelf",flag=shelf_mode, writeback=real_run);
 
 
 snapshot_interval = 1800;
 
-if real_run :
-    port = 50609;
-else :
-    port = 8080;
-
-version = '0.671';
+version = '0.674';
+map_version = '0.673';
 min_version = '0.666';
+min_news_version = '0.673';
+
+long_ago = datetime.utcnow() - timedelta(100,100,100);
+
+def toHex(s):
+    lst = []
+    for ch in s:
+        hv = hex(ord(ch)).replace('0x', '')
+        if len(hv) == 1:
+            hv = '0'+hv
+        lst.append(hv)
+    
+    return reduce(lambda x,y:x+y, lst)
 
 class CI_dict(dict):
     """Dictionary with case-insensitive keys
@@ -322,7 +343,7 @@ building_class_dict = {"armoury" : (0,True),
 class UDSurvivorDBEntry :
     def __init__(self, i) :
         self.id = i;
-        self.last_seen_time = 0;
+        self.last_seen_time = long_ago;
         self.location = 0;
         self.last_seen_by = 0;
         self.known = False;
@@ -335,7 +356,6 @@ class UDSurvivorDBEntry :
 class UDSurvivorDB :
     def __init__(self) :
         self.db = {};
-        self.db_mutex = mutex.mutex();
         
     def update_pos(self, id, timestamp, location, witness) :
         if self.db.has_key(id) :
@@ -362,6 +382,10 @@ class UDSurvivorDB :
     def get_count(self) :
         return len(self.db);
 
+class NewsItem :
+    def __init__(self, time, text) :
+        self.timestamp = time;
+        self.text = text;
 
 if my_shelf.has_key("survivor_db") :
     survivor_db = my_shelf["survivor_db"];
@@ -371,9 +395,28 @@ else :
     my_shelf["survivor_db"] = survivor_db;
     print("created survivor database");
 
+if my_shelf.has_key("user_db") :
+    user_db = my_shelf["user_db"];
+    print("found user database with "+str(user_db.get_count())+" char");
+else :
+    user_db = UDUserDB();
+    if real_run :
+        my_shelf["user_db"] = user_db;
+    print("created user databaes");
+
+if my_shelf.has_key("news") :
+    news = my_shelf["news"];
+    print("found " + str(len(news))+" news items");
+else :
+    news = [];
+    if real_run :
+        my_shelf["news"] = news;
+    else :
+        news.append(NewsItem(datetime.utcnow(), "this is not a real server"));
+    print("created new news feed");
+
 class UDMapEntry :
     def __init__(self, p) :
-        long_ago = datetime.utcnow() - timedelta(100,100,100);
         self.position = p;
         self.indoor_time = long_ago;
         self.indoor_user = 0;
@@ -742,7 +785,7 @@ class UDRequestHandler(RequestHandler) :
         self.send_response(200)
         self.send_header("Content-type", "text/plain");
         self.end_headers()
-        self.wfile.write(version+"\n");
+        self.wfile.write(map_version+"\n");
         for x in range(10) :
             for y in range(10) :
                 coord = y + coords[1]*10 + 100*x + coords[0]*1000;
@@ -828,7 +871,16 @@ class UDRequestHandler(RequestHandler) :
             self.wfile.write("</tr>\n");
         self.wfile.write("</table>\n");
         self.wfile.write("</body></html>\n");
-        
+
+    def send_file(self, filename) :
+            try:
+                f = open(filename, "r");
+                self.copyfile(f, self.wfile);
+                f.close()
+            except IOError:
+                self.udbrain_error("couldn't find "+filename);
+                self.send_response(404);
+                
     def handle_data(self):
         self.timestamp = datetime.utcnow();
         self.my_path = self.path.split('?');
@@ -843,8 +895,15 @@ class UDRequestHandler(RequestHandler) :
             self.handle_udbrain_query();
         elif self.my_path[0] == '/udgraph' :
             self.handle_graph();
+        elif self.my_path[0] == '/udaddnews' :
+            self.handle_add_news();
         elif self.my_path[0] == '/udknowsurvivor' :
             self.handle_know_survivor();
+            self.send_file("ud.html");            
+        elif self.my_path[0] == "/ud.html" :
+            self.send_file("ud.html");
+        elif self.my_path[0] == "/udnews.html" :
+            self.send_file("udnews.html");
         else :
             self.send_response(404);
         self.finish();
@@ -903,11 +962,19 @@ class UDRequestHandler(RequestHandler) :
             for x in self.survivor_list :
                 if x[1] :
                     response.append("S:"+str(x[0])+":"+x[2]);
+                elif user_db.is_user(x[1]) :
+                    response.append("S:"+str(x[0])+":black");
             tasties = ud_map.find_tasties(self.user_pos, self.timestamp);
             for x in tasties :
                 response.append("T:"+str(x[0])+":"+str(x[1])+":"+str(x[2])+":"+
                                 age(self.timestamp, x[3])+":"+str(x[4])+":"+
                                 age(self.timestamp, x[5])+":"+x[6]);
+            if self.user_version >= min_news_version :
+                for x in reversed(news) :
+                    if x.timestamp > self.last_user_info[0] :
+                        response.append('N:<div align="left">'+x.text+"</div>");
+                    else :
+                        break
         self.send_response(200);
         self.end_headers();
         self.wfile.write("|".join(response))
@@ -950,9 +1017,20 @@ class UDRequestHandler(RequestHandler) :
         self.wfile.write('\n');
         return
 
-#    def log_message(self, msg) :
-#        print(msg);
-    
+    #    def log_message(self, msg) :
+    #        print(msg);
+
+    def handle_add_news(self) :
+        global news;
+        if not self.body.has_key('news') :
+            self.udbrain_error("no user field");
+            self.send_response(501);
+            return
+        nstr = (cgi.escape(self.body.getvalue('news'))).replace('|', '\n').replace('\r', '').replace('\n','<br/>');
+        news.append(NewsItem(self.timestamp, nstr));
+        self.send_response(200);
+        print(news);
+
     def handle_udbrain(self) :
         global min_version;
         global last_ip_limit_reset_time;
@@ -981,6 +1059,7 @@ class UDRequestHandler(RequestHandler) :
             self.send_response(501);
             return
         try:
+            self.user_version = user_data[1];
             self.userid = int(user_data[0]);
             self.user_pos = int(user_data[2]);
             if self.user_pos < 0 or self.user_pos > 9999 :
@@ -993,6 +1072,8 @@ class UDRequestHandler(RequestHandler) :
                 self.send_response(501);
                 return
 
+            if self.user_version >= min_news_version :
+                self.last_user_info = user_db.update(self.userid, self.timestamp, self.user_pos, addr);
             self.handle_incoming_data();
             self.handle_survivor_data(self.userid, self.user_pos);
             self.respond_with_data(True);

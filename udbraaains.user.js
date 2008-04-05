@@ -6,7 +6,7 @@
 // ==/UserScript==
 
 
-version = "0.673";
+version = "0.674";
 
 /**
 * Timezone stuff
@@ -197,7 +197,10 @@ function displayData(estr) {
 			var data_string = "\n("+convertCadeLevelToShort(entry[3])+")";
 			if (entry[4] < 3600*24*14) // we accept 2-week-old survivor data
 			{
-				data_string += "("+entry[5]+")";
+				if (entry[4] > 3600*24) // after 24 hours, add ?
+					data_string += "("+entry[5]+"?)";
+				else
+					data_string += "("+entry[5]+")";
 			}
 			inputs[i+1].value += data_string;
 			var agestr = "Barricade data is "+convertAge(entry[1])+" old.\n"+

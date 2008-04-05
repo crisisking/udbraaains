@@ -35,7 +35,7 @@ var borderNewBlack = '3px double #000000';
 var zedColor = '#00cc00';
 var zedBorder = '2px solid ' +zedColor;
 var ONEDAY = 86400;
-var version = '0.671';
+var version = '0.673';
 var update_link = "http://code.google.com/p/udbraaains/downloads/list";
 
 //******************************************************************************
@@ -329,28 +329,31 @@ function getDataRaw(suburbsArr) {
 		query = 'suburb=' + suburbQuery;
 		GM_xmlhttpRequest({
 			method: 'GET',
-			url: 'http://65.78.27.242:50609/ud_xml?'+query,
+			url: 'http://godswr.ath.cx:50609/ud_xml?'+query,
 			onload: function(xhr) {
 				var l = xhr.responseText.split('\n');
-				if (l[0] != version)
+				if (l.length > 0 && l[0].length > 2)
 				{
-					alert("Get a new version, now:\n" + update_link);
-					window.location = update_link;
-				}
-				for (var i = 1; i < l.length ; i++)
-				{
-					var sp = l[i].split(':');
-					if (sp.length > 1)
-						data[sp[0]] = sp;
-					//divAdd(l[i]);
-				}
-				loaded++;
-				if (loaded == suburbsArr.length)
-				{
-					removeLoadDiv();
-					new_data = data;
-					if (old_data && !displayed)
-						displayData();
+					if (l[0] > version)
+					{
+						alert("Get a new version, now:\n" + update_link);
+						window.location = update_link;
+					}
+					for (var i = 1; i < l.length ; i++)
+					{
+						var sp = l[i].split(':');
+						if (sp.length > 1)
+							data[sp[0]] = sp;
+						//divAdd(l[i]);
+					}
+					loaded++;
+					if (loaded == suburbsArr.length)
+					{
+						removeLoadDiv();
+						new_data = data;
+						if (old_data && !displayed)
+							displayData();
+					}
 				}
 			}
 		});
