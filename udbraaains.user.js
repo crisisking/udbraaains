@@ -562,7 +562,7 @@ function exchangeData() {
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
 //		url: 'http://127.0.0.1:8080/udb'+qs,
-		url: 'http://godswr.ath.cx:50609/udb'+qs,
+		url: 'http://udbrains.kimihia.org.nz:50609/udb'+qs,
 		headers: {
 			"Accept": "text/html",
 			"Content-type": "application/x-www-form-urlencoded",
@@ -661,7 +661,7 @@ function drawGoonOrdersIFrame() {
   // Make iframe
   var eIF = document.createElement('iframe');
   eIF.id = 'goonOrders_frame';
-  szGoonOrderSrc = 'http://www.distributedneuron.net/UD/orders.php?uid='+gUDID+'&x='+gCoords[0]+'&y='+gCoords[1];
+  szGoonOrderSrc = 'http://udbrains.kimihia.org.nz/orders?uid='+gUDID+'&x='+gCoords[0]+'&y='+gCoords[1];
   // check if we are actually going to display this
   if ( readCookie('goonorders') == 'hidden' ) {
   eIF.src = 'about:blank';
