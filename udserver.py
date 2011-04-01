@@ -766,21 +766,7 @@ class UDRequestHandler(RequestHandler) :
             self.udbrain_error("no data field");
             self.send_response(501);
             return
-        if self.user_version >= crypt_version :
-            try:
-                nums = map(int, self.body.getvalue('data').split(','));
-                seed = 0;
-                ans = '';
-                for i in nums :
-                    ans += chr(i^seed);
-                    seed = i;
-                data_data = ans.split('|');
-            except ValueError:
-                self.udbrain_error("bad encryption");
-                self.send_response(501);
-                return
-        else :
-            data_data = self.body.getvalue('data').split('|');
+        data_data = self.body.getvalue('data').split('|');
         # print(data_data);
         def U(x) : return self.process_datum(x)
         map(U, data_data);
