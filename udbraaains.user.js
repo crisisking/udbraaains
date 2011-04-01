@@ -566,8 +566,6 @@ function exchangeData() {
 		headers: {
 			"Accept": "text/html",
 			"Content-type": "application/x-www-form-urlencoded",
-			"Content-length": data.length,
-			"Connection": "close"
 		},
 		data: encodeURI(data),
 		onload: function(xhr) {
@@ -618,7 +616,7 @@ function processNews(line)
 *  All that is needed for UDToolbar compatibility is a regex switch. --XyzzyYYZ
 **/
 function getUDID() {
-	var query = "//p[@class='gt']";
+	var query = "//div[@class='gt']";
 	var grid = document.evaluate(query, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
 	for(var i = 0; i < grid.snapshotLength; i++) {
 		var pText = grid.snapshotItem(i).innerHTML;
@@ -661,7 +659,7 @@ function drawGoonOrdersIFrame() {
   // Make iframe
   var eIF = document.createElement('iframe');
   eIF.id = 'goonOrders_frame';
-  szGoonOrderSrc = 'http://udbrains.kimihia.org.nz/orders?uid='+gUDID+'&x='+gCoords[0]+'&y='+gCoords[1];
+  szGoonOrderSrc = 'http://www.distributedneuron.net/UD/orders.php?uid='+gUDID+'&x='+gCoords[0]+'&y='+gCoords[1];
   // check if we are actually going to display this
   if ( readCookie('goonorders') == 'hidden' ) {
   eIF.src = 'about:blank';
@@ -842,6 +840,6 @@ if(gUDID != -1) {
 		displayOnCenterSquare(getCurrentCades());
 		if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
 			exchangeData();
-		drawGoonOrdersIFrame();
+		//drawGoonOrdersIFrame();
 	}
 }

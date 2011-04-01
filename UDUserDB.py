@@ -1,3 +1,7 @@
+from datetime import datetime, timedelta;
+
+long_ago = datetime.utcnow() - timedelta(100,100,100);
+
 class UDUserDBEntry :
     def __init__(self, i) :
         self.id = i;

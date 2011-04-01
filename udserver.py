@@ -3,8 +3,8 @@
 Under asyncore, every time a socket is created it enters a table which is
 scanned through select calls by the asyncore.loop() function
 
-All events (a client connecting to a server socket, a client sending data, 
-a server receiving data) is handled by the instances of classes derived 
+All events (a client connecting to a server socket, a client sending data,
+a server receiving data) is handled by the instances of classes derived
 from asyncore.dispatcher
 
 Here the server is represented by an instance of the Server class
@@ -20,7 +20,7 @@ will be used for HTTP POST requests
 
 The data is processed by a method called found_terminator. In RequestHandler,
 found_terminator is first set to handle_request_line to handle the HTTP
-request line (including the decoding of the query string) and the headers. 
+request line (including the decoding of the query string) and the headers.
 If the method is POST, terminator is set to the number of bytes to read
 (the content-length header), and found_terminator is set to handle_post_data
 
@@ -37,11 +37,17 @@ import threading
 import time, shutil
 import shelve
 import string
+import numpy
 from datetime import datetime,timedelta
 
 # my modules
 from UDUserDB import UDUserDB, UDUserDBEntry
+from UDSurvivorDB import UDSurvivorDB, UDSurvivorDBEntry
 
+banned_ips = {'72.71.246.74':True, '71.181.56.44':True, '24.9.106.246':True, ' 81.169.183.122':True,
+              '216.64.136.168':True, '75.68.61.119':True, '70.88.210.149':True}#, '98.144.10.100':True};
+banned_users = {1023658:True, 713477:True, 1029916:True};#, 1209917:True};
+unlimited_ips = {'65.78.27.242':True};
 
 real_run = True;
 
@@ -56,13 +62,13 @@ else :
 my_shelf = shelve.open("udb_shelf",flag=shelf_mode, writeback=real_run);
 
 
-snapshot_interval = 1800;
+snapshot_interval = 3600;
 
 version = '0.674';
 map_version = '0.673';
 min_version = '0.666';
 min_news_version = '0.673';
-
+crypt_version = '0.675';
 long_ago = datetime.utcnow() - timedelta(100,100,100);
 
 def toHex(s):
@@ -72,7 +78,7 @@ def toHex(s):
         if len(hv) == 1:
             hv = '0'+hv
         lst.append(hv)
-    
+
     return reduce(lambda x,y:x+y, lst)
 
 class CI_dict(dict):
@@ -87,19 +93,19 @@ class CI_dict(dict):
             k,v=line.split(":",1)
             self._ci_dict[k.lower()] = self[k] = v.strip()
         self.headers = self.keys()
-    
+
     def getheader(self,key,default=""):
         return self._ci_dict.get(key.lower(),default)
-    
+
     def get(self,key,default=""):
         return self._ci_dict.get(key.lower(),default)
-    
+
     def __getitem__(self,key):
         return self._ci_dict[key.lower()]
-    
+
     def __contains__(self,key):
         return key.lower() in self._ci_dict
-        
+
 class socketStream:
 
     def __init__(self,sock):
@@ -107,7 +113,7 @@ class socketStream:
         self.sock = sock
         self.buffer = cStringIO.StringIO()
         self.closed = 1   # compatibility with SocketServer
-    
+
     def write(self, data):
         """Buffer the input, then send as many bytes as possible"""
         self.buffer.write(data)
@@ -124,7 +130,7 @@ class socketStream:
             # reset the buffer to the data that has not yet be sent
             self.buffer=cStringIO.StringIO()
             self.buffer.write(buff[sent:])
-            
+
     def finish(self):
         """When all data has been received, send what remains
         in the buffer"""
@@ -170,7 +176,7 @@ class RequestHandler(asynchat.async_chat,
         global request_count;
         asynchat.async_chat.close(self);
         request_count = request_count - 1;
-        print("outstanding requests = "+str(request_count));        
+        print("outstanding requests = "+str(request_count));
 
     def collect_incoming_data(self,data):
         """Collect the data arriving on the connexion"""
@@ -184,12 +190,12 @@ class RequestHandler(asynchat.async_chat,
         self.rfile = cStringIO.StringIO()
         # control will be passed to a new found_terminator
         self.found_terminator = self.handle_post_data
-    
+
     def handle_post_data(self):
         """Called when a POST request body has been read"""
         self.rfile.seek(0)
         self.do_POST()
-            
+
     def do_GET(self):
         """Begins serving a GET request"""
         # nothing more to do before handle_data()
@@ -206,7 +212,7 @@ class RequestHandler(asynchat.async_chat,
                     else :
                         self.GET_headers[p[0]]="";
         self.handle_data()
-        
+
     def do_POST(self):
         """Begins serving a POST request. The request data must be readable
         on a file-like object called self.rfile"""
@@ -267,7 +273,7 @@ class RequestHandler(asynchat.async_chat,
         """Send data, then close"""
         try:
             self.wfile.finish()
-        except AttributeError: 
+        except AttributeError:
             # if end_headers() wasn't called, wfile is a StringIO
             # this happens for error 404 in self.send_head() for instance
             self.wfile.seek(0)
@@ -338,57 +344,18 @@ building_class_dict = {"armoury" : (0,True),
                        "wasteland" : (32,False),
                        "zoo" : (33,False),
                        "zoo1" : (34,True)}
-                       
 
-class UDSurvivorDBEntry :
-    def __init__(self, i) :
-        self.id = i;
-        self.last_seen_time = long_ago;
-        self.location = 0;
-        self.last_seen_by = 0;
-        self.known = False;
-        self.color = '#000000';
-    def dump(self) :
-        print("player id " + str(self.id) + " last seen at " + str(self.location) + " ("+str(self.last_seen_time)+
-              " by "+str(self.last_seen_by)+") "+str(self.known)+" "+str(self.color));
-        
-
-class UDSurvivorDB :
-    def __init__(self) :
-        self.db = {};
-        
-    def update_pos(self, id, timestamp, location, witness) :
-        if self.db.has_key(id) :
-            K = self.db[id];
-        else :
-            K = UDSurvivorDBEntry(id);
-            self.db[id] = K;
-        #K.dump();
-        K.last_seen_time = timestamp;
-        K.last_seen_location = location;
-        K.last_seen_by = witness;
-        return (id, K.known, K.color);
-
-    def know_survivor(self, id, color) :
-        if self.db.has_key(id) :
-            K = self.db[id];
-        else :
-            K = UDSurvivorDBEntry(id);
-            self.db[id] = K;
-        #K.dump();
-        K.known = True;
-        K.color = color;
-
-    def get_count(self) :
-        return len(self.db);
 
 class NewsItem :
     def __init__(self, time, text) :
         self.timestamp = time;
         self.text = text;
+    def __repr__(self) :
+        return str(self.timestamp) + " : " + self.text;
 
 if my_shelf.has_key("survivor_db") :
     survivor_db = my_shelf["survivor_db"];
+    survivor_db.post_load();
     print("found surivor database with "+str(survivor_db.get_count())+" chars");
 else :
     survivor_db = UDSurvivorDB();
@@ -415,6 +382,15 @@ else :
         news.append(NewsItem(datetime.utcnow(), "this is not a real server"));
     print("created new news feed");
 
+
+
+def explicit_shelf_sync() :
+    my_shelf["survivor_db"] = survivor_db;
+    my_shelf["user_db"] = user_db;
+    my_shelf["news"] = news;
+
+#news = news[0:-1];
+
 class UDMapEntry :
     def __init__(self, p) :
         self.position = p;
@@ -439,6 +415,7 @@ class UDMapEntry :
         print(" " + str(self.position) + " " + str(self.indoor_zombies) + " " + str(self.indoor_survivors) + " " + str(self.indoor_time) + " " + str(self.indoor_user));
         print("    " + str(self.outdoor_zombies) + " " + str(self.outdoor_survivors) + " " + str(self.outdoor_time) + " " + str(self.outdoor_user));
         print("    " + str(self.cade_level) + " " + str(self.cade_time) + " " + str(self.cade_user));
+        print("    " + str(self.ruin) + " " + str(self.ruin_time) + " " + str(self.ruin_user));
         print("    " + str(self.building));
 
 import re;
@@ -455,11 +432,12 @@ class UDMap :
 
     def building_name(self, pos) :
         return self.building_names[pos];
-    
+
     def load_types(self) :
         try:
             line_pattern = re.compile('^(\w+)\s(\d+)\s(\d+)\s(.*)')
             f = open("map_data", "r");
+            count = 0;
             for line in f.readlines() :
                 r = line_pattern.search(line);
                 if r :
@@ -467,12 +445,15 @@ class UDMap :
                     xpos = int(r.groups()[1]);
                     ypos = int(r.groups()[2]);
                     self.map_data[xpos*100+ypos].building = cl;
+                    if cl[0] == 8 :
+                        count  = count+self.map_data[xpos*100+ypos].outdoor_zombies;
                     self.building_names[xpos*100+ypos] = r.groups()[3];
                 else :
                     print("parse error " + line)
             f.close();
+            print("cemetary zombies : "+str(count));
         except IOError:
-            print("couldn't load map data");            
+            print("couldn't load map data");
 
     def tasty_helper(self, x, y, t) :
         if x < 0 or x > 99 or y < 0 or y > 99 :
@@ -505,7 +486,7 @@ class UDMap :
             if len(resp) > 5 :
                 return resp;
         return resp
-    
+
     def load(self) :
         try:
             f = open("udmap.dat", "r");
@@ -514,7 +495,7 @@ class UDMap :
         except IOError:
             print("couldn't load saved data");
         return
-        
+
     def get(self, p) :
         return self.map_data[p];
 
@@ -544,10 +525,9 @@ class UDMap :
 #        self.save();
 
 #    def set(x,y,data) :
-#        
-        
-ud_map = UDMap();    
+#
 
+ud_map = UDMap();
 
 class SnapshotThread ( threading.Thread ):
     def run ( self ):
@@ -556,6 +536,9 @@ class SnapshotThread ( threading.Thread ):
         #time.sleep(snapshot_interval);
         while self.go :
             ud_map.save_snapshot();
+            my_shelf["user_db"] = user_db;
+            explicit_shelf_sync();
+            my_shelf.sync();
             # save a copy of the shelf :
             try:
                 shutil.copyfile('udb_shelf', 'logs/udb_shelf-'+str(datetime.utcnow()));
@@ -566,115 +549,115 @@ class SnapshotThread ( threading.Thread ):
     def stop_saving ( self ) :
         self.go = False;
 
-burb_dict = {'suburb=dakerstown':(0,0),
-             'suburb=jensentown':(1,0),
-             'suburb=quarlesbank':(2,0),
-             'suburb=west+boundwood':(3,0),
-             'suburb=east+boundwood':(4,0),
-             'suburb=lamport+hills':(5,0),
-             'suburb=chancelwood':(6,0),
-             'suburb=earletown':(7,0),
-             'suburb=rhodenbank':(8,0),
-             'suburb=dulston':(9,0),
+burb_dict = {'dakerstown':(0,0),
+             'jensentown':(1,0),
+             'quarlesbank':(2,0),
+             'west+boundwood':(3,0),
+             'east+boundwood':(4,0),
+             'lamport+hills':(5,0),
+             'chancelwood':(6,0),
+             'earletown':(7,0),
+             'rhodenbank':(8,0),
+             'dulston':(9,0),
 
-             'suburb=roywood':(0,1),
-             'suburb=judgewood':(1,1),
-             'suburb=gatcombeton':(2,1),
-             'suburb=shuttlebank':(3,1),
-             'suburb=yagoton':(4,1),
-             'suburb=millen+hills':(5,1),
-             'suburb=raines+hills':(6,1),
-             'suburb=pashenton':(7,1),
-             'suburb=rolt+heights':(8,1),
-             'suburb=pescodside':(9,1),
-             
-             'suburb=peddlesden+village':(0,2),
-             'suburb=chudleyton':(1,2),
-             'suburb=darvall+heights':(2,2),
-             'suburb=eastonwood':(3,2),
-             'suburb=brooke+hills':(4,2),
-             'suburb=shearbank':(5,2),
-             'suburb=huntley+heights':(6,2),
-             'suburb=santlerville':(7,2),
-             'suburb=gibsonton':(8,2),
-             'suburb=dunningwood':(9,2),
-             
-             'suburb=dunell+hills':(0,3),
-             'suburb=west+becktown':(1,3),
-             'suburb=east+becktown':(2,3),
-             'suburb=richmond+hills':(3,3),
-             'suburb=ketchelbank':(4,3),
-             'suburb=roachtown':(5,3),
-             'suburb=randallbank':(6,3),
-             'suburb=heytown':(7,3),
-             'suburb=spracklingbank':(8,3),
-             'suburb=paynterton':(9,3),
+             'roywood':(0,1),
+             'judgewood':(1,1),
+             'gatcombeton':(2,1),
+             'shuttlebank':(3,1),
+             'yagoton':(4,1),
+             'millen+hills':(5,1),
+             'raines+hills':(6,1),
+             'pashenton':(7,1),
+             'rolt+heights':(8,1),
+             'pescodside':(9,1),
 
-             'suburb=owsleybank':(0,4),
-             'suburb=molebank':(1,4),
-             'suburb=lukinswood':(2,4),
-             'suburb=havercroft':(3,4),
-             'suburb=barrville':(4,4),
-             'suburb=ridleybank':(5,4),
-             'suburb=pimbank':(6,4),
-             'suburb=peppardville':(7,4),
-             'suburb=pitneybank':(8,4),
-             'suburb=starlingtown':(9,4),
+             'peddlesden+village':(0,2),
+             'chudleyton':(1,2),
+             'darvall+heights':(2,2),
+             'eastonwood':(3,2),
+             'brooke+hills':(4,2),
+             'shearbank':(5,2),
+             'huntley+heights':(6,2),
+             'santlerville':(7,2),
+             'gibsonton':(8,2),
+             'dunningwood':(9,2),
 
-             'suburb=grigg+heights':(0,5),
-             'suburb=reganbank':(1,5),
-             'suburb=lerwill+heights':(2,5),
-             'suburb=shore+hills':(3,5),
-             'suburb=galbraith+hills':(4,5),
-             'suburb=stanbury+village':(5,5),
-             'suburb=roftwood':(6,5),
-             'suburb=edgecombe':(7,5),
-             'suburb=pegton':(8,5),
-             'suburb=dentonside':(9,5),
+             'dunell+hills':(0,3),
+             'west+becktown':(1,3),
+             'east+becktown':(2,3),
+             'richmond+hills':(3,3),
+             'ketchelbank':(4,3),
+             'roachtown':(5,3),
+             'randallbank':(6,3),
+             'heytown':(7,3),
+             'spracklingbank':(8,3),
+             'paynterton':(9,3),
 
-             'suburb=crooketon':(0,6),
-             'suburb=mornington':(1,6),
-             'suburb=north+blythville':(2,6),
-             'suburb=brooksville':(3,6),
-             'suburb=mockridge+heights':(4,6),
-             'suburb=shackleville':(5,6),
-             'suburb=tollyton':(6,6),
-             'suburb=crowbank':(7,6),
-             'suburb=vinetown':(8,6),
-             'suburb=houldenbank':(9,6),
+             'owsleybank':(0,4),
+             'molebank':(1,4),
+             'lukinswood':(2,4),
+             'havercroft':(3,4),
+             'barrville':(4,4),
+             'ridleybank':(5,4),
+             'pimbank':(6,4),
+             'peppardville':(7,4),
+             'pitneybank':(8,4),
+             'starlingtown':(9,4),
 
-             'suburb=nixbank':(0,7),
-             'suburb=wykewood':(1,7),
-             'suburb=south+blythville':(2,7),
-             'suburb=greentown':(3,7),
-             'suburb=tapton':(4,7),
-             'suburb=kempsterbank':(5,7),
-             'suburb=wray+heights':(6,7),
-             'suburb=gulsonside':(7,7),
-             'suburb=osmondville':(8,7),
-             'suburb=penny+heights':(9,7),
+             'grigg+heights':(0,5),
+             'reganbank':(1,5),
+             'lerwill+heights':(2,5),
+             'shore+hills':(3,5),
+             'galbraith+hills':(4,5),
+             'stanbury+village':(5,5),
+             'roftwood':(6,5),
+             'edgecombe':(7,5),
+             'pegton':(8,5),
+             'dentonside':(9,5),
 
-             'suburb=foulkes+village':(0,8),
-             'suburb=ruddlebank':(1,8),
-             'suburb=lockettside':(2,8),
-             'suburb=dartside':(3,8),
-             'suburb=kinch+heights':(4,8),
-             'suburb=west+grayside':(5,8),
-             'suburb=east+grayside':(6,8),
-             'suburb=scarletwood':(7,8),
-             'suburb=pennville':(8,8),
-             'suburb=fryerbank':(9,8),
-             
-             'suburb=new+arkham':(0,9),
-             'suburb=old+arkham':(1,9),
-             'suburb=spicer+hills':(2,9),
-             'suburb=williamsville':(3,9),
-             'suburb=buttonville':(4,9),
-             'suburb=wyke+hills':(5,9),
-             'suburb=hollomstown':(6,9),
-             'suburb=danversbank':(7,9),
-             'suburb=whittenside':(8,9),
-             'suburb=miltown':(9,9)}
+             'crooketon':(0,6),
+             'mornington':(1,6),
+             'north+blythville':(2,6),
+             'brooksville':(3,6),
+             'mockridge+heights':(4,6),
+             'shackleville':(5,6),
+             'tollyton':(6,6),
+             'crowbank':(7,6),
+             'vinetown':(8,6),
+             'houldenbank':(9,6),
+
+             'nixbank':(0,7),
+             'wykewood':(1,7),
+             'south+blythville':(2,7),
+             'greentown':(3,7),
+             'tapton':(4,7),
+             'kempsterbank':(5,7),
+             'wray+heights':(6,7),
+             'gulsonside':(7,7),
+             'osmondville':(8,7),
+             'penny+heights':(9,7),
+
+             'foulkes+village':(0,8),
+             'ruddlebank':(1,8),
+             'lockettside':(2,8),
+             'dartside':(3,8),
+             'kinch+heights':(4,8),
+             'west+grayside':(5,8),
+             'east+grayside':(6,8),
+             'scarletwood':(7,8),
+             'pennville':(8,8),
+             'fryerbank':(9,8),
+
+             'new+arkham':(0,9),
+             'old+arkham':(1,9),
+             'spicer+hills':(2,9),
+             'williamsville':(3,9),
+             'buttonville':(4,9),
+             'wyke+hills':(5,9),
+             'hollomstown':(6,9),
+             'danversbank':(7,9),
+             'whittenside':(8,9),
+             'miltown':(9,9)}
 
 
 def age(now, before) :
@@ -683,10 +666,16 @@ def age(now, before) :
 
 db_submit_dict = {};
 last_ip_limit_reset_time = datetime.utcnow();
-    
+
 
 class UDRequestHandler(RequestHandler) :
     foo = 1;
+    
+    def send_response(self, status_code):
+        RequestHandler.send_response(self, status_code)
+        
+        if(self.headers['Origin'] in ('http://urbandead.com', 'http://www.urbandead.com')):
+            self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
 
     def process_datum(self, x) :
         p = x.split(':');
@@ -767,16 +756,31 @@ class UDRequestHandler(RequestHandler) :
             except ValueError:
                 self.udbrain_error("bad survivor ids " + self.body.getvalue('survivors'));
                 return
-                
+
             for x in survivor_id_list :
                 self.survivor_list.append(survivor_db.update_pos(x, self.timestamp, location, player_id));
-        
+
     def handle_incoming_data(self) :
+        global crypt_version;
         if not self.body.has_key('data') :
             self.udbrain_error("no data field");
             self.send_response(501);
             return
-        data_data = self.body.getvalue('data').split('|');
+        if self.user_version >= crypt_version :
+            try:
+                nums = map(int, self.body.getvalue('data').split(','));
+                seed = 0;
+                ans = '';
+                for i in nums :
+                    ans += chr(i^seed);
+                    seed = i;
+                data_data = ans.split('|');
+            except ValueError:
+                self.udbrain_error("bad encryption");
+                self.send_response(501);
+                return
+        else :
+            data_data = self.body.getvalue('data').split('|');
         # print(data_data);
         def U(x) : return self.process_datum(x)
         map(U, data_data);
@@ -815,7 +819,7 @@ class UDRequestHandler(RequestHandler) :
                 graph_type = int(self.GET_headers['type']);
             except ValueError:
                 graph_type = 0;
-        
+
         for sy in range(10) :
             self.wfile.write("<tr>\n");
             for sx in range(10) :
@@ -841,6 +845,8 @@ class UDRequestHandler(RequestHandler) :
                                     # reliable information, so we leave it gray
                                     if M.ruin_change_time < M.cade_time :
                                         color = cade_colors[M.cade_level];
+                                    else :
+                                        color = '#ff00ff'
                         elif graph_type == 1 :
                             if self.timestamp - M.indoor_time < timedelta(days = 7) :
                                 if M.indoor_survivors == 0 :
@@ -861,6 +867,22 @@ class UDRequestHandler(RequestHandler) :
                                     color = '#ff0080';
                                 else :
                                     color = '#ff00ff';
+                        elif graph_type == 2 :
+                            x = self.timestamp - M.ruin_time;
+                            if x < timedelta(days = 1) :
+                                color = '#008000';
+                            elif x < timedelta(days = 2):
+                                color = '#00ff00';
+                            elif x < timedelta(days = 3):
+                                color = '#40ff00';
+                            elif x < timedelta(days = 4):
+                                color = '#ffff00';
+                            elif x < timedelta(days = 5):
+                                color = '#ff4000';
+                            elif x < timedelta(days = 6):
+                                color = '#ff0000';
+                            else:
+                                color = '#800000';                    
                         row = row + '<td width=5px style="height: 5px; background: ' + color +';"></td>';
                         #self.wfile.write('<td width=5px style="height: 5px; background: ' + color +';">');
                         #self.wfile.write("</td>");
@@ -880,7 +902,7 @@ class UDRequestHandler(RequestHandler) :
             except IOError:
                 self.udbrain_error("couldn't find "+filename);
                 self.send_response(404);
-                
+
     def handle_data(self):
         self.timestamp = datetime.utcnow();
         self.my_path = self.path.split('?');
@@ -890,6 +912,7 @@ class UDRequestHandler(RequestHandler) :
         if self.my_path[0] == '/ud_xml' :
             self.handle_udbrainmap();
         elif self.my_path[0] == '/udb' :
+            self.send_header
             self.handle_udbrain();
         elif self.my_path[0] == '/udbq' :
             self.handle_udbrain_query();
@@ -897,16 +920,42 @@ class UDRequestHandler(RequestHandler) :
             self.handle_graph();
         elif self.my_path[0] == '/udaddnews' :
             self.handle_add_news();
-        elif self.my_path[0] == '/udknowsurvivor' :
+        elif self.my_path[0] == '/fuckudknowsurvivor' :
             self.handle_know_survivor();
-            self.send_file("ud.html");            
-        elif self.my_path[0] == "/ud.html" :
-            self.send_file("ud.html");
+            self.send_html("ud.html", False);
+        elif self.my_path[0] == '/sqq' :
+            self.handle_square_query();
+        elif self.my_path[0] == '/survq' :
+            self.handle_survivor_query();
+        elif self.my_path[0] == '/gunes' :
+            self.handle_gunes();
+        elif self.my_path[0] == "/buttfuckud.html" :
+            self.send_html("ud.html");
         elif self.my_path[0] == "/udnews.html" :
-            self.send_file("udnews.html");
+            self.send_html("udnews.html");
         else :
             self.send_response(404);
         self.finish();
+
+    def send_html(self, filename, resp=True) :
+        if resp :
+            self.send_response(200);
+        self.send_header("Content-type", "text/html");
+        self.end_headers()
+        self.send_file(filename);
+
+    def handle_gunes(self) :
+        self.send_response(200);
+        self.send_header("Content-type", "text/plain");
+        self.end_headers();
+        burbs = numpy.zeros((10,10));
+        for x in user_db.db :
+            u = user_db.get_user(x);
+            y = u.last_location % 100;
+            x = (u.last_location - y)/100;
+            if self.timestamp - u.last_connect_time < timedelta(days=2) :
+                burbs[y//10,x//10] = burbs[y//10,x//10] + 1;
+        self.wfile.write(str(burbs));        
 
     def handle_know_survivor(self) :
         if not self.GET_headers.has_key('id') :
@@ -923,7 +972,8 @@ class UDRequestHandler(RequestHandler) :
             self.udbrain_error("Bad id");
             self.send_response(501);
             return
-        survivor_db.know_survivor(playerid, self.GET_headers['color']);
+        survivor_db.know_survivor(playerid, self.GET_headers['color'],
+                                  self.client_address[0]);
         self.send_response(200);
 
     def handle_udbrainmap(self) :
@@ -931,11 +981,16 @@ class UDRequestHandler(RequestHandler) :
             self.udbrain_error("error - no request");
             self.send_response(501);
             return
-        if not burb_dict.has_key(self.my_path[1]) :
-            self.udbrain_error("bad suburb " + self.my_path[1]);
+        if not self.GET_headers.has_key('suburb') :
+            self.udbrain_error("no suburb entry");
             self.send_response(501);
             return
-        self.get_suburb_data(burb_dict[self.my_path[1]]);
+        burb = self.GET_headers['suburb'];
+        if not burb_dict.has_key(burb) :
+            self.udbrain_error("bad suburb " + burb);
+            self.send_response(501);
+            return
+        self.get_suburb_data(burb_dict[burb]);
 
     def respond_with_data(self, player) :
         global version
@@ -962,8 +1017,14 @@ class UDRequestHandler(RequestHandler) :
             for x in self.survivor_list :
                 if x[1] :
                     response.append("S:"+str(x[0])+":"+x[2]);
-                elif user_db.is_user(x[1]) :
+                elif user_db.is_user(x[0]) :
                     response.append("S:"+str(x[0])+":black");
+            pl_s = survivor_db.get(self.userid);
+            if pl_s != None :
+                if pl_s.known :
+                    response.append("S:"+str(self.userid)+":"+pl_s.color);
+                    
+#            if 
             tasties = ud_map.find_tasties(self.user_pos, self.timestamp);
             for x in tasties :
                 response.append("T:"+str(x[0])+":"+str(x[1])+":"+str(x[2])+":"+
@@ -987,6 +1048,53 @@ class UDRequestHandler(RequestHandler) :
     def udbrain_error(self, msg) :
         print('ERROR ' + self.client_address[0] + ' ' + self.path);
         print('   : ' + msg);
+
+    def handle_survivor_query(self) :
+        ids = self.my_path[1].split('&');
+        try:
+            ids = map(int, ids);
+        except ValueError:
+            self.udbrain_error("bad location request " + str(ids));
+            self.send_response(501);
+            return
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain");
+        self.end_headers();
+        for x in ids :
+            U = survivor_db.get(x);
+            if U != None :
+                self.wfile.write(str(x)+"\n");
+                self.wfile.write("last seen at "+str(U.last_seen_location)+
+                                 " on "+str(U.last_seen_time)+
+                                 " by "+str(U.last_seen_by)+"\n");
+                self.wfile.write("Known : "+str(U.known)+" color : "+str(U.color)+ " by addr: "+str(U.added_by_addr));
+
+                
+    def handle_square_query(self) :
+        squares = self.my_path[1].split('&');
+        try:
+            squares = map(int, squares);
+        except ValueError:
+            self.udbrain_error("bad location request " + str(squares));
+            self.send_response(501);
+            return
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain");
+        self.end_headers();
+        for x in squares :
+            M = ud_map.get(x);
+            self.wfile.write(str(x)+"\n");
+            self.wfile.write("cade level : " + str(M.cade_level)+"\t"+
+                             str(M.cade_time)+"\t"+str(M.cade_user)+"\t"+
+                             str(user_db.get_user(M.cade_user).address)+"\n");
+            self.wfile.write("ruin : " + str(M.ruin)+"\t"+
+                             str(M.ruin_time)+"\t"+str(M.ruin_user)+"\t"+
+                             str(user_db.get_user(M.ruin_user).address)+"\n");
+            self.wfile.write("indoor : " + str(M.indoor_zombies)+"\t"+
+                             str(M.indoor_survivors) + "\t" +
+                             str(M.indoor_time)+"\t"+str(M.indoor_user)+"\t"+
+                             str(user_db.get_user(M.indoor_user).address)+"\n");
+            
 
     def handle_udbrain_query(self) :
         global version
@@ -1026,7 +1134,8 @@ class UDRequestHandler(RequestHandler) :
             self.udbrain_error("no user field");
             self.send_response(501);
             return
-        nstr = (cgi.escape(self.body.getvalue('news'))).replace('|', '\n').replace('\r', '').replace('\n','<br/>');
+        #nstr = (cgi.escape(self.body.getvalue('news'))).replace('|', '\n').replace('\r', '').replace('\n','<br/>');
+        nstr = (self.body.getvalue('news')).replace('|', '\n').replace('\r', '').replace('\n','<br/>');
         news.append(NewsItem(self.timestamp, nstr));
         self.send_response(200);
         print(news);
@@ -1041,7 +1150,7 @@ class UDRequestHandler(RequestHandler) :
         if not db_submit_dict.has_key(addr) :
             db_submit_dict[addr] = 0;
         db_submit_dict[addr] = db_submit_dict[addr] + 1;
-        if db_submit_dict[addr] > 800 :
+        if (not unlimited_ips.has_key(str(addr))) and db_submit_dict[addr] > 500 :
             self.udbrain_error("too many submissions");
             self.respond_with_data(False);
             return
@@ -1056,7 +1165,10 @@ class UDRequestHandler(RequestHandler) :
             return
         if user_data[1] < min_version :
             self.udbrain_error("wrong UDBrain version " + user_data[1]);
-            self.send_response(501);
+            #self.send_response(501);
+            self.send_response(200);
+            self.end_headers();
+            self.wfile.write('v'+version);
             return
         try:
             self.user_version = user_data[1];
@@ -1066,7 +1178,7 @@ class UDRequestHandler(RequestHandler) :
                 self.udbrain_error("bad location " + self.user_pos);
                 self.send_response(501);
                 return
-            
+
             if not ( user_data[3] == '1' or  user_data[3] == '2' or user_data[3] == '3' ) :
                 self.udbrain_error("bad location type " + user_data[3]);
                 self.send_response(501);
@@ -1074,20 +1186,31 @@ class UDRequestHandler(RequestHandler) :
 
             if self.user_version >= min_news_version :
                 self.last_user_info = user_db.update(self.userid, self.timestamp, self.user_pos, addr);
-            self.handle_incoming_data();
-            self.handle_survivor_data(self.userid, self.user_pos);
+
+            if banned_ips.has_key(str(addr)) :
+                self.udbrain_error("BANNED IP");
+                self.respond_with_data(False);
+                return
+
+            self.survivor_list = [];
+            if self.userid != 0 :
+                if not banned_users.has_key(self.userid) :
+                    self.handle_incoming_data();
+                    self.handle_survivor_data(self.userid, self.user_pos);
+                else:
+                    print "BANNED USER "+str(self.userid)+" "+str(addr);
             self.respond_with_data(True);
-            
+
         except ValueError:
             self.udbrain_error("bad data");
             print(user_data);
             self.send_response(501);
             return
-        
+
 #        .split(':');
 #        self.userid = user_data[0];
-        
-        
+
+
 if __name__=="__main__":
     # launch the server on the specified port
     s=Server('', port, UDRequestHandler)
@@ -1096,13 +1219,14 @@ if __name__=="__main__":
         st = SnapshotThread();
         st.setDaemon(True);
         st.start();
-        
+
     try:
         asyncore.loop()
     except KeyboardInterrupt:
         if real_run :
             st.stop_saving();
             print("syncing shelf");
+            explicit_shelf_sync();
             my_shelf.close();
             ud_map.save()
         print "Crtl+C pressed. Shutting down."
