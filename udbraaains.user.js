@@ -573,8 +573,8 @@ function exchangeData() {
 			//alert(xhr.responseText);
 			
 			// If Error, throw alert box
-			if(xhr.responseText.match(/Error:/))
-				alert(xhr.responseText);
+            if(xhr.responseText.match(/Error:/))
+                alert('Sorry, something is broken :(');
 			
 			// Begin to parse the response data
 			var arr = xhr.responseText.split('|');
