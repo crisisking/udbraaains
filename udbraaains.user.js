@@ -562,7 +562,7 @@ function exchangeData() {
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
 //		url: 'http://127.0.0.1:8080/udb'+qs,
-		url: 'http://udbrains.kimihia.org.nz/udb'+qs,
+		url: 'http://udbrains.kimihia.org.nz:50609/udb'+qs,
 		headers: {
 			"Accept": "text/html",
 			"Content-type": "application/x-www-form-urlencoded",
@@ -570,7 +570,7 @@ function exchangeData() {
 		data: encodeURI(data),
 		onload: function(xhr) {
 			// Debugging: print response
-			// divAdd("response: "+xhr.responseText);
+			//alert(xhr.responseText);
 			
 			// If Error, throw alert box
 			if(xhr.responseText.match(/Error:/))
