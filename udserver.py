@@ -462,7 +462,7 @@ class UDMap :
         if M.cade_level != -1 and M.indoor_survivors > 0 and M.cade_level < 5 :
             if t - M.indoor_time < timedelta(days = 1) :
                 return (x, y, M.cade_level, M.cade_time,
-                        M.indoor_survivors, M.indoor_time, self.building_names[x*100+y]);
+                        M.indoor_survivors, M.indoor_time, self.building_names.get(x*100+y, ''));
         return None;
 
     def find_tasties(self, pos, current_time) :
