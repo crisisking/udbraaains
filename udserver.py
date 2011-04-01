@@ -64,11 +64,11 @@ my_shelf = shelve.open("udb_shelf",flag=shelf_mode, writeback=real_run);
 
 snapshot_interval = 3600;
 
-version = '0.674';
-map_version = '0.673';
-min_version = '0.666';
-min_news_version = '0.673';
-crypt_version = '0.675';
+version = '0.7';
+map_version = '0.7';
+min_version = '0.7';
+min_news_version = '0.7';
+crypt_version = '0.7';
 long_ago = datetime.utcnow() - timedelta(100,100,100);
 
 def toHex(s):
