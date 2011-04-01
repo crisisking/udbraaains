@@ -673,8 +673,8 @@ class UDRequestHandler(RequestHandler) :
     
     def send_response(self, status_code):
         RequestHandler.send_response(self, status_code)
-        
-        if(self.headers['Origin'] in ('http://urbandead.com', 'http://www.urbandead.com')):
+        origin = self.headers.get('Origin', None)
+        if(origin in ('http://urbandead.com', 'http://www.urbandead.com')):
             self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
 
     def process_datum(self, x) :
