@@ -45,31 +45,31 @@ from UDUserDB import UDUserDB, UDUserDBEntry
 from UDSurvivorDB import UDSurvivorDB, UDSurvivorDBEntry
 
 banned_ips = {'72.71.246.74':True, '71.181.56.44':True, '24.9.106.246':True, ' 81.169.183.122':True,
-              '216.64.136.168':True, '75.68.61.119':True, '70.88.210.149':True}#, '98.144.10.100':True};
-banned_users = {1023658:True, 713477:True, 1029916:True};#, 1209917:True};
-unlimited_ips = {'65.78.27.242':True};
+              '216.64.136.168':True, '75.68.61.119':True, '70.88.210.149':True}#, '98.144.10.100':True}
+banned_users = {1023658:True, 713477:True, 1029916:True}#, 1209917:True}
+unlimited_ips = {'65.78.27.242':True}
 
-real_run = True;
+real_run = True
 
 if real_run :
-    port = 50609;
-    shelf_mode = 'c';
+    port = 50609
+    shelf_mode = 'c'
 else :
-    port = 8080;
-    shelf_mode = 'r';
+    port = 8080
+    shelf_mode = 'r'
 
 
-my_shelf = shelve.open("udb_shelf",flag=shelf_mode, writeback=real_run);
+my_shelf = shelve.open("udb_shelf",flag=shelf_mode, writeback=real_run)
 
 
-snapshot_interval = 3600;
+snapshot_interval = 3600
 
-version = '0.7';
-map_version = '0.7';
-min_version = '0.7';
-min_news_version = '0.7';
-crypt_version = '0.7';
-long_ago = datetime.utcnow() - timedelta(100,100,100);
+version = '0.7'
+map_version = '0.7'
+min_version = '0.7'
+min_news_version = '0.7'
+crypt_version = '0.7'
+long_ago = datetime.utcnow() - timedelta(100,100,100)
 
 def toHex(s):
     lst = []
@@ -146,7 +146,7 @@ class socketStream:
         """Used as a flag to know if something can be sent to the socket"""
         return select.select([],[self.sock],[])[1]
 
-request_count = 0;
+request_count = 0
 
 class RequestHandler(asynchat.async_chat,
     SimpleHTTPServer.SimpleHTTPRequestHandler):
@@ -155,9 +155,9 @@ class RequestHandler(asynchat.async_chat,
     MessageClass = CI_dict
 
     def __init__(self,conn,addr,server):
-        global request_count;
-        request_count = request_count + 1;
-        print("outstanding requests = "+str(request_count));
+        global request_count
+        request_count = request_count + 1
+        print("outstanding requests = "+str(request_count))
         asynchat.async_chat.__init__(self,conn)
         self.client_address = addr
         self.connection = conn
@@ -173,10 +173,10 @@ class RequestHandler(asynchat.async_chat,
         self.wfile = cStringIO.StringIO()
 
     def close(self) :
-        global request_count;
-        asynchat.async_chat.close(self);
-        request_count = request_count - 1;
-        print("outstanding requests = "+str(request_count));
+        global request_count
+        asynchat.async_chat.close(self)
+        request_count = request_count - 1
+        print("outstanding requests = "+str(request_count))
 
     def collect_incoming_data(self,data):
         """Collect the data arriving on the connexion"""
@@ -200,17 +200,17 @@ class RequestHandler(asynchat.async_chat,
         """Begins serving a GET request"""
         # nothing more to do before handle_data()
         self.body = {}
-        self.GET_headers = {};
+        self.GET_headers = {}
         if len(self.path) > 0 :
-            h=self.path.split('?');
+            h=self.path.split('?')
             if len(h) > 1 :
-                h = h[1].split('&');
+                h = h[1].split('&')
                 for H in h :
-                    p = H.split('=');
+                    p = H.split('=')
                     if len(p) > 1 :
-                        self.GET_headers[p[0]]=p[1];
+                        self.GET_headers[p[0]]=p[1]
                     else :
-                        self.GET_headers[p[0]]="";
+                        self.GET_headers[p[0]]=""
         self.handle_data()
 
     def do_POST(self):
@@ -224,8 +224,8 @@ class RequestHandler(asynchat.async_chat,
 
     def handle_data(self):
         """Class to override"""
-        print("handle_data");
-        print(self.body);
+        print("handle_data")
+        print(self.body)
         f = self.send_head()
         if f:
             self.copyfile(f, self.wfile)
@@ -299,7 +299,7 @@ class Server(asyncore.dispatcher):
         try:
             conn, addr = self.accept()
         except socket.error:
-            print("error");
+            print("error")
             self.log_info ('warning: server accept() threw an exception', 'warning')
             return
         except TypeError:
@@ -348,206 +348,206 @@ building_class_dict = {"armoury" : (0,True),
 
 class NewsItem :
     def __init__(self, time, text) :
-        self.timestamp = time;
-        self.text = text;
+        self.timestamp = time
+        self.text = text
     def __repr__(self) :
-        return str(self.timestamp) + " : " + self.text;
+        return str(self.timestamp) + " : " + self.text
 
 if my_shelf.has_key("survivor_db") :
-    survivor_db = my_shelf["survivor_db"];
-    survivor_db.post_load();
-    print("found surivor database with "+str(survivor_db.get_count())+" chars");
+    survivor_db = my_shelf["survivor_db"]
+    survivor_db.post_load()
+    print("found surivor database with "+str(survivor_db.get_count())+" chars")
 else :
-    survivor_db = UDSurvivorDB();
-    my_shelf["survivor_db"] = survivor_db;
-    print("created survivor database");
+    survivor_db = UDSurvivorDB()
+    my_shelf["survivor_db"] = survivor_db
+    print("created survivor database")
 
 if my_shelf.has_key("user_db") :
-    user_db = my_shelf["user_db"];
-    print("found user database with "+str(user_db.get_count())+" char");
+    user_db = my_shelf["user_db"]
+    print("found user database with "+str(user_db.get_count())+" char")
 else :
-    user_db = UDUserDB();
+    user_db = UDUserDB()
     if real_run :
-        my_shelf["user_db"] = user_db;
-    print("created user databaes");
+        my_shelf["user_db"] = user_db
+    print("created user databaes")
 
 if my_shelf.has_key("news") :
-    news = my_shelf["news"];
-    print("found " + str(len(news))+" news items");
+    news = my_shelf["news"]
+    print("found " + str(len(news))+" news items")
 else :
-    news = [];
+    news = []
     if real_run :
-        my_shelf["news"] = news;
+        my_shelf["news"] = news
     else :
-        news.append(NewsItem(datetime.utcnow(), "this is not a real server"));
-    print("created new news feed");
+        news.append(NewsItem(datetime.utcnow(), "this is not a real server"))
+    print("created new news feed")
 
 
 
 def explicit_shelf_sync() :
-    my_shelf["survivor_db"] = survivor_db;
-    my_shelf["user_db"] = user_db;
-    my_shelf["news"] = news;
+    my_shelf["survivor_db"] = survivor_db
+    my_shelf["user_db"] = user_db
+    my_shelf["news"] = news
 
 #news = news[0:-1];
 
 class UDMapEntry :
     def __init__(self, p) :
-        self.position = p;
-        self.indoor_time = long_ago;
-        self.indoor_user = 0;
-        self.indoor_zombies = 0;
-        self.indoor_survivors = 0;
-        self.outdoor_time = long_ago;
-        self.outdoor_user = 0;
-        self.outdoor_zombies = 0;
-        self.outdoor_survivors = 0;
-        self.cade_time = long_ago;
-        self.cade_user = 0;
-        self.cade_level = -1;
-        self.ruin_time = long_ago;
-        self.ruin_user = 0;
-        self.ruin = 0;
-        self.building = 0;
-        self.ruin_change_time = long_ago;
+        self.position = p
+        self.indoor_time = long_ago
+        self.indoor_user = 0
+        self.indoor_zombies = 0
+        self.indoor_survivors = 0
+        self.outdoor_time = long_ago
+        self.outdoor_user = 0
+        self.outdoor_zombies = 0
+        self.outdoor_survivors = 0
+        self.cade_time = long_ago
+        self.cade_user = 0
+        self.cade_level = -1
+        self.ruin_time = long_ago
+        self.ruin_user = 0
+        self.ruin = 0
+        self.building = 0
+        self.ruin_change_time = long_ago
 
     def dump(self) :
-        print(" " + str(self.position) + " " + str(self.indoor_zombies) + " " + str(self.indoor_survivors) + " " + str(self.indoor_time) + " " + str(self.indoor_user));
-        print("    " + str(self.outdoor_zombies) + " " + str(self.outdoor_survivors) + " " + str(self.outdoor_time) + " " + str(self.outdoor_user));
-        print("    " + str(self.cade_level) + " " + str(self.cade_time) + " " + str(self.cade_user));
-        print("    " + str(self.ruin) + " " + str(self.ruin_time) + " " + str(self.ruin_user));
-        print("    " + str(self.building));
+        print(" " + str(self.position) + " " + str(self.indoor_zombies) + " " + str(self.indoor_survivors) + " " + str(self.indoor_time) + " " + str(self.indoor_user))
+        print("    " + str(self.outdoor_zombies) + " " + str(self.outdoor_survivors) + " " + str(self.outdoor_time) + " " + str(self.outdoor_user))
+        print("    " + str(self.cade_level) + " " + str(self.cade_time) + " " + str(self.cade_user))
+        print("    " + str(self.ruin) + " " + str(self.ruin_time) + " " + str(self.ruin_user))
+        print("    " + str(self.building))
 
-import re;
+import re
 
 class UDMap :
     def __init__(self) :
-        self.map_data = {};
-        self.building_names = {};
-        self.map_mutex = mutex.mutex();
+        self.map_data = {}
+        self.building_names = {}
+        self.map_mutex = mutex.mutex()
         for i in range(10000) :
-            self.map_data[i] = UDMapEntry(i);
-        self.load();
-        self.load_types();
+            self.map_data[i] = UDMapEntry(i)
+        self.load()
+        self.load_types()
 
     def building_name(self, pos) :
-        return self.building_names[pos];
+        return self.building_names[pos]
 
     def load_types(self) :
         try:
             line_pattern = re.compile('^(\w+)\s(\d+)\s(\d+)\s(.*)')
-            f = open("map_data", "r");
-            count = 0;
+            f = open("map_data", "r")
+            count = 0
             for line in f.readlines() :
-                r = line_pattern.search(line);
+                r = line_pattern.search(line)
                 if r :
-                    cl = building_class_dict[r.groups()[0]];
-                    xpos = int(r.groups()[1]);
-                    ypos = int(r.groups()[2]);
-                    self.map_data[xpos*100+ypos].building = cl;
+                    cl = building_class_dict[r.groups()[0]]
+                    xpos = int(r.groups()[1])
+                    ypos = int(r.groups()[2])
+                    self.map_data[xpos*100+ypos].building = cl
                     if cl[0] == 8 :
-                        count  = count+self.map_data[xpos*100+ypos].outdoor_zombies;
-                    self.building_names[xpos*100+ypos] = r.groups()[3];
+                        count  = count+self.map_data[xpos*100+ypos].outdoor_zombies
+                    self.building_names[xpos*100+ypos] = r.groups()[3]
                 else :
                     print("parse error " + line)
-            f.close();
-            print("cemetary zombies : "+str(count));
+            f.close()
+            print("cemetary zombies : "+str(count))
         except IOError:
-            print("couldn't load map data");
+            print("couldn't load map data")
 
     def tasty_helper(self, x, y, t) :
         if x < 0 or x > 99 or y < 0 or y > 99 :
-            return None;
-        M = self.map_data[x*100+y];
+            return None
+        M = self.map_data[x*100+y]
         if M.cade_level != -1 and M.indoor_survivors > 0 and M.cade_level < 5 :
             if t - M.indoor_time < timedelta(days = 1) :
                 return (x, y, M.cade_level, M.cade_time,
-                        M.indoor_survivors, M.indoor_time, self.building_names.get(x*100+y, ''));
-        return None;
+                        M.indoor_survivors, M.indoor_time, self.building_names.get(x*100+y, ''))
+        return None
 
     def find_tasties(self, pos, current_time) :
-        y = pos % 100;
-        x = (pos - y)/100;
-        resp = [];
+        y = pos % 100
+        x = (pos - y)/100
+        resp = []
         for d in range(1,9) :
             for xo in range(-d,d) :
-                t = self.tasty_helper(x+xo, y-d, current_time);
+                t = self.tasty_helper(x+xo, y-d, current_time)
                 if t != None :
-                    resp.append(t);
-                t = self.tasty_helper(x-xo, y+d, current_time);
+                    resp.append(t)
+                t = self.tasty_helper(x-xo, y+d, current_time)
                 if t != None :
-                    resp.append(t);
-                t = self.tasty_helper(x-d, y-xo, current_time);
+                    resp.append(t)
+                t = self.tasty_helper(x-d, y-xo, current_time)
                 if t != None :
-                    resp.append(t);
-                t = self.tasty_helper(x+d, y+xo, current_time);
+                    resp.append(t)
+                t = self.tasty_helper(x+d, y+xo, current_time)
                 if t != None :
-                    resp.append(t);
+                    resp.append(t)
             if len(resp) > 5 :
-                return resp;
+                return resp
         return resp
 
     def load(self) :
         try:
-            f = open("udmap.dat", "r");
-            self.map_data = pickle.load(f);
-            f.close();
+            f = open("udmap.dat", "r")
+            self.map_data = pickle.load(f)
+            f.close()
         except IOError:
-            print("couldn't load saved data");
+            print("couldn't load saved data")
         return
 
     def get(self, p) :
-        return self.map_data[p];
+        return self.map_data[p]
 
     def save_locked(self) :
         print "saving map"
         try:
-            f = open("udmap.dat", "w");
-            pickle.dump(self.map_data, f);
+            f = open("udmap.dat", "w")
+            pickle.dump(self.map_data, f)
             f.close()
         except IOError:
-            print("couldn't save!!!!\n");
-        self.map_mutex.unlock();
+            print("couldn't save!!!!\n")
+        self.map_mutex.unlock()
         return
 
     def save(self) :
-        self.map_mutex.lock(UDMap.save_locked, self);
+        self.map_mutex.lock(UDMap.save_locked, self)
 
     def save_snapshot_locked(self) :
         try:
-            shutil.copyfile('udmap.dat', 'logs/udmap-'+str(datetime.utcnow())+'.dat');
+            shutil.copyfile('udmap.dat', 'logs/udmap-'+str(datetime.utcnow())+'.dat')
         except IOError:
-            print("couldn't copy file");
-        self.map_mutex.unlock();
+            print("couldn't copy file")
+        self.map_mutex.unlock()
 
     def save_snapshot(self) :
-        self.map_mutex.lock(UDMap.save_snapshot_locked, self);
-#        self.save();
+        self.map_mutex.lock(UDMap.save_snapshot_locked, self)
+#        self.save()
 
 #    def set(x,y,data) :
 #
 
-ud_map = UDMap();
+ud_map = UDMap()
 
 class SnapshotThread ( threading.Thread ):
     def run ( self ):
-        global snapshot_interval;
-        self.go = True;
-        #time.sleep(snapshot_interval);
+        global snapshot_interval
+        self.go = True
+        #time.sleep(snapshot_interval)
         while self.go :
-            ud_map.save_snapshot();
-            my_shelf["user_db"] = user_db;
-            explicit_shelf_sync();
-            my_shelf.sync();
+            ud_map.save_snapshot()
+            my_shelf["user_db"] = user_db
+            explicit_shelf_sync()
+            my_shelf.sync()
             # save a copy of the shelf :
             try:
-                shutil.copyfile('udb_shelf', 'logs/udb_shelf-'+str(datetime.utcnow()));
+                shutil.copyfile('udb_shelf', 'logs/udb_shelf-'+str(datetime.utcnow()))
             except IOError:
-                print("couldn't copy file");
-            time.sleep(snapshot_interval);
+                print("couldn't copy file")
+            time.sleep(snapshot_interval)
 
     def stop_saving ( self ) :
-        self.go = False;
+        self.go = False
 
 burb_dict = {'dakerstown':(0,0),
              'jensentown':(1,0),
@@ -661,15 +661,15 @@ burb_dict = {'dakerstown':(0,0),
 
 
 def age(now, before) :
-    delta = now - before;
+    delta = now - before
     return str(delta.seconds + 86400*delta.days)
 
-db_submit_dict = {};
-last_ip_limit_reset_time = datetime.utcnow();
+db_submit_dict = {}
+last_ip_limit_reset_time = datetime.utcnow()
 
 
 class UDRequestHandler(RequestHandler) :
-    foo = 1;
+    foo = 1
     
     def send_response(self, status_code):
         RequestHandler.send_response(self, status_code)
@@ -678,37 +678,37 @@ class UDRequestHandler(RequestHandler) :
             self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
 
     def process_datum(self, x) :
-        p = x.split(':');
+        p = x.split(':')
         if len(x) == 0 : # ignore empty data
             return
         if len(p) != 3 :
-            self.udbrain_error("bad datum size");
-            self.send_response(501);
+            self.udbrain_error("bad datum size")
+            self.send_response(501)
             return
         try:
-            datum = map(int, p);
+            datum = map(int, p)
 #            print(datum)
             if datum[0] < 0 or datum[0] > 9999 :
-                self.udbrain_error("bad datum location " + str(datum[0]));
-                self.send_response(501);
+                self.udbrain_error("bad datum location " + str(datum[0]))
+                self.send_response(501)
                 return
-            M = ud_map.get(datum[0]);
-#            M.dump();
+            M = ud_map.get(datum[0])
+#            M.dump()
             if datum[1] == 1 :
                 # barricades
-                M.cade_level = datum[2];
-                M.cade_time = self.timestamp;
-                M.cade_user = self.userid;
+                M.cade_level = datum[2]
+                M.cade_time = self.timestamp
+                M.cade_user = self.userid
             elif datum[1] == 2 :
                 # outdoor zombies
-                M.outdoor_zombies = datum[2];
-                M.outdoor_time = self.timestamp;
-                M.outdoor_user = self.userid;
+                M.outdoor_zombies = datum[2]
+                M.outdoor_time = self.timestamp
+                M.outdoor_user = self.userid
             elif datum[1] == 3 :
                 # indoor zombies
-                M.indoor_zombies = datum[2];
-                M.indoor_time = self.timestamp;
-                M.indoor_user = self.userid;
+                M.indoor_zombies = datum[2]
+                M.indoor_time = self.timestamp
+                M.indoor_user = self.userid
             elif datum[1] == 4 :
                 if (M.ruin != 1) and datum[2] == 1 and M.indoor_survivors > 0 :
                     # the building has become ruined since last observation
@@ -724,103 +724,103 @@ class UDRequestHandler(RequestHandler) :
                     # observed could have left immediately after being seen.
                     # So we just set the count to 0.
                     if self.timestamp - M.indoor_time > timedelta(seconds=60) :
-                        M.indoor_survivors = 0;
+                        M.indoor_survivors = 0
                 if (M.ruin != datum[2]) :
                     # ruin status has changed :
-                    M.ruin_change_time = self.timestamp;
-                M.ruin = datum[2];
-                M.ruin_time = self.timestamp;
-                M.ruin_user = self.userid;
+                    M.ruin_change_time = self.timestamp
+                M.ruin = datum[2]
+                M.ruin_time = self.timestamp
+                M.ruin_user = self.userid
             elif datum[1] == 5 :
-                M.indoor_survivors = datum[2];
-                M.indoor_time = self.timestamp;
-                M.indoor_user = self.userid;
+                M.indoor_survivors = datum[2]
+                M.indoor_time = self.timestamp
+                M.indoor_user = self.userid
             else :
-                self.udbrain_error("bad field " + str(datum[1]));
-                self.send_response(501);
+                self.udbrain_error("bad field " + str(datum[1]))
+                self.send_response(501)
                 return
-#            print(M);
-#            M.dump();
+#            print(M)
+#            M.dump()
         except ValueError:
-            self.udbrain_error("bad datum " + x);
-            self.send_response(501);
+            self.udbrain_error("bad datum " + x)
+            self.send_response(501)
             return
 
 
     def handle_survivor_data(self, player_id, location) :
-        self.survivor_list = [];
+        self.survivor_list = []
         if self.body.has_key('survivors') :
-            # print(self.body.getvalue('survivors'));
+            # print(self.body.getvalue('survivors'))
             try:
-                survivor_id_list = map(int, self.body.getvalue('survivors').split(','));
+                survivor_id_list = map(int, self.body.getvalue('survivors').split(','))
             except ValueError:
-                self.udbrain_error("bad survivor ids " + self.body.getvalue('survivors'));
+                self.udbrain_error("bad survivor ids " + self.body.getvalue('survivors'))
                 return
 
             for x in survivor_id_list :
-                self.survivor_list.append(survivor_db.update_pos(x, self.timestamp, location, player_id));
+                self.survivor_list.append(survivor_db.update_pos(x, self.timestamp, location, player_id))
 
     def handle_incoming_data(self) :
-        global crypt_version;
+        global crypt_version
         if not self.body.has_key('data') :
-            self.udbrain_error("no data field");
-            self.send_response(501);
+            self.udbrain_error("no data field")
+            self.send_response(501)
             return
-        data_data = self.body.getvalue('data').split('|');
-        # print(data_data);
+        data_data = self.body.getvalue('data').split('|')
+        # print(data_data)
         def U(x) : return self.process_datum(x)
-        map(U, data_data);
+        map(U, data_data)
 
     def get_suburb_data(self, coords) :
         self.send_response(200)
-        self.send_header("Content-type", "text/plain");
+        self.send_header("Content-type", "text/plain")
         self.end_headers()
-        self.wfile.write(map_version+"\n");
+        self.wfile.write(map_version+"\n")
         for x in range(10) :
             for y in range(10) :
-                coord = y + coords[1]*10 + 100*x + coords[0]*1000;
-                M = ud_map.get(coord);
+                coord = y + coords[1]*10 + 100*x + coords[0]*1000
+                M = ud_map.get(coord)
                 report = [str(coord), age(self.timestamp, M.cade_time), "1", str(M.cade_level),
                           age(self.timestamp, M.indoor_time), str(M.indoor_zombies),
                           age(self.timestamp, M.outdoor_time), str(M.outdoor_zombies),
                           age(self.timestamp, M.ruin_time), str(M.ruin),
-                          str(M.indoor_survivors)];
-                self.wfile.write(":".join(report) + "\n");
+                          str(M.indoor_survivors)]
+                self.wfile.write(":".join(report) + "\n")
 #        self.end_headers
         return
 
     def handle_graph(self):
         self.send_response(200)
-        self.send_header("Content-type", "text/html");
+        self.send_header("Content-type", "text/html")
         self.end_headers()
-        self.wfile.write("<html><head></head><body>");
-        self.wfile.write("<table>");
+        self.wfile.write("<html><head></head><body>")
+        self.wfile.write("<table>")
         cade_colors = {-1:'#ffffff', 1:'#800000', 2:'#ff0000', 3:'#aa3300',
                        4:'#ff8000', 5:'#ffff00', 6:'#00ff00', 7:'#00aa20',
-                       8:'#008080', 9:'#0000ff'};
+                       8:'#008080', 9:'#0000ff'}
         if not self.GET_headers.has_key('type') :
-            graph_type = 0;
+            graph_type = 0
         else :
             try:
-                graph_type = int(self.GET_headers['type']);
+                graph_type = int(self.GET_headers['type'])
             except ValueError:
-                graph_type = 0;
+                graph_type = 0
 
         for sy in range(10) :
-            self.wfile.write("<tr>\n");
+            self.wfile.write("<tr>\n")
             for sx in range(10) :
-                self.wfile.write("<td>");
-                self.wfile.write("<table border=1>\n");
+                self.wfile.write("<td>")
+                self.wfile.write("<table border=1>\n")
                 for y in range(10) :
-                    self.wfile.write("<tr>\n");
-                    row = "";
+                    self.wfile.write("<tr>\n")
+                    row = ""
                     for x in range(10) :
-                        M = ud_map.get(y + sy*10 + 100*x + sx*1000);
+                        M = ud_map.get(y + sy*10 + 100*x + sx*1000)
                         #M.dump()
                         if M.building[1] :
                             color = '#606060'
                         else :
-                            color = '#ffffff';
+                            color = '#ffffff'
                         if graph_type == 0 :
                             if self.timestamp - M.ruin_time < timedelta(days = 7) :
                                 if M.ruin == 1 :
@@ -830,256 +830,257 @@ class UDRequestHandler(RequestHandler) :
                                     # last barricade update, we no longer have
                                     # reliable information, so we leave it gray
                                     if M.ruin_change_time < M.cade_time :
-                                        color = cade_colors[M.cade_level];
+                                        color = cade_colors[M.cade_level]
                                     else :
                                         color = '#ff00ff'
                         elif graph_type == 1 :
                             if self.timestamp - M.indoor_time < timedelta(days = 7) :
                                 if M.indoor_survivors == 0 :
-                                    color = '#000000';
+                                    color = '#000000'
                                 elif M.indoor_survivors == 1 :
-                                    color = '#00a000';
+                                    color = '#00a000'
                                 elif M.indoor_survivors < 4 :
-                                    color = '#00ff00';
+                                    color = '#00ff00'
                                 elif M.indoor_survivors < 8 :
-                                    color = '#80ff00';
+                                    color = '#80ff00'
                                 elif M.indoor_survivors < 12 :
-                                    color = '#eeee00';
+                                    color = '#eeee00'
                                 elif M.indoor_survivors < 20 :
-                                    color = '#ff8000';
+                                    color = '#ff8000'
                                 elif M.indoor_survivors < 30 :
-                                    color = '#ff0000';
+                                    color = '#ff0000'
                                 elif M.indoor_survivors < 45 :
-                                    color = '#ff0080';
+                                    color = '#ff0080'
                                 else :
-                                    color = '#ff00ff';
+                                    color = '#ff00ff'
                         elif graph_type == 2 :
-                            x = self.timestamp - M.ruin_time;
+                            x = self.timestamp - M.ruin_time
                             if x < timedelta(days = 1) :
-                                color = '#008000';
+                                color = '#008000'
                             elif x < timedelta(days = 2):
-                                color = '#00ff00';
+                                color = '#00ff00'
                             elif x < timedelta(days = 3):
-                                color = '#40ff00';
+                                color = '#40ff00'
                             elif x < timedelta(days = 4):
-                                color = '#ffff00';
+                                color = '#ffff00'
                             elif x < timedelta(days = 5):
-                                color = '#ff4000';
+                                color = '#ff4000'
                             elif x < timedelta(days = 6):
-                                color = '#ff0000';
+                                color = '#ff0000'
                             else:
                                 color = '#800000';                    
-                        row = row + '<td width=5px style="height: 5px; background: ' + color +';"></td>';
+                        row = row + '<td width=5px style="height: 5px; background: ' + color +';"></td>'
                         #self.wfile.write('<td width=5px style="height: 5px; background: ' + color +';">');
                         #self.wfile.write("</td>");
                     self.wfile.write(row)
-                    self.wfile.write("</tr>\n");
-                self.wfile.write("</table>");
-                self.wfile.write("</td>\n");
-            self.wfile.write("</tr>\n");
-        self.wfile.write("</table>\n");
-        self.wfile.write("</body></html>\n");
+                    self.wfile.write("</tr>\n")
+                self.wfile.write("</table>")
+                self.wfile.write("</td>\n")
+            self.wfile.write("</tr>\n")
+        self.wfile.write("</table>\n")
+        self.wfile.write("</body></html>\n")
 
     def send_file(self, filename) :
             try:
-                f = open(filename, "r");
-                self.copyfile(f, self.wfile);
+                f = open(filename, "r")
+                self.copyfile(f, self.wfile)
                 f.close()
             except IOError:
-                self.udbrain_error("couldn't find "+filename);
-                self.send_response(404);
+                self.udbrain_error("couldn't find "+filename)
+                self.send_response(404)
 
     def handle_data(self):
-        self.timestamp = datetime.utcnow();
-        self.my_path = self.path.split('?');
+        self.timestamp = datetime.utcnow()
+        self.my_path = self.path.split('?')
+        
         if len(self.my_path) == 0 :
-            self.udbrain_error("no path");
-            self.send_response(501);
+            self.udbrain_error("no path")
+            self.send_response(501)
         if self.my_path[0] == '/ud_xml' :
-            self.handle_udbrainmap();
+            self.handle_udbrainmap()
         elif self.my_path[0] == '/udb' :
             self.send_header
-            self.handle_udbrain();
+            self.handle_udbrain()
         elif self.my_path[0] == '/udbq' :
-            self.handle_udbrain_query();
+            self.handle_udbrain_query()
         elif self.my_path[0] == '/udgraph' :
-            self.handle_graph();
+            self.handle_graph()
         elif self.my_path[0] == '/udaddnews' :
-            self.handle_add_news();
+            self.handle_add_news()
         elif self.my_path[0] == '/fuckudknowsurvivor' :
-            self.handle_know_survivor();
-            self.send_html("ud.html", False);
+            self.handle_know_survivor()
+            self.send_html("ud.html", False)
         elif self.my_path[0] == '/sqq' :
-            self.handle_square_query();
+            self.handle_square_query()
         elif self.my_path[0] == '/survq' :
-            self.handle_survivor_query();
+            self.handle_survivor_query()
         elif self.my_path[0] == '/gunes' :
-            self.handle_gunes();
+            self.handle_gunes()
         elif self.my_path[0] == "/buttfuckud.html" :
-            self.send_html("ud.html");
+            self.send_html("ud.html")
         elif self.my_path[0] == "/udnews.html" :
-            self.send_html("udnews.html");
+            self.send_html("udnews.html")
         else :
-            self.send_response(404);
-        self.finish();
+            self.send_response(404)
+        self.finish()
 
     def send_html(self, filename, resp=True) :
         if resp :
-            self.send_response(200);
-        self.send_header("Content-type", "text/html");
+            self.send_response(200)
+        self.send_header("Content-type", "text/html")
         self.end_headers()
-        self.send_file(filename);
+        self.send_file(filename)
 
     def handle_gunes(self) :
-        self.send_response(200);
-        self.send_header("Content-type", "text/plain");
-        self.end_headers();
-        burbs = numpy.zeros((10,10));
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        burbs = numpy.zeros((10,10))
         for x in user_db.db :
-            u = user_db.get_user(x);
-            y = u.last_location % 100;
-            x = (u.last_location - y)/100;
+            u = user_db.get_user(x)
+            y = u.last_location % 100
+            x = (u.last_location - y)/100
             if self.timestamp - u.last_connect_time < timedelta(days=2) :
-                burbs[y//10,x//10] = burbs[y//10,x//10] + 1;
-        self.wfile.write(str(burbs));        
+                burbs[y//10,x//10] = burbs[y//10,x//10] + 1
+        self.wfile.write(str(burbs))        
 
     def handle_know_survivor(self) :
         if not self.GET_headers.has_key('id') :
-            self.udbrain_error("Need id");
-            self.send_response(501);
+            self.udbrain_error("Need id")
+            self.send_response(501)
             return
         if not self.GET_headers.has_key('color') :
             self.udbrain_error("Need color")
-            self.send_response(501);
+            self.send_response(501)
             return
         try:
-            playerid = int(self.GET_headers['id']);
+            playerid = int(self.GET_headers['id'])
         except ValueError:
-            self.udbrain_error("Bad id");
-            self.send_response(501);
+            self.udbrain_error("Bad id")
+            self.send_response(501)
             return
         survivor_db.know_survivor(playerid, self.GET_headers['color'],
-                                  self.client_address[0]);
-        self.send_response(200);
+                                  self.client_address[0])
+        self.send_response(200)
 
     def handle_udbrainmap(self) :
         if len(self.my_path) != 2 :
-            self.udbrain_error("error - no request");
-            self.send_response(501);
+            self.udbrain_error("error - no request")
+            self.send_response(501)
             return
         if not self.GET_headers.has_key('suburb') :
-            self.udbrain_error("no suburb entry");
-            self.send_response(501);
+            self.udbrain_error("no suburb entry")
+            self.send_response(501)
             return
-        burb = self.GET_headers['suburb'];
+        burb = self.GET_headers['suburb']
         if not burb_dict.has_key(burb) :
-            self.udbrain_error("bad suburb " + burb);
-            self.send_response(501);
+            self.udbrain_error("bad suburb " + burb)
+            self.send_response(501)
             return
-        self.get_suburb_data(burb_dict[burb]);
+        self.get_suburb_data(burb_dict[burb])
 
     def respond_with_data(self, player) :
         global version
         if len(self.my_path) < 2 :
             return
-        squares = self.my_path[1].split('&');
+        squares = self.my_path[1].split('&')
         try:
-            squares = map(int, squares);
+            squares = map(int, squares)
         except ValueError:
-            self.udbrain_error("bad location request " + str(squares));
-            self.send_response(501);
+            self.udbrain_error("bad location request " + str(squares))
+            self.send_response(501)
             return
-        response = ['v' + version];
+        response = ['v' + version]
         for x in squares :
             if x < 0 or x > 9999 :
                 self.udbrain_error("bad location " + str(x))
-                self.send_response(501);
+                self.send_response(501)
                 return
-            M = ud_map.get(x);
+            M = ud_map.get(x)
             #            M.dump()
             if M.cade_level != -1 :
                 response.append(str(x)+':'+age(self.timestamp, M.cade_time)+':1:'+str(M.cade_level)+':'+age(self.timestamp, M.indoor_time)+':'+str(M.indoor_survivors))
         if player :
             for x in self.survivor_list :
                 if x[1] :
-                    response.append("S:"+str(x[0])+":"+x[2]);
+                    response.append("S:"+str(x[0])+":"+x[2])
                 elif user_db.is_user(x[0]) :
-                    response.append("S:"+str(x[0])+":black");
-            pl_s = survivor_db.get(self.userid);
+                    response.append("S:"+str(x[0])+":black")
+            pl_s = survivor_db.get(self.userid)
             if pl_s != None :
                 if pl_s.known :
-                    response.append("S:"+str(self.userid)+":"+pl_s.color);
+                    response.append("S:"+str(self.userid)+":"+pl_s.color)
                     
 #            if 
-            tasties = ud_map.find_tasties(self.user_pos, self.timestamp);
+            tasties = ud_map.find_tasties(self.user_pos, self.timestamp)
             for x in tasties :
                 response.append("T:"+str(x[0])+":"+str(x[1])+":"+str(x[2])+":"+
                                 age(self.timestamp, x[3])+":"+str(x[4])+":"+
-                                age(self.timestamp, x[5])+":"+x[6]);
+                                age(self.timestamp, x[5])+":"+x[6])
             if self.user_version >= min_news_version :
                 for x in reversed(news) :
                     if x.timestamp > self.last_user_info[0] :
-                        response.append('N:<div align="left">'+x.text+"</div>");
+                        response.append('N:<div align="left">'+x.text+"</div>")
                     else :
                         break
-        self.send_response(200);
-        self.end_headers();
+        self.send_response(200)
+        self.end_headers()
         self.wfile.write("|".join(response))
-        self.wfile.write('\n');
+        self.wfile.write('\n')
         return
 
     def log_request(self, code='-', size='-') :
-        print('request : ' + self.client_address[0] + ' ' + self.path);
+        print('request : ' + self.client_address[0] + ' ' + self.path)
 
     def udbrain_error(self, msg) :
-        print('ERROR ' + self.client_address[0] + ' ' + self.path);
-        print('   : ' + msg);
+        print('ERROR ' + self.client_address[0] + ' ' + self.path)
+        print('   : ' + msg)
 
     def handle_survivor_query(self) :
-        ids = self.my_path[1].split('&');
+        ids = self.my_path[1].split('&')
         try:
-            ids = map(int, ids);
+            ids = map(int, ids)
         except ValueError:
-            self.udbrain_error("bad location request " + str(ids));
-            self.send_response(501);
+            self.udbrain_error("bad location request " + str(ids))
+            self.send_response(501)
             return
         self.send_response(200)
-        self.send_header("Content-type", "text/plain");
-        self.end_headers();
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
         for x in ids :
-            U = survivor_db.get(x);
+            U = survivor_db.get(x)
             if U != None :
-                self.wfile.write(str(x)+"\n");
+                self.wfile.write(str(x)+"\n")
                 self.wfile.write("last seen at "+str(U.last_seen_location)+
                                  " on "+str(U.last_seen_time)+
-                                 " by "+str(U.last_seen_by)+"\n");
-                self.wfile.write("Known : "+str(U.known)+" color : "+str(U.color)+ " by addr: "+str(U.added_by_addr));
+                                 " by "+str(U.last_seen_by)+"\n")
+                self.wfile.write("Known : "+str(U.known)+" color : "+str(U.color)+ " by addr: "+str(U.added_by_addr))
 
                 
     def handle_square_query(self) :
-        squares = self.my_path[1].split('&');
+        squares = self.my_path[1].split('&')
         try:
-            squares = map(int, squares);
+            squares = map(int, squares)
         except ValueError:
-            self.udbrain_error("bad location request " + str(squares));
-            self.send_response(501);
+            self.udbrain_error("bad location request " + str(squares))
+            self.send_response(501)
             return
         self.send_response(200)
-        self.send_header("Content-type", "text/plain");
-        self.end_headers();
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
         for x in squares :
-            M = ud_map.get(x);
-            self.wfile.write(str(x)+"\n");
+            M = ud_map.get(x)
+            self.wfile.write(str(x)+"\n")
             self.wfile.write("cade level : " + str(M.cade_level)+"\t"+
                              str(M.cade_time)+"\t"+str(M.cade_user)+"\t"+
-                             str(user_db.get_user(M.cade_user).address)+"\n");
+                             str(user_db.get_user(M.cade_user).address)+"\n")
             self.wfile.write("ruin : " + str(M.ruin)+"\t"+
                              str(M.ruin_time)+"\t"+str(M.ruin_user)+"\t"+
-                             str(user_db.get_user(M.ruin_user).address)+"\n");
+                             str(user_db.get_user(M.ruin_user).address)+"\n")
             self.wfile.write("indoor : " + str(M.indoor_zombies)+"\t"+
                              str(M.indoor_survivors) + "\t" +
                              str(M.indoor_time)+"\t"+str(M.indoor_user)+"\t"+
-                             str(user_db.get_user(M.indoor_user).address)+"\n");
+                             str(user_db.get_user(M.indoor_user).address)+"\n")
             
 
     def handle_udbrain_query(self) :
@@ -1087,114 +1088,114 @@ class UDRequestHandler(RequestHandler) :
         # we send more information here than we do in respond_with_data:
         if len(self.my_path) < 2 :
             return
-        squares = self.my_path[1].split('&');
+        squares = self.my_path[1].split('&')
         try:
-            squares = map(int, squares);
+            squares = map(int, squares)
         except ValueError:
-            self.udbrain_error("bad location request " + str(squares));
-            self.send_response(501);
+            self.udbrain_error("bad location request " + str(squares))
+            self.send_response(501)
             return
-        response = [version];
+        response = [version]
         for x in squares :
             if x < 0 or x > 9999 :
                 self.udbrain_error("bad location " + str(x))
-                self.send_response(501);
+                self.send_response(501)
                 return
-            M = ud_map.get(x);
+            M = ud_map.get(x)
             #            M.dump()
             response.append(str(x)+':'+age(self.timestamp, M.cade_time)+':'+str(M.cade_level)+':'+
                             age(self.timestamp, M.indoor_time)+':'+str(M.indoor_survivors)+':'+
-                            str(M.indoor_zombies)+':'+age(self.timestamp, M.ruin_time)+':'+str(M.ruin));
-        self.send_response(200);
-        self.end_headers();
+                            str(M.indoor_zombies)+':'+age(self.timestamp, M.ruin_time)+':'+str(M.ruin))
+        self.send_response(200)
+        self.end_headers()
         self.wfile.write("|".join(response))
-        self.wfile.write('\n');
+        self.wfile.write('\n')
         return
 
     #    def log_message(self, msg) :
-    #        print(msg);
+    #        print(msg)
 
     def handle_add_news(self) :
-        global news;
+        global news
         if not self.body.has_key('news') :
-            self.udbrain_error("no user field");
-            self.send_response(501);
+            self.udbrain_error("no user field")
+            self.send_response(501)
             return
-        #nstr = (cgi.escape(self.body.getvalue('news'))).replace('|', '\n').replace('\r', '').replace('\n','<br/>');
-        nstr = (self.body.getvalue('news')).replace('|', '\n').replace('\r', '').replace('\n','<br/>');
-        news.append(NewsItem(self.timestamp, nstr));
-        self.send_response(200);
-        print(news);
+        #nstr = (cgi.escape(self.body.getvalue('news'))).replace('|', '\n').replace('\r', '').replace('\n','<br/>')
+        nstr = (self.body.getvalue('news')).replace('|', '\n').replace('\r', '').replace('\n','<br/>')
+        news.append(NewsItem(self.timestamp, nstr))
+        self.send_response(200)
+        print(news)
 
     def handle_udbrain(self) :
-        global min_version;
-        global last_ip_limit_reset_time;
+        global min_version
+        global last_ip_limit_reset_time
         if self.timestamp - last_ip_limit_reset_time > timedelta(1) :
-            db_submit_dict.clear();
-            last_ip_limit_reset_time = self.timestamp;
-        addr = self.client_address[0];
+            db_submit_dict.clear()
+            last_ip_limit_reset_time = self.timestamp
+        addr = self.client_address[0]
         if not db_submit_dict.has_key(addr) :
-            db_submit_dict[addr] = 0;
-        db_submit_dict[addr] = db_submit_dict[addr] + 1;
+            db_submit_dict[addr] = 0
+        db_submit_dict[addr] = db_submit_dict[addr] + 1
         if (not unlimited_ips.has_key(str(addr))) and db_submit_dict[addr] > 500 :
-            self.udbrain_error("too many submissions");
-            self.respond_with_data(False);
+            self.udbrain_error("too many submissions")
+            self.respond_with_data(False)
             return
         if not self.body.has_key('user') :
-            self.udbrain_error("no user field");
-            self.send_response(501);
+            self.udbrain_error("no user field")
+            self.send_response(501)
             return
-        user_data = self.body.getvalue('user').split(':');
+        user_data = self.body.getvalue('user').split(':')
         if len(user_data) != 4 :
-            self.udbrain_error("wrong user data size");
-            self.send_response(501);
+            self.udbrain_error("wrong user data size")
+            self.send_response(501)
             return
         if user_data[1] < min_version :
-            self.udbrain_error("wrong UDBrain version " + user_data[1]);
-            #self.send_response(501);
-            self.send_response(200);
-            self.end_headers();
-            self.wfile.write('v'+version);
+            self.udbrain_error("wrong UDBrain version " + user_data[1])
+            #self.send_response(501)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write('v'+version)
             return
         try:
-            self.user_version = user_data[1];
-            self.userid = int(user_data[0]);
-            self.user_pos = int(user_data[2]);
+            self.user_version = user_data[1]
+            self.userid = int(user_data[0])
+            self.user_pos = int(user_data[2])
             if self.user_pos < 0 or self.user_pos > 9999 :
-                self.udbrain_error("bad location " + self.user_pos);
-                self.send_response(501);
+                self.udbrain_error("bad location " + self.user_pos)
+                self.send_response(501)
                 return
 
             if not ( user_data[3] == '1' or  user_data[3] == '2' or user_data[3] == '3' ) :
-                self.udbrain_error("bad location type " + user_data[3]);
-                self.send_response(501);
+                self.udbrain_error("bad location type " + user_data[3])
+                self.send_response(501)
                 return
 
             if self.user_version >= min_news_version :
-                self.last_user_info = user_db.update(self.userid, self.timestamp, self.user_pos, addr);
+                self.last_user_info = user_db.update(self.userid, self.timestamp, self.user_pos, addr)
 
             if banned_ips.has_key(str(addr)) :
-                self.udbrain_error("BANNED IP");
-                self.respond_with_data(False);
+                self.udbrain_error("BANNED IP")
+                self.respond_with_data(False)
                 return
 
-            self.survivor_list = [];
+            self.survivor_list = []
             if self.userid != 0 :
                 if not banned_users.has_key(self.userid) :
-                    self.handle_incoming_data();
-                    self.handle_survivor_data(self.userid, self.user_pos);
+                    self.handle_incoming_data()
+                    self.handle_survivor_data(self.userid, self.user_pos)
                 else:
-                    print "BANNED USER "+str(self.userid)+" "+str(addr);
-            self.respond_with_data(True);
+                    print "BANNED USER "+str(self.userid)+" "+str(addr)
+            self.respond_with_data(True)
 
         except ValueError:
-            self.udbrain_error("bad data");
-            print(user_data);
-            self.send_response(501);
+            self.udbrain_error("bad data")
+            print(user_data)
+            self.send_response(501)
             return
 
-#        .split(':');
-#        self.userid = user_data[0];
+#        .split(':')
+#        self.userid = user_data[0]
 
 
 if __name__=="__main__":
@@ -1202,17 +1203,17 @@ if __name__=="__main__":
     s=Server('', port, UDRequestHandler)
     print "SimpleAsyncHTTPServer running on port %s" %port
     if real_run :
-        st = SnapshotThread();
-        st.setDaemon(True);
-        st.start();
+        st = SnapshotThread()
+        st.setDaemon(True)
+        st.start()
 
     try:
         asyncore.loop()
     except KeyboardInterrupt:
         if real_run :
-            st.stop_saving();
-            print("syncing shelf");
-            explicit_shelf_sync();
-            my_shelf.close();
+            st.stop_saving()
+            print("syncing shelf")
+            explicit_shelf_sync()
+            my_shelf.close()
             ud_map.save()
         print "Crtl+C pressed. Shutting down."
