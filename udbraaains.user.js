@@ -281,7 +281,7 @@ function divAddHighlighted(txt) {
 **/
 function checkVersion(txt) {
 	if(parseFloat(txt) > parseFloat(version))
-		divAddHighlighted('<h1> <a href="http://code.google.com/p/udbraaains/downloads/list">'+
+		divAddHighlighted('<h1> <a href="https://github.com/crisisking/udbraaains/raw/master/udbraaains.user.js">'+
 				'Please update UDBraaains from version ' + version + ' to version ' + txt + '</a></h1>.');
 }
 
