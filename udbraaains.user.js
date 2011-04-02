@@ -482,7 +482,7 @@ function playerLocation() {
 		if(oDiv.innerHTML.match(/You are at/) || oDiv.innerHTML.match(/You are standing in/)) // TODO: Test
 			return 1;
 	}
-	return 0;
+	return -1;
 }
 
 
