@@ -7,3 +7,6 @@ class Order(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     message = models.TextField()
     subject = models.CharField(max_length=250)
+
+    def __unicode__(self):
+        return self.subject
