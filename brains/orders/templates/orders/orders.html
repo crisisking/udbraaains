@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UDBraaains Orders</title>
+</head>
+<body>
+    <div id="news">
+        {% for order in orders %}
+        <div id="newsitem">
+            <h1>{{ order.subject }}</h1>
+            <h2>Posted by {{ order.user.username }} on {{ order.date }}</h2>
+            {{ order.message|linebreaks}}
+        </div>
+        {% endfor %}
+    </div>
+    <div id="moreinfo">
+        <p>For more information, please visit <a href="http://forums.somethingawful.com/showthread.php?threadid=3400878">the current PGS thread.</a></p>
+    </div>
+</body>
+</html>
