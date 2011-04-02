@@ -6,7 +6,7 @@
 // ==/UserScript==
 
 
-version = "0.7";
+version = "0.71";
 
 /**
 * Timezone stuff
@@ -659,7 +659,7 @@ function drawGoonOrdersIFrame() {
   // Make iframe
   var eIF = document.createElement('iframe');
   eIF.id = 'goonOrders_frame';
-  szGoonOrderSrc = 'http://udbrains.kimihia.org.nz/orders?uid='+gUDID+'&x='+gCoords[0]+'&y='+gCoords[1];
+  szGoonOrderSrc = 'http://tdslk.com'
   // check if we are actually going to display this
   if ( readCookie('goonorders') == 'hidden' ) {
   eIF.src = 'about:blank';
