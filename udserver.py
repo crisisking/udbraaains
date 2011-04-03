@@ -752,7 +752,7 @@ class UDRequestHandler(RequestHandler) :
         if self.body.has_key('survivors') :
             # print(self.body.getvalue('survivors'))
             
-            survivors = self.body.getvalues('survivors')
+            survivors = self.body.getvalue('survivors')
             if survivors:
                 try:
                     survivor_id_list = map(int, survivors.split('|'))
