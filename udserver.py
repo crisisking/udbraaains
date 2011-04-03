@@ -759,9 +759,9 @@ class UDRequestHandler(RequestHandler) :
                 except ValueError:
                     self.udbrain_error('bad survivor ids %s' % survivors)
                     return
-
-            for x in survivor_id_list :
-                self.survivor_list.append(survivor_db.update_pos(x, self.timestamp, location, player_id))
+                else:
+                    for x in survivor_id_list :
+                        self.survivor_list.append(survivor_db.update_pos(x, self.timestamp, location, player_id))
 
     def handle_incoming_data(self) :
         global crypt_version
