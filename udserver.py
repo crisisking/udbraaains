@@ -752,7 +752,7 @@ class UDRequestHandler(RequestHandler) :
         if self.body.has_key('survivors') :
             # print(self.body.getvalue('survivors'))
             try:
-                survivor_id_list = map(int, self.body.getvalue('survivors').split(','))
+                survivor_id_list = map(int, self.body.getvalue('survivors').split('|'))
             except ValueError:
                 self.udbrain_error("bad survivor ids " + self.body.getvalue('survivors'))
                 return
