@@ -380,7 +380,8 @@ function countSurvivors() {
 		}
 	}
 	gSurvivorIds = survivor_ids;
-	return(survivor_count);
+	gSurvivorIds.shift();
+	return(survivor_count - 1);
 }
 
 /**
