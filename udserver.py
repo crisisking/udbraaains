@@ -751,11 +751,14 @@ class UDRequestHandler(RequestHandler) :
         self.survivor_list = []
         if self.body.has_key('survivors') :
             # print(self.body.getvalue('survivors'))
-            try:
-                survivor_id_list = map(int, self.body.getvalue('survivors').split('|'))
-            except ValueError:
-                self.udbrain_error("bad survivor ids " + self.body.getvalue('survivors'))
-                return
+            
+            survivors = self.body.getvalues('survivors')
+            if survivors:
+                try:
+                    survivor_id_list = map(int, survivors.split('|'))
+                except ValueError:
+                    self.udbrain_error('bad survivor ids %s' % survivors)
+                    return
 
             for x in survivor_id_list :
                 self.survivor_list.append(survivor_db.update_pos(x, self.timestamp, location, player_id))
