@@ -2,13 +2,16 @@
 <html>
 <head>
     <title>UDBraaains Orders</title>
+    <style type="text/css" media="screen">
+        body { font-family: sans-serif; background-color: "white"; }
+    </style>
 </head>
 <body>
     <div id="news">
         {% for order in orders %}
         <div id="newsitem">
             <h1>{{ order.subject }}</h1>
-            <h2>Posted by {{ order.user.username }} on {{ order.date }}</h2>
+            <h2>Posted {{ order.date|timesince }} ago by {{ order.user.username }}</h2>
             {{ order.message|linebreaks}}
         </div>
         {% endfor %}
