@@ -62,7 +62,9 @@ function getCoords() {
 	//divAdd(sb.snapshotItem(0).innerHTML);
 	if (sb.snapshotLength)
 	{
-		sb.snapshotItem(0).innerHTML += " <span style=\"color: 'red	'\"> ["+x+", "+y+"]</span>";
+		sb.snapshotItem(0).innerHTML += ' <a href="http://map.aypok.co.uk/index.php?suburb='
+			+((Math.floor(x/10)+1) + (Math.floor(y/10)*10))
+			+'" style="color: red"> ['+x+", "+y+"]</a>";
 	}
 	return out;
 }
@@ -340,17 +342,21 @@ function countLocalZeds() {
 	return 0;
 }
 
-var gSurvivorIds;
+var gSurvivorIds = false;
 
 function countSurvivors() {
+	var survivor_count = 0;
+	var survivor_ids = [];
+	
+	// this matches multiple items, so we have to evaluate each
 	var textblob = document.evaluate("//div[contains(@class,'gt')]", document, null, XPathResult.ANY_TYPE, null);
-	var bso = textblob.iterateNext();
-	if (bso) {
+	var bso;
+	while ( bso = textblob.iterateNext() ) {
 		var bs = ''+bso.innerHTML;
 //		alert(bs+'\n');
 		var matches = bs.match(/There\sis\sa\scrowd\sof\s(\d+)\ssurvivors\sgathered\shere/);
-		var survivor_count = '0';
-		if(matches) {
+		
+		if (matches) {
 			survivor_count = matches[1];
 //			alert(matches[1]);
 //				array[i] = [ coords, 2, matches[1] ].join(':');
@@ -362,27 +368,19 @@ function countSurvivors() {
 			var m2 = m1[1].match(/<a\shref="profile.cgi\?id=\d+/g);
 			if (m2)
 			{
-				var survivor_ids = [];
-				survivor_count = m2.length;
+				survivor_count += m2.length;
 				for (var i = 0; i < m2.length; i++)
 				{
 					m3 = m2[i].match(/\d+/);
 					survivor_ids.push(m3);
 				}
-				gSurvivorIds = survivor_ids;
 			}
-			else
-				survivor_count = 0;
 //			alert(m2.length);
 //			alert(m1[1]);
 		}
-		return(survivor_count);
 	}
-	else
-	{
-//		alert("not found");
-		return(0);
-	}
+	gSurvivorIds = survivor_ids;
+	return(survivor_count);
 }
 
 /**
@@ -482,6 +480,9 @@ function playerLocation() {
 		if(oDiv.innerHTML.match(/You are at/) || oDiv.innerHTML.match(/You are standing in/)) // TODO: Test
 			return 1;
 	}
+	/* If we reach here, we have struck an annoying bug. What we really want to do is submit the entire page to 
+	 * our debugging server for later analysis to see why it coudn't find your location. TODO 
+	 * Bug tracker: Issue#1 */
 	return -1;
 }
 
@@ -552,7 +553,7 @@ function exchangeData() {
 	// Build the post data string
 	var data = 'user='+[ gUDID, version, convertCoordsToBXY(coords), gPlayerLocation ].join(':')+'&data='+postarr.join('|');
 	if (gSurvivorIds)
-		data += '&survivors='+gSurvivorIds;
+		data += '&survivors='+gSurvivorIds.join("|");
 
 	// Debugging: print query and data
 	//divAdd("qs: "+qs+"<br>data: "+data);
@@ -565,7 +566,7 @@ function exchangeData() {
 		url: 'http://udbrains.kimihia.org.nz:50609/udb'+qs,
 		headers: {
 			"Accept": "text/html",
-			"Content-type": "application/x-www-form-urlencoded",
+			"Content-type": "application/x-www-form-urlencoded"
 		},
 		data: encodeURI(data),
 		onload: function(xhr) {
@@ -833,7 +834,7 @@ if(gUDID != -1) {
 	{
 		if (gPlayerLocation == 0)
 		{
-			divAdd('player location reported as 0 - minor bug - please report');
+			divAdd('player location reported as 0 - minor bug - <a href="http://code.google.com/p/udbraaains/issues/detail?id=1">please report</a>');
 		}
 		gCoords = getCoords();
 		createTastyTable();
@@ -843,3 +844,4 @@ if(gUDID != -1) {
 		drawGoonOrdersIFrame();
 	}
 }
+

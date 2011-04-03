@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name           UDBraaainsMap
-// @namespace      -
+// @namespace      http://code.google.com/p/udbraaains/
 // @description    View UDBrain data in Red Rum map
-// @include        http://redrum.soul-fantasy.net/map.php?*suburb*
-// @include        http://redrum.soul-fantasy.net/map.php?*splitsub*
-// @include        http://redrum.soul-fantasy.net/map.php?*menu*
+// @include        http://map.aypok.co.uk/?*suburb*
+// @include        http://map.aypok.co.uk/?*splitsub*
+// @include        http://map.aypok.co.uk/?*menu*
 // ==/UserScript==
 
 /* Date				Version		Description
@@ -23,6 +23,7 @@
  * 2008-02-25		v1.05		- 'Loading' screen worked for split view
  * 								- Re-added zombie numbers
  * 2008-02-26		v1.06		Script works for 'menu' page
+ * 2011-04-03		v1.07		Redrum has shifted to new hostname.
  */
 
 //******************************************************************************
@@ -245,7 +246,7 @@ function getData(query) {
 
 	GM_xmlhttpRequest({
 		method: 'GET',
-		url: 'http://www.alloscomp.com/udbrain/api2.php?'+query,
+		url: 'http://udbrains.kimihia.org.nz:50609/udb?'+query,
 		onload: function(xhr) {
 			removeLoadDiv();
 
@@ -329,7 +330,7 @@ function getDataRaw(suburbsArr) {
 		query = 'suburb=' + suburbQuery;
 		GM_xmlhttpRequest({
 			method: 'GET',
-			url: 'http://godswr.ath.cx:50609/ud_xml?'+query,
+			url: 'http://udbrains.kimihia.org.nz:50609/ud_xml?'+query,
 			onload: function(xhr) {
 				var l = xhr.responseText.split('\n');
 				if (l.length > 0 && l[0].length > 2)
@@ -380,7 +381,7 @@ function getDataXML(suburbsArr) {
 	    //divAdd(query);
 		GM_xmlhttpRequest({
 			method: 'GET',
-			url: 'http://www.alloscomp.com/udbrain/dump.xml?'+query,
+			url: 'http://udbrains.kimihia.org.nz:50609/dump.xml?'+query,
 			onload: function(xhr) {
 
 	            		var parser = new DOMParser();
