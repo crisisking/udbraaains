@@ -6,7 +6,7 @@
 // ==/UserScript==
 
 
-version = "0.73";
+version = "0.74";
 
 /**
 * Timezone stuff
@@ -472,6 +472,8 @@ function playerLocation() {
 			return 3;
 		if(oDiv.innerHTML.match(/^You are in the/))
 			return 3;
+		if(oDiv.innerHTML.match(/^You are in your safehouse at/))
+		    return 3;
 		if(oDiv.innerHTML.match(/You are standing outside/))
 			return 2;
 		if(oDiv.innerHTML.match(/You are lying outside/))
@@ -827,6 +829,7 @@ function addTastyRow(r) {
 }
 
 gUDID = getUDID();
+
 
 if(gUDID != -1) {
 //	alert(timezone);
