@@ -237,7 +237,7 @@ class RequestHandler(asynchat.async_chat,
         self.raw_requestline = self.rfile.readline()
         self.parse_request()
 
-        if self.command in ['GET','HEAD']:
+        if self.command in ['GET','HEAD', 'OPTIONS']:
             # if method is GET or HEAD, call do_GET or do_HEAD and finish
             method = "do_"+self.command
             if hasattr(self,method):
