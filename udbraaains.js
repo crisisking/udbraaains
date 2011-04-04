@@ -663,7 +663,7 @@ function drawGoonOrdersIFrame() {
   // Make iframe
   var eIF = document.createElement('iframe');
   eIF.id = 'goonOrders_frame';
-  szGoonOrderSrc = 'http://tdslk.com'
+  szGoonOrderSrc = 'http://brains.somethingdead.com/orders/'
   // check if we are actually going to display this
   if ( readCookie('goonorders') == 'hidden' ) {
   eIF.src = 'about:blank';
