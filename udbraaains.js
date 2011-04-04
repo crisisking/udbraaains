@@ -562,8 +562,51 @@ function exchangeData() {
 	//divAdd("qs: "+qs+"<br>data: "+data);
 	
 	// Make connection to server
-	return [data,qs];
-	
+	makexmlhttpRequest({
+		method: 'POST',
+//		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
+//		url: 'http://127.0.0.1:8080/udb'+qs,
+		url: 'http://udbrains.kimihia.org.nz:50609/udb'+qs,
+		headers: {
+			"Accept": "text/html",
+			"Content-type": "application/x-www-form-urlencoded"
+		},
+		data: encodeURI(data),
+		onload: function(xhr) {
+			// Debugging: print response
+			//alert(xhr.responseText);
+			
+			// If Error, throw alert box
+            if(xhr.responseText.match(/Error:/))
+                alert('Sorry, something is broken :(');
+			
+			// Begin to parse the response data
+			var arr = xhr.responseText.split('|');
+			for(var i=0; i < arr.length; i++) {
+				// Build and exec regexps
+				var version_matches = arr[i].match(/^v(.*)/); // Contains version info?
+				var alert_matches = arr[i].match(/^(Alert: .*?)ENDALERT/); // Is an alert?
+				
+				// Add a div with alert text
+				if(alert_matches)
+					divAdd(alert_matches[1]);
+				
+				// Check to see if upgrade is needed
+				else if(version_matches)
+					checkVersion(version_matches[1]);
+
+				else if (arr[i].match(/^S:/))
+					colorSurvivor(arr[i].split(':'));
+				else if (arr[i].match(/^T:/))
+					processTastyData(arr[i].split(':'));
+				else if (arr[i].match(/^N:/))
+					processNews(arr[i]);
+				// Handle the report
+				else
+					displayData(arr[i]);
+			}
+		}
+	});
 }
 
 function processNews(line)
@@ -801,8 +844,23 @@ if(gUDID != -1) {
 		createTastyTable();
 		displayOnCenterSquare(getCurrentCades());
 		if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
-         // exchangeData();
+			exchangeData();
 		drawGoonOrdersIFrame();
 	}
+}
+
+function makexmlhttpRequest(req) {
+   xhr = new XMLHttpRequest();
+	xhr.open(req.method, req.url, true);
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState == 4) {
+			req.onload(xhr);
+		}
+	}
+   // Make these pull from the req argument instead someday (not today)
+	xhr.setRequestHeader("Accept", "text/html");
+	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	
+	xhr.send(req.data);
 }
 
