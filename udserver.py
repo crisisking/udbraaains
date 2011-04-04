@@ -159,7 +159,7 @@ class RequestHandler(asynchat.async_chat,
         request_count = request_count + 1
         print("outstanding requests = "+str(request_count))
         asynchat.async_chat.__init__(self,conn)
-        self.client_address = addr
+        self.client_address = list(addr)
         self.connection = conn
         self.server = server
         # set the terminator : when it is received, this means that the
@@ -236,7 +236,10 @@ class RequestHandler(asynchat.async_chat,
         self.rfile.seek(0)
         self.raw_requestline = self.rfile.readline()
         self.parse_request()
-
+        
+        if self.headers.has_key('X-Forwarded-For'):
+            self.client_address[0] = self.headers['X-Forwarded-For']
+        
         if self.command in ['GET','HEAD', 'OPTIONS']:
             # if method is GET or HEAD, call do_GET or do_HEAD and finish
             method = "do_"+self.command
