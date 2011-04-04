@@ -117,6 +117,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'orders',
+    'namelist',
     'south',
     'gunicorn',
 
