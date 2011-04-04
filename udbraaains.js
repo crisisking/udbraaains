@@ -6,7 +6,11 @@
 // ==/UserScript==
 
 
+<<<<<<< HEAD
 version = "0.74";
+=======
+version = "0.75";
+>>>>>>> upstream/master
 
 /**
 * Timezone stuff

@@ -10,6 +10,7 @@
 (function () {
    window = unsafeWindow ? unsafeWindow : window; //fucking chrome
    function appendScript(source, loadHandler) {
+<<<<<<< HEAD
    	var head = document.getElementsByTagName('head')[0] || document.documentElement;
    	var script = document.createElement('script');
 
@@ -70,13 +71,29 @@
    appendScript('http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', function () {
       // appendScript('http://localhost:8000/udbraaains.js', function () {
       appendScript('https://github.com/underisk/udbraaains/raw/master/udbraaains.js', function () {
+=======
+       	var head = document.getElementsByTagName('head')[0] || document.documentElement;
+       	var script = document.createElement('script');
+
+       	script.src = source;
+       	script.type = 'text/javascript';
+       	script.addEventListener('load', loadHandler, false);
+       	head.appendChild(script);
+   }
+
+   appendScript('http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', function () {
+      appendScript('https://github.com/crisisking/udbraaains/raw/master/udbraaains.js', function () {
+>>>>>>> upstream/master
          //Stuff here someday maybe.
       });      
    });
    
+<<<<<<< HEAD
    
 
 
    
    
+=======
+>>>>>>> upstream/master
 })();
