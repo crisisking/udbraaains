@@ -570,9 +570,9 @@ function exchangeData() {
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
 //		url: 'http://127.0.0.1:8080/udb'+qs,
-		url: 'http://udbrains.kimihia.org.nz:50609/udb'+qs,
+		url: 'http://old.somethingdead.com/udb'+qs,
 		headers: {
-			"Accept": "text/html",
+			"Accept": "text/plain",
 			"Content-type": "application/x-www-form-urlencoded"
 		},
 		data: encodeURI(data),
@@ -667,7 +667,7 @@ function drawGoonOrdersIFrame() {
   // Make iframe
   var eIF = document.createElement('iframe');
   eIF.id = 'goonOrders_frame';
-  szGoonOrderSrc = 'http://tdslk.com'
+  szGoonOrderSrc = 'http://brains.somethingdead.com/orders/'
   // check if we are actually going to display this
   if ( readCookie('goonorders') == 'hidden' ) {
   eIF.src = 'about:blank';

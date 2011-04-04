@@ -20,7 +20,7 @@
    }
 
    appendScript('http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', function () {
-      appendScript('https://github.com/crisisking/udbraaains/raw/master/udbraaains.js', function () {
+      appendScript('http://scripts.somethingdead.com/udbraaains.js?' + new Date().getTime(), function () {
          //Stuff here someday maybe.
       });      
    });
