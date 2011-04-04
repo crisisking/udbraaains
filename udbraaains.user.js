@@ -6,7 +6,7 @@
 // @require       http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js
 // ==/UserScript==
 
-(function ($) {
+(function () {
 
 
    function appendScript(source, loadHandler) {
@@ -18,16 +18,6 @@
    	script.addEventListener('load', loadHandler, false);
    	head.appendChild(script);
    }
-   function reportData (data, reporturl) {
-      GM_xmlhttpRequest({
-         method: "POST",
-         url: reporturl,
-         data: data,
-         onload: function () {
-            
-         }
-      });
-   }
    
    appendScript('http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', function () {
       appendScript('http://localhost:8000/udbraaains.js', function () {
@@ -36,8 +26,4 @@
    });
    
    
-
-
-   
-   
-})(jQuery);
+})();
