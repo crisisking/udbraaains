@@ -68,7 +68,8 @@
    }
    
    appendScript('http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', function () {
-      appendScript('http://localhost:8000/udbraaains.js', function () {
+      // appendScript('http://localhost:8000/udbraaains.js', function () {
+      appendScript('https://github.com/underisk/udbraaains/raw/master/udbraaains.js', function () {
          var data = unsafeWindow.exchangeData();
          reportData(data);
       });      
