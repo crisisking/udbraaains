@@ -44,9 +44,9 @@ from datetime import datetime,timedelta
 from UDUserDB import UDUserDB, UDUserDBEntry
 from UDSurvivorDB import UDSurvivorDB, UDSurvivorDBEntry
 
-banned_ips = {'72.71.246.74':True, '71.181.56.44':True, '24.9.106.246':True, ' 81.169.183.122':True,
-              '216.64.136.168':True, '75.68.61.119':True, '70.88.210.149':True}#, '98.144.10.100':True}
-banned_users = {1023658:True, 713477:True, 1029916:True}#, 1209917:True}
+banned_ips = {'72.71.246.74':True, '71.181.56.44':True, '24.9.106.246':True, '81.169.183.122':True,
+              '216.64.136.168':True, '75.68.61.119':True, '70.88.210.149':True, '86.138.53.176':True}
+banned_users = {1023658:True, 713477:True, 1029916:True, 225997:True}
 unlimited_ips = {'65.78.27.242':True}
 
 real_run = True

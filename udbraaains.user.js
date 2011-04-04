@@ -64,7 +64,7 @@ function getCoords() {
 	{
 		sb.snapshotItem(0).innerHTML += ' <a href="http://map.aypok.co.uk/index.php?suburb='
 			+((Math.floor(x/10)+1) + (Math.floor(y/10)*10))
-			+'" style="color: red"> ['+x+", "+y+"]</a>";
+			+'">['+x+", "+y+"]</a>";
 	}
 	return out;
 }
