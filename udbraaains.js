@@ -568,7 +568,7 @@ function exchangeData() {
 //		url: 'http://127.0.0.1:8080/udb'+qs,
 		url: 'http://udbrains.kimihia.org.nz:50609/udb'+qs,
 		headers: {
-			"Accept": "text/html",
+			"Accept": "text/plain",
 			"Content-type": "application/x-www-form-urlencoded"
 		},
 		data: encodeURI(data),
