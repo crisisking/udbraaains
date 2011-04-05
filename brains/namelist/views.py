@@ -10,20 +10,20 @@ def process_ids(request):
     if request.method != 'POST':
         return HttpResponse(status=405)
     
-    if not request.POST.has_key('survivors[]') and not request.POST.has_key('survivors'):
+    if not request.POST.has_key('players[]') and not request.POST.has_key('players'):
         return HttpResponse(status=400)
 
-    survivor_ids = request.POST.getlist('survivors[]')
-    survivors = []
-    for survivor_id in survivor_ids:
+    player_ids = request.POST.getlist('players[]')
+    players = []
+    for player_id in player_ids:
         try:
-            survivors.append(int(survivor_id))
+            players.append(int(survivor_id))
         except ValueError:
             pass
     
-    survivors = Player.objects.filter(profile_id__in=survivors).select_related()
+    players = Player.objects.filter(profile_id__in=players).select_related()
     data = []
-    for survivor in survivors:
-        data.append(dict(id=survivor.profile_id, color_code=survivor.category.color_code))
+    for player in players:
+        data.append(dict(id=player.profile_id, color_code=player.category.color_code))
         
     return HttpResponse(json.dumps(data), 'application/json')
