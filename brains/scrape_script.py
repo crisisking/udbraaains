@@ -23,6 +23,8 @@ requests.post('http://urbandead.com/map.cgi', data={'username': USERNAME, 'passw
 
 profiles_url = 'http://profiles.urbandead.net/index.php'
 
+cant_add = []
+
 for goon in GOONS:
     buffer.seek(0)
     buffer.truncate(0)
@@ -33,10 +35,8 @@ for goon in GOONS:
     try:
         profile_url = xml.xpath('//table/tbody/tr/td[1]/a')[0].attrib['href']
     except IndexError:
-        buffer.seek(0)
-        print buffer.read()
-        print goon
-        exit()
+        cant_add.append(goon)
+        continue
 
     user_id = int(profile_url[40:])
     profile_xml = requests.get(profile_url, cookies=cookies)
@@ -52,3 +52,4 @@ for goon in GOONS:
     Player.objects.get_or_create(category=goon_category, profile_id=user_id, group_name=group, name=name)
     print 'Created %s' % name
 
+print "Couldn't create the following users: %s" % ', '.join(cant_add)
