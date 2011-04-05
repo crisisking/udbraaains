@@ -12,7 +12,7 @@ CATEGORY_NAME = u''
 USERNAME = u''
 PASSWORD = u''
 
-goon_category = Category.objects.get(name=u'Goon')
+goon_category = Category.objects.get(name=CATEGORY_NAME)
 
 
 
