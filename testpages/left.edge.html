@@ -2,6 +2,49 @@
 <html><head><title>Urban Dead - The City</title><link rel="stylesheet" href="http://urbandead.com/dead.css?0121"><!--v13.45-->
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 	<script src="http://localhost:8000/udbraaains.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/testpages/testing.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript" charset="utf-8">
+		//Tests
+		$(UDBrains).bind('ready', function () {
+			assert('user type', (!this.user.alive));
+			assert('inside status', (this.isOutsideBuilding()));
+			assert('barricades', (this.surroundings.position.barricades == 1));
+			assert('map size', function () {
+				var rows = 3, cols = 2;
+				if (this.surroundings.map.length != rows)
+					return this.surroundings.map;
+				for (var i = this.surroundings.map.length - 1; i >= 0; i--){
+					if (this.surroundings.map[i].length != cols)
+						return this.surroundings.map[i];
+				};
+				return true
+			}, this);
+			var zombies = [
+				[0,1],
+				[6,14],
+				[1,7]
+			];
+			assert('zombie map', maptest(zombies, '.zombies'), this);
+			var xcoords = [
+				[0,1],
+				[0,1],
+				[0,1]
+			];
+			assert('coordinates - x', maptest(xcoords, '.coords.x'), this);
+			var ycoords = [
+				[50,50],
+				[51,51],
+				[52,52]
+			]
+			assert('coordinates - y', maptest(ycoords, '.coords.y'), this);
+			var survivors = [
+				[0,0,0],
+				[0,0,0],
+				[0,0,0]
+			];
+			assert('survivor map', maptest(survivors, '.survivors.length'), this);
+		});
+	</script>
 
 </head><body><table width="100%"><tr><td class="cp"><table class="c" 
 cellspacing=0> 
