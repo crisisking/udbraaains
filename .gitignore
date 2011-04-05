@@ -1,4 +1,5 @@
+brains/brains.db
 *.pyc
-map_data
-brains.db
+*.DS_Store
+old_udbraaains.user.js
 

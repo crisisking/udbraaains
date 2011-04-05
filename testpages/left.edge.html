@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"> 
+<html><head><title>Urban Dead - The City</title><link rel="stylesheet" href="http://urbandead.com/dead.css?0121"><!--v13.45-->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../udbraaains.js" type="text/javascript" charset="utf-8"></script>
+	<script src="testing.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript" charset="utf-8">
+		//Tests
+		$(UDBrains).bind('ready', function () {
+			assert('user type', (!this.user.alive));
+			assert('inside status', (this.isOutsideBuilding()));
+			assert('barricades', (this.surroundings.position.barricades == 1));
+			assert('map size', function () {
+				var rows = 3, cols = 2;
+				if (this.surroundings.map.length != rows)
+					return this.surroundings.map;
+				for (var i = this.surroundings.map.length - 1; i >= 0; i--){
+					if (this.surroundings.map[i].length != cols)
+						return this.surroundings.map[i];
+				};
+				return true
+			}, this);
+			var zombies = [
+				[0,1],
+				[6,14],
+				[1,7]
+			];
+			assert('zombie map', maptest(zombies, '.zombies'), this);
+			var xcoords = [
+				[0,1],
+				[0,1],
+				[0,1]
+			];
+			assert('coordinates - x', maptest(xcoords, '.coords.x'), this);
+			var ycoords = [
+				[50,50],
+				[51,51],
+				[52,52]
+			]
+			assert('coordinates - y', maptest(ycoords, '.coords.y'), this);
+			var survivors = [
+				[0,0,0],
+				[0,0,0],
+				[0,0,0]
+			];
+			assert('survivor map', maptest(survivors, '.survivors.length'), this);
+		});
+	</script>
+
+</head><body><table width="100%"><tr><td class="cp"><table class="c" 
+cellspacing=0> 
+<tr><td colspan=3 class="sb">Grigg Heights</td></tr> 
+<td class="b c33"><form action="map.cgi" method="post"> 
+<input type="hidden" name="v" value="0-50"><input type="submit" class="md" value="Gilbey Street"></form></td><td class="b c10"><form action="map.cgi" method="post"> 
+<input type="hidden" name="v" value="1-50"><input type="submit" class="mr" value="the Loveridge
+Arms"></form><br><span class="fz">1 
+zombie</span></td></tr> 
+<td class="b c12 l"><input type="submit" class="mr" value="Haddock
+Road
+Police
+Dept"><br><span class="fz">6 
+zombies</span></td><td class="b c9"><form action="map.cgi" method="post"> 
+<input type="hidden" name="v" value="1-51"><input type="submit" class="mr" value="Edmund
+General
+Hospital"></form><br><span class="fz">14 
+zombies</span></td></tr> 
+<td class="b c1"><form action="map.cgi" method="post"> 
+<input type="hidden" name="v" value="0-52"><input type="submit" class="md" value="Besant Avenue"></form><br><span class="fz">1 
+zombie</span></td><td class="b c33"><form action="map.cgi" method="post"> 
+<input type="hidden" name="v" value="1-52"><input type="submit" class="md" value="Sherring
+Place"></form><br><span class="fz">7 
+zombies</span></td></tr> 
+</table> 
+<div class="gt">You are <a href="profile.cgi?id=1886221"><b>w'hat</b></a> and you are <b>dead</b>. You have <b>17</b> Hit Points and <b>18</b> Experience Points. You have <b>39</b> Action Points remaining.</div><div class="gthome"></div><p> 
+<a href="skills.cgi" class="y">Buy skills</a> 
+<a href="contacts.cgi" class="y">Contacts</a> 
+<a href="profile.cgi?mode=edit&id=1886221" class="y">Settings</a> 
+<a href="map.cgi?logout" class="y">Log out</a> 
+</p> 
+<p> 
+<a href="news.html" class="y">News</a> 
+<a href="faq.html" class="y">FAQ</a> 
+<a href="http://wiki.urbandead.com" class="y">Wiki</a> 
+<a href="donate.html" class="y">Donate</a> 
+</p> 
+</td> 
+<td class="gp"> 
+<div class="gt">You are standing outside <b>Haddock Road Police Dept</b>, a narrow yellow-stone building surrounded by lawns. The building's doors have been left wide open, and you can see that the interior of the building has been ruined.<br><br>There is a group of six other zombies here.<br><br>There are two dead bodies here.</div><p>Possible actions:</p>  <form action="map.cgi?in" method="post" class="a"><input class="m"
+type="submit" value="Enter Haddock Road Police Dept"></form> <form action="map.cgi" method="post" class="a"><select name="speech"> 
+<option value="zs1"> Graagh.
+<option value="zs2"> Graaaagh!
+<option value="zs3"> Grrrh.
+<option value="zs4"> Grh.
+<option value="zs5"> Mrh?
+<option value="zs6"> Brnhr.
+</select><input type="submit" class="m" value="Speak"></form><br> <form action="map.cgi" method="post" class="a"> 
+<input type="submit" value="Attack" class="m">&nbsp;<select 
+name="target"><option value='z'> a zombie</select>&nbsp;with&nbsp;<select 
+name="weapon"><option value="maul"> hands (35%, 2 dam)</option><option value='teeth'> teeth (20%, 4 dam)</option></select></form><p>You are carrying nothing.</p></td></tr></table> 
+</body></html> 
