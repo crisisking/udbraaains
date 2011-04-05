@@ -822,11 +822,11 @@ if(gUDID != -1) {
         player_payload.players.push(gSurvivorIds[i][0]);
     }
     
-    jQuery.post('http://brains.somethingdead.com/names/colors/', player_payload, function (data) {
-        for(var i=0; i < data.length; i += 1) {
-            jQuery('a[href="profile.cgi?id=' + data.id + '"]').css('color', data.color_code);
+    jQuery.post('http://brains.somethingdead.com/names/colors/', player_payload, function (coloring_data) {
+        for(var i=0; i < coloring_data.length; i += 1) {
+            jQuery('a[href="profile.cgi?id=' + coloring_data[i].id + '"]').css('color', coloring_data[i].color_code);
         }
-    });
+    }, 'json');
     
 	gPlayerLocation = playerLocation();
 	if (gPlayerLocation != -1)
