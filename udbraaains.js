@@ -156,7 +156,10 @@
       
       getBarricadeLevel: function () {
          var reg = /The (building|doors to the street|building\'s doors) (has|have) been ([^\.]*(secured|barricaded|left wide open))[^\.]*./;
-         var barricadeText = $('.gp .gt').text().match(reg)[3];
+         if (this.isEmptyLot())
+            var barricadeText = 'no building';
+         else
+            var barricadeText = $('.gp .gt').text().match(reg)[3];
          return this.barricadeLevels[barricadeText];
       },
 
@@ -214,6 +217,7 @@
       },
 
       barricadeLevels: {
+         'no building':                      0,
          'left wide open' :                  1,
          'secured' :                         2,
          'loosely barricaded' :              3,
