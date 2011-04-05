@@ -10,7 +10,7 @@ def process_ids(request):
     if request.method != 'POST':
         return HttpResponse(status=405)
     
-    if not request.POST.has_key('survivors[]') or not request.POST.has_key('survivors'):
+    if not request.POST.has_key('survivors[]') and not request.POST.has_key('survivors'):
         return HttpResponse(status=400)
 
     survivor_ids = request.POST.getlist('survivors[]')

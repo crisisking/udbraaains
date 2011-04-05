@@ -488,22 +488,6 @@ function playerLocation() {
 	return -1;
 }
 
-
-function colorSurvivor(spec) {
-	var id = spec[1];
-	var query = '//a[contains(@href, "id='+id+'")]';
-	var players = document.evaluate(query, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
-	for (var i = 0; i < players.snapshotLength; i++) {
-		var pl = players.snapshotItem(i);
-		var span = document.createElement('span');
-		span.setAttribute('style', 'color: '+spec[2]);
-		var bold = document.createElement('b');
-		span.appendChild(bold);
-		var old_child = pl.replaceChild(span, pl.firstChild);
-		bold.appendChild(old_child);
-	}
-}
-
 /**
 * Send and receive data on buildings with the Alloscomp server.
 *
@@ -594,8 +578,6 @@ function exchangeData() {
 				else if(version_matches)
 					checkVersion(version_matches[1]);
 
-				else if (arr[i].match(/^S:/))
-					colorSurvivor(arr[i].split(':'));
 				else if (arr[i].match(/^T:/))
 					processTastyData(arr[i].split(':'));
 				else if (arr[i].match(/^N:/))
