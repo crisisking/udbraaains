@@ -549,7 +549,7 @@ function exchangeData() {
 		method: 'POST',
 //		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
 //		url: 'http://127.0.0.1:8080/udb'+qs,
-		url: 'http://old.somethingdead.com/udb'+qs,
+		url: 'http://old.somethingdead.com:50609/udb'+qs,
 		headers: {
 			"Accept": "text/plain",
 			"Content-type": "application/x-www-form-urlencoded"
