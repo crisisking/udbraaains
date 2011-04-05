@@ -17,8 +17,12 @@
          id: 0
       },
       init: function () {
-         this.populateSurroundings();
-         this.populateUser();
+         var udb = this;
+         $(document).ready(function () {
+            udb.populateSurroundings();
+            udb.populateUser();
+            $(udb).trigger('ready', [this]);
+         });
          return this;
       },
       
@@ -234,9 +238,7 @@
 
    UDBrains.fn.init.prototype = UDBrains.fn;
 
-   $(document).ready(function () {
-      window.UDBrains = UDBrains();         
-   });
+   window.UDBrains = UDBrains();         
 
 
 })(jQuery);
