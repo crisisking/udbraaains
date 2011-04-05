@@ -17,7 +17,7 @@ def process_ids(request):
     players = []
     for player_id in player_ids:
         try:
-            players.append(int(survivor_id))
+            players.append(int(player_id))
         except ValueError:
             pass
     
