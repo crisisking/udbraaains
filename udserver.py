@@ -64,11 +64,11 @@ my_shelf = shelve.open("udb_shelf",flag=shelf_mode, writeback=real_run)
 
 snapshot_interval = 3600
 
-version = '0.74'
+version = '0.75'
 map_version = '0.71'
-min_version = '0.74'
-min_news_version = '0.74'
-crypt_version = '0.74'
+min_version = '0.75'
+min_news_version = '0.75'
+crypt_version = '0.75'
 long_ago = datetime.utcnow() - timedelta(100,100,100)
 
 def toHex(s):
@@ -159,7 +159,7 @@ class RequestHandler(asynchat.async_chat,
         request_count = request_count + 1
         print("outstanding requests = "+str(request_count))
         asynchat.async_chat.__init__(self,conn)
-        self.client_address = addr
+        self.client_address = list(addr)
         self.connection = conn
         self.server = server
         # set the terminator : when it is received, this means that the
@@ -236,8 +236,11 @@ class RequestHandler(asynchat.async_chat,
         self.rfile.seek(0)
         self.raw_requestline = self.rfile.readline()
         self.parse_request()
-
-        if self.command in ['GET','HEAD']:
+        
+        if self.headers.has_key('X-Forwarded-For'):
+            self.client_address[0] = self.headers['X-Forwarded-For']
+        
+        if self.command in ['GET','HEAD', 'OPTIONS']:
             # if method is GET or HEAD, call do_GET or do_HEAD and finish
             method = "do_"+self.command
             if hasattr(self,method):
