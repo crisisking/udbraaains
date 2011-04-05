@@ -98,6 +98,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'middleware.access_control.AccessControl',
 )
 
 ROOT_URLCONF = 'urls'
@@ -117,6 +118,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'orders',
+    'namelist',
     'south',
     'gunicorn',
 
