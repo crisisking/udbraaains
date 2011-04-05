@@ -824,7 +824,7 @@ if(gUDID != -1) {
     
     jQuery.post('http://brains.somethingdead.com/names/colors/', player_payload, function (data) {
         for(var i=0; i < data.length; i += 1) {
-            jQuery('a[href="profile.cgi?' + data.id + '"]').css('color', data.color_code);
+            jQuery('a[href="profile.cgi?id=' + data.id + '"]').css('color', data.color_code);
         }
     });
     
