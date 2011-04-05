@@ -1,288 +1,237 @@
 (function ($) {
 
-      var UDBrains = function () {
-         return new UDBrains.fn.init();
-      }
+   var UDBrains = function () {
+      return new UDBrains.fn.init();
+   }
 
-      UDBrains.fn = UDBrains.prototype = {
-         version: 2.0,
-         reportUrl: 'http://localhost:8989/',
-         barricadeLevels: {
-            'left wide open' :                  1,
-            'secured' :                         2,
-            'loosely barricaded' :              3,
-            'lightly barricaded' :              4,
-            'quite strongly barricaded' :       5,
-            'very strongly barricaded' :        6,
-            'heavily barricaded' :              7,
-            'very heavily barricaded' :         8,
-            'extremely heavily barricaded' :    9
-      	},
-      	surroundings: [[],[],[]],
-      	position: [],
-         init: function () {
-            var udb = this;
-            $(document).ready(function () {
-               udb.populateSurroundings();
-               udb.user = {
-                  name: $('.cp .gt a[href^=profile]').text(),
-                    id: $('.cp .gt a[href^=profile]').attr('href').split('=')[1]
-               };
-            });            
-            return this;
-         },
-         
-         populateSurroundings: function () {
-            var udb = this;
-            
-            $('table.c tr:has(td.b)').each(function (row) {
-               $(this).find('td.b').each(function (col) {
-                  udb.surroundings[row].push({
-                     element:    this,
-                     coords:     udb.getCoordsFromElement(this),
-                     zombies:    udb.getZombieCountFromElement(this),
-                     survivors:  udb.getSurvivorsFromElement(this),
-                     ruinLevel:  udb.getRuinLevelFromElement(this)
-                  });
-                  // Note the coordinates of our position in relation to surroundings.
-                  if(udb.isPositionElement(this))
-                     udb.position = udb.surroundings[row][udb.surroundings[row].length-1];
-               });
+   UDBrains.fn = UDBrains.prototype = {
+      version: 2.0,
+      reportURL: 'http://localhost:8989/',
+      surroundings: {
+         inside: false,
+         position: [],
+         map: [],
+      },
+      user: {
+         name: "",
+         id: 0
+      },
+      init: function () {
+         this.populateSurroundings();
+         this.populateUser();
+         return this;
+      },
+      
+      populateUser: function () {
+         var playerInfo = $('.cp .gt');
+         $.extend(this.user, {
+            name:       playerInfo.find('a[href^=profile]').text(),
+            id:         playerInfo.find('a[href^=profile]').attr('href').split('=')[1],
+            alive:      playerInfo.text().search(/you are dead/) == -1 ? true : false,
+            health:     playerInfo.text().match(/You have (\d+) Hit Points?/)[1],
+            ap:         playerInfo.text().match(/You have (\d+) Action Points?/)[1],
+            experience: playerInfo.text().match(/and (\d+) Experience Points?/)[1],
+            inventory:  []
+         });
+         var udb = this;
+         $('select[name=drop] option[value!=""]').each(function () {
+            udb.user.inventory.push({
+               id:   $(this).val(),
+               name: $(this).text()
             });
-         },
+         });
          
-         isPositionElement: function (elem) {
-            return $(elem).is('td:has(>input)');
-         },
          
-         getCoordsFromElement: function (elem) {
-            var coords;
-            if (this.isPositionElement(elem)) {
-               coords = this.calculatePositionCoords();
-            } else {
-               coords = this.parseCoords($(elem).find('input[type=hidden]').val());
-            }
-            return coords;
-         },
-         
-         getSurvivorsFromElement: function (elem) {
-            //Returns an array of objects with survivor names and ids.
-            var survivors = [];
-            var survivorLinks = $(elem).find('a[href^=profile]');
-            if (this.isPositionElement(elem)) {
-               // If the query is for our current position we can provide a full list.
-               survivorLinks = $('.gp .gt a');
-            } 
-            survivorLinks.each(function () {
-               survivors.push({
-                  name: $(this).text(),
-                  id:   $(this).attr('href').split('=')[1]
-               })
-            });               
-            return survivors;
-         },
-         
-         getZombieCountFromElement: function (elem) {
-            if($(elem).is('td:has(.fz)'))
-               return parseInt($(elem).find('.fz').text().split(' ')[0], 10);
-            else
-               return 0;
-         },
-         
-         getRuinLevelFromElement: function (elem) {            
-            var ruinClasses = {
-               'mr': 1,
-               'ml': 2 //Building is ruined.
-            };
-            if($(elem).is('td:has(.mr)'))
-               return ruinClasses['mr'];
-            else if($(elem).is('td:has(.ml)'))
-               return ruinClasses['ml'];
-            else
-               return 0;
-         },
-         
-         calculatePositionCoords: function (row,col) {
-            var locationTD = $('table.c td:has(>input)'); //Location TD always has an input without a form.
-            var locationRow = locationTD.parent().find('td');
-            var xOffset = 1;
-            var offsetTDIndex = 0;
-            if (col == 0) {//We are at the left edge of the map.
-               xOffset = -1;
-               offsetTDIndex = 1;
-            }
-            var offset = this.parseCoords(
-               locationRow.eq(offsetTDIndex).find('input[type=hidden]').val()
-            );
-            return {
-               x: offset.x + xOffset,
-               y: offset.y
-            }
-         },
-         
-         parseCoords: function (coords) {
-            coords = coords.split('-');
-            return {
-               x: parseInt(coords[0], 10), 
-               y: parseInt(coords[1], 10)
-            }
-         },
-         
-         isInside: function () {
-            //Check for the leave button to determine if we're inside a building.
-            return ($('.gp form[action$=out]').length == 1);
-         },
-         
-         isOutsideBuilding: function () {
-            //Check for the enter button to see if we're outside a building.
-            return ($('.gp form[action$=in]').length == 1);
-         },
-         
-         isEmptyLot: function () {
-            //Returns true if current tile is empty lot
-            return (!this.isInside() && !this.isOutsideBuilding());
-         },
-         
-         getPositionType: function () {
-            if (this.isInside())
-               return 3;
-            else if (this.isOutsideBuilding())
-               return 2;
-            else
-               return 1;
-         },
-         
-         getBarricadeLevel: function () {
-            var reg = /The (building|doors to the street|building\'s doors) (has|have) been ([^\.]*(secured|barricaded|left wide open))[^\.]*./;
-            var barricadeText = $('.gp .gt').text().match(reg)[3];
-            return this.barricadeLevels[barricadeText];
-         },
-         
-         getLocationByCoord: function (locx, locy) {
-            var location = false;
-            $.each(this.surroundings, function () {
-               $.each(this, function () {
-                  if (this.coords.x == locx && this.coords.y == locy)
-                     location = this;
-               });
-            });
-            return location;
-         },
-         
-         generateReport: function () {
-            var qs = [];
-            var post = {};
-            var positionCoords = this.position.coords.x * 100 + this.position.coords.y;
-            var survivors = [];
-            var user = [
-                           this.user.id,
-                           this.version,
-                           positionCoords,
-                           this.getPositionType()
-                       ].join(':');
-            
-            // Start with information on current position.
-            var data = [[positionCoords,1,this.getBarricadeLevel()].join(':')];
-            
-            // Zombie and survivor levels only sent when inside
-            if (this.isInside()) {
-               data.push([positionCoords,3,this.position.zombies].join(':'));
-               data.push([positionCoords,5,this.position.survivors.length].join(':'));
-            };
-            
-            // Collect surroundings info
-            $.each(this.surroundings, function () {
-               $.each(this, function () {
-                  var coords = this.coords.x * 100 + this.coords.y;
-                  data.push([coords,4,this.ruinLevel].join(':'));
-                  qs.push(coords);                  
-               });
-            });
-            
-            // Create an array of survivor IDs
-            $.each(this.position.survivors, function () {
-               survivors.push(this.id);
-            });
-            
-            // Collect the post data
-            post.user = user;
-            post.data = data.join('|');
-            post.survivors = survivors.join('|');            
-            
-            return {
-               qs:   '?' + qs.join('&'),
-               post: post               
-            }
-         },
-         
-         sendReport: function () {
-            var data = this.generateReport();
-            var udb = this;
-            xhr = new XMLHttpRequest();
-            xhr.open('POST', this.reportUrl + data.qs, true);
-            xhr.onreadystatechange = function () {
-            	if (xhr.readyState == 4) {
-            		udb.receiveData(xhr);
-            	}
-            }
-            xhr.setRequestHeader("Accept", "text/html");
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      },
 
-            xhr.send($.param(data.post));
-         },
-         
-         receiveData: function (xhr) {
-            // this.metaData = xhr.responseText;
-            this.parseResponse(xhr.responseText);
-            // this.UI.render();
-         },
-         
-         parseResponse: function (response) {
-            response = response.split('|');
-            this.easyEats = [];
-            this.alert = false;
-            this.outdated = parseFloat(response.shift().substr(1), 10) == this.version;
-            var udb = this;
-            $.each(response, function () {
-               var arr = this.split(':');
-               if (arr[0] == "T") {
-                  udb.easyEats.push({
-                     x:                   arr[1],
-                     y:                   arr[2],
-                     barricadeLevel:      arr[3],
-                     barricadeLevelAge:   arr[4],
-                     indoorSurvivors:     arr[5],
-                     indoorSurvivorsAge:  arr[6],
-                     name:                arr[7]
-                  });                  
-               } else if( arr[0] == "ALERT" ) {
-                  arr.shift();
-                  this.alert = arr.join(':').substr(-8);
-               } else {
-                  //{coords}:{barricadeAge}:1:{barricadeLevel}:{survivorAge}:{indoorSurvivors}
-                  loc = udb.getLocationByCoord(udb.parseResponseCoords(arr[0]));
-                  $.extend(loc, {
-                     barricadeLevel:      arr[3],
-                     barricadeLevelAge:   arr[1],
-                     indoorSurvivors:     arr[5],
-                     indoorSurvivorsAge:  arr[4]
-                  });
-               };
+      populateSurroundings: function () {
+         var udb = this;
+         this.surroundings.inside = this.isInside();
+         $('table.c tr:has(td.b)').each(function (row) {
+            udb.surroundings.map.push([]);
+            $(this).find('td.b').each(function (col) {
+               udb.surroundings.map[row].push({
+                  element:          this,
+                  coords:           udb.getCoordsFromMapTile(this),
+                  zombies:          udb.getZombieCountFromMapTile(this),
+                  survivors:        udb.getSurvivorsFromMapTile(this),
+                  ruined:           udb.isMapTileRuined(this),
+                  illuminated:      udb.isMapTileLit(this)
+               });
+               // Note the coordinates of our position in relation to surroundings.
+               if(udb.isPositionElement(this))
+                  udb.surroundings.position = udb.surroundings.map[row][udb.surroundings.map[row].length-1];
             });
-         },
-         
-         parseResponseCoords: function (coord) {
-            return {
-               x: coords.substr(0,2),
-               y: coords.substr(2)
-            }
+            // Current position specific data.
+            $.extend(udb.surroundings.position, {
+               barricades: udb.getBarricadeLevel()
+            });
+         });
+      },
+
+      isPositionElement: function (elem) {
+         // Position element has input with no form.
+         return $(elem).is('td:has(>input)');
+      },
+
+      isInside: function () {
+         //Check for the leave button to determine if we're inside a building.
+         return ($('.gp form[action$=out]').length == 1);
+      },
+
+      isOutsideBuilding: function () {
+         //Check for the enter button to see if we're outside a building.
+         return ($('.gp form[action$=in]').length == 1);
+      },
+
+      isEmptyLot: function () {
+         //Returns true if current tile is empty lot
+         return (!this.isInside() && !this.isOutsideBuilding());
+      },
+      
+      isMapTileRuined: function (elem) {
+         //.mr = ruined or inside dark
+         if(this.isPositionElement(elem)){
+            return false;//fucking special cases
+         } else {
+            return $(elem).find('input[type=submit]').hasClass('mr');
          }
-         
+      },
+      
+      isMapTileLit: function (elem) {
+         //.ml = lit tile
+         //.mrl = ruined + powered
+         var button = $(elem).find('input[type=submit]');
+         return ( button.hasClass('ml') || button.hasClass('mrl') );
+      },
+      
+      isHPDataAvailable: function () {
+         return ( $('.gp .gt sub').length != 0 );
+      },
+
+      getCoordsFromMapTile: function (elem) {
+         // Parse out the coordinates for the provided tile.
+         var coords;
+         if (this.isPositionElement(elem)) {
+            // Player position has to be calculated from a nearby tile.
+            coords = this.calculatePositionCoords();
+         } else {
+            coords = this.parseCoords($(elem).find('input[type=hidden]').val());
+         }
+         return coords;
+      },
+
+      getSurvivorsFromMapTile: function (elem) {
+         //Returns an array of objects with survivor names and ids.
+         var survivors = [];
+         var survivorLinks = $(elem).find('a[href^=profile]');
+         if (this.isPositionElement(elem)) {
+            // If the query is for our current position we can provide a full list.
+            survivorLinks = $('.gp .gt a');
+         }
+         var udb = this;
+         survivorLinks.each(function (i) {
+            survivors.push({
+               name: $(this).text(),
+               id:   $(this).attr('href').split('=')[1]
+            })
+            if (udb.isPositionElement(elem) && udb.isHPDataAvailable()) {
+               survivors[i].hp = udb.getHPDataForSurvivor(survivors[i]);
+            }
+         });
+         return survivors;
+      },
+      
+      getHPDataForSurvivor: function (survivor) {
+         var reg = new RegExp( survivor.name + "\\s\\((\\d+)HP\\)" );
+         return $('.gp .gt').text().match(reg)[1];
+      },
+
+      getZombieCountFromMapTile: function (elem) {
+         if($(elem).is('td:has(.fz)'))
+            return parseInt($(elem).find('.fz').text().split(' ')[0], 10);
+         else
+            return 0;
+      },
+      
+      getBarricadeLevel: function () {
+         var reg = /The (building|doors to the street|building\'s doors) (has|have) been ([^\.]*(secured|barricaded|left wide open))[^\.]*./;
+         var barricadeText = $('.gp .gt').text().match(reg)[3];
+         return this.barricadeLevels[barricadeText];
+      },
+
+      getLocationByCoord: function (locx, locy) {
+         var location = false;
+         $.each(this.surroundings, function () {
+            $.each(this, function () {
+               if (this.coords.x == locx && this.coords.y == locy)
+                  location = this;
+            });
+         });
+         return location;
+      },
+
+      calculatePositionCoords: function (row,col) {
+         var locationTD = $('table.c td:has(>input)'); //Location TD always has an input without a form.
+         var locationRow = locationTD.parent().find('td');
+         var xOffset = 1;
+         var offsetTDIndex = 0;
+         if (col == 0) {//We are at the left edge of the map.
+            xOffset = -1;
+            offsetTDIndex = 1;
+         }
+         var offset = this.parseCoords(
+            // Get the coordinates of the tile to our left/right
+            locationRow.eq(offsetTDIndex).find('input[type=hidden]').val()
+         );
+         return {
+            x: offset.x + xOffset,
+            y: offset.y
+         }
+      },
+
+      parseCoords: function (coords) {
+         coords = coords.split('-');
+         return {
+            x: parseInt(coords[0], 10), 
+            y: parseInt(coords[1], 10)
+         }
+      },
+
+      sendReport: function () {
+         $.ajax({
+            type: "GET",
+            url: this.reportURL,
+            data: {data: JSON.stringify({user: this.user, surroundings: this.surroundings})},
+            dataType: 'jsonp',
+            success: this.receiveData
+         });
+      },
+      
+      receiveData: function (data, status, xhr) {
+         //placeholder
+         console.log('xhr');
+      },
+
+      barricadeLevels: {
+         'left wide open' :                  1,
+         'secured' :                         2,
+         'loosely barricaded' :              3,
+         'lightly barricaded' :              4,
+         'quite strongly barricaded' :       5,
+         'very strongly barricaded' :        6,
+         'heavily barricaded' :              7,
+         'very heavily barricaded' :         8,
+         'extremely heavily barricaded' :    9
       }
 
-      UDBrains.fn.init.prototype = UDBrains.fn;
+   }
 
+   UDBrains.fn.init.prototype = UDBrains.fn;
+
+   $(document).ready(function () {
       window.UDBrains = UDBrains();         
+   });
 
-   
+
 })(jQuery);
