@@ -839,7 +839,7 @@ if(gUDID != -1) {
 		createTastyTable();
 		displayOnCenterSquare(getCurrentCades());
 		if (!(gCoords[0] > 99 || gCoords[1] > 99)) // No support for Monroeville, sorry.
-			exchangeData();
+			// exchangeData();
 		drawGoonOrdersIFrame();
 	}
 }
