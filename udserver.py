@@ -675,10 +675,10 @@ class UDRequestHandler(RequestHandler) :
     foo = 1
     
     def send_response(self, status_code):
-        RequestHandler.send_response(self, status_code)
         origin = self.headers.get('Origin', None)
-        if(origin in ('http://urbandead.com', 'http://www.urbandead.com')):
+        if origin in ('http://urbandead.com', 'http://www.urbandead.com'):
             self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
+        RequestHandler.send_response(self, status_code)
 
     def process_datum(self, x) :
         p = x.split(':')
@@ -746,7 +746,6 @@ class UDRequestHandler(RequestHandler) :
 #            M.dump()
         except ValueError:
             self.udbrain_error("bad datum " + x)
-            self.send_response(501)
             return
 
 
