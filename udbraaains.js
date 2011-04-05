@@ -114,12 +114,40 @@
          var coords;
          if (this.isPositionElement(elem)) {
             // Player position has to be calculated from a nearby tile.
-            coords = this.calculatePositionCoords();
+            coords = this.calculatePositionCoords(elem);
          } else {
             coords = this.parseCoords($(elem).find('input[type=hidden]').val());
          }
          return coords;
       },
+      
+      calculatePositionCoords: function (elem) {
+         var locationTD = $('table.c td:has(>input)'); //Location TD always has an input without a form.
+         var locationRow = locationTD.parent().find('td');
+         var xOffset = 1;
+         var offsetTDIndex = 0;
+         if (locationRow.index(elem) == 0) {//We are at the left edge of the map.
+            xOffset = -1;
+            offsetTDIndex = 1;
+         }
+         var offset = this.parseCoords(
+            // Get the coordinates of the tile to our left/right
+            locationRow.eq(offsetTDIndex).find('input[type=hidden]').val()
+         );
+         return {
+            x: offset.x + xOffset,
+            y: offset.y
+         }
+      },
+
+      parseCoords: function (coords) {
+         coords = coords.split('-');
+         return {
+            x: parseInt(coords[0], 10), 
+            y: parseInt(coords[1], 10)
+         }
+      },
+
 
       getSurvivorsFromMapTile: function (elem) {
          //Returns an array of objects with survivor names and ids.
@@ -172,33 +200,6 @@
             });
          });
          return location;
-      },
-
-      calculatePositionCoords: function (row,col) {
-         var locationTD = $('table.c td:has(>input)'); //Location TD always has an input without a form.
-         var locationRow = locationTD.parent().find('td');
-         var xOffset = 1;
-         var offsetTDIndex = 0;
-         if (col == 0) {//We are at the left edge of the map.
-            xOffset = -1;
-            offsetTDIndex = 1;
-         }
-         var offset = this.parseCoords(
-            // Get the coordinates of the tile to our left/right
-            locationRow.eq(offsetTDIndex).find('input[type=hidden]').val()
-         );
-         return {
-            x: offset.x + xOffset,
-            y: offset.y
-         }
-      },
-
-      parseCoords: function (coords) {
-         coords = coords.split('-');
-         return {
-            x: parseInt(coords[0], 10), 
-            y: parseInt(coords[1], 10)
-         }
       },
 
       sendReport: function () {
