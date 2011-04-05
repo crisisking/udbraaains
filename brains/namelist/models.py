@@ -7,6 +7,10 @@ class Category(models.Model):
     
     name = models.CharField(max_length=25, null=False, blank=False)
     color_code = models.CharField(max_length=7, null=False, blank=False)
+    
+    def __unicode__(self):
+        return self.name
+
 
 class Player(models.Model):
     
@@ -14,4 +18,7 @@ class Player(models.Model):
     profile_id = models.IntegerField(null=True)
     group_name = models.CharField(max_length=50, blank=True)
     category = models.ForeignKey(Category, null=False)
+
+    def __unicode__(self):
+        return self.name
 
