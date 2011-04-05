@@ -237,8 +237,8 @@ class RequestHandler(asynchat.async_chat,
         self.raw_requestline = self.rfile.readline()
         self.parse_request()
         
-        if self.headers.has_key('X-Forwarded-For'):
-            self.client_address[0] = self.headers['X-Forwarded-For']
+        if self.headers.has_key('Origin') and self.headers['Origin'] in ('http://urbandead.com', 'http://www.urbandead.com'):
+            self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
         
         if self.command in ['GET','HEAD', 'OPTIONS']:
             # if method is GET or HEAD, call do_GET or do_HEAD and finish
