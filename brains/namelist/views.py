@@ -2,7 +2,10 @@
 import json
 from django.http import HttpResponse
 from namelist.models import Player
+from django.views.decorators.csrf import csrf_exempt
 
+
+@csrf_exempt
 def process_ids(request):
     if request.method != 'POST':
         return HttpResponse(status=405)
