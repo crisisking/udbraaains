@@ -243,6 +243,8 @@ class RequestHandler(asynchat.async_chat,
         if self.command in ['GET','HEAD', 'OPTIONS']:
             # if method is GET or HEAD, call do_GET or do_HEAD and finish
             method = "do_"+self.command
+            if method == 'OPTIONS':
+                method = 'do_GET'
             if hasattr(self,method):
                 getattr(self,method)()
         elif self.command=="POST":
