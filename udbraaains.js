@@ -6,17 +6,17 @@
 
       UDBrains.fn = UDBrains.prototype = {
          version: 2.0,
-         reportUrl: 'http://old.somethingdead.com/udb',
+         reportUrl: 'http://localhost:8989/',
          barricadeLevels: {
-                          'left wide open' : 1,
-                                 'secured' : 2,
-                      'loosely barricaded' : 3,
-                      'lightly barricaded' : 4,
-               'quite strongly barricaded' : 5,
-                'very strongly barricaded' : 6,
-                      'heavily barricaded' : 7,
-                 'very heavily barricaded' : 8,
-            'extremely heavily barricaded' : 9
+            'left wide open' :                  1,
+            'secured' :                         2,
+            'loosely barricaded' :              3,
+            'lightly barricaded' :              4,
+            'quite strongly barricaded' :       5,
+            'very strongly barricaded' :        6,
+            'heavily barricaded' :              7,
+            'very heavily barricaded' :         8,
+            'extremely heavily barricaded' :    9
       	},
       	surroundings: [[],[],[]],
       	position: [],
@@ -38,11 +38,11 @@
             $('table.c tr:has(td.b)').each(function (row) {
                $(this).find('td.b').each(function (col) {
                   udb.surroundings[row].push({
-                       element: this,
-                        coords: udb.getCoordsFromElement(this),
-                       zombies: udb.getZombieCountFromElement(this),
-                     survivors: udb.getSurvivorsFromElement(this),
-                     ruinLevel: udb.getRuinLevelFromElement(this)
+                     element:    this,
+                     coords:     udb.getCoordsFromElement(this),
+                     zombies:    udb.getZombieCountFromElement(this),
+                     survivors:  udb.getSurvivorsFromElement(this),
+                     ruinLevel:  udb.getRuinLevelFromElement(this)
                   });
                   // Note the coordinates of our position in relation to surroundings.
                   if(udb.isPositionElement(this))
@@ -76,7 +76,7 @@
             survivorLinks.each(function () {
                survivors.push({
                   name: $(this).text(),
-                    id: $(this).attr('href').split('=')[1]
+                  id:   $(this).attr('href').split('=')[1]
                })
             });               
             return survivors;
@@ -153,15 +153,26 @@
          },
          
          getBarricadeLevel: function () {
-            var reg = /The (building|doors to the street) (has|have) been ([^\.]*(secured|barricaded|left wide open))./;
+            var reg = /The (building|doors to the street|building\'s doors) (has|have) been ([^\.]*(secured|barricaded|left wide open))[^\.]*./;
             var barricadeText = $('.gp .gt').text().match(reg)[3];
             return this.barricadeLevels[barricadeText];
+         },
+         
+         getLocationByCoord: function (locx, locy) {
+            var location = false;
+            $.each(this.surroundings, function () {
+               $.each(this, function () {
+                  if (this.coords.x == locx && this.coords.y == locy)
+                     location = this;
+               });
+            });
+            return location;
          },
          
          generateReport: function () {
             var qs = [];
             var post = {};
-            var positionCoords = [this.position.coords.x,this.position.coords.y].join('');
+            var positionCoords = this.position.coords.x * 100 + this.position.coords.y;
             var survivors = [];
             var user = [
                            this.user.id,
@@ -182,7 +193,7 @@
             // Collect surroundings info
             $.each(this.surroundings, function () {
                $.each(this, function () {
-                  var coords = [this.coords.x,this.coords.y].join('');
+                  var coords = this.coords.x * 100 + this.coords.y;
                   data.push([coords,4,this.ruinLevel].join(':'));
                   qs.push(coords);                  
                });
@@ -199,7 +210,7 @@
             post.survivors = survivors.join('|');            
             
             return {
-                 qs: '?' + qs.join('&'),
+               qs:   '?' + qs.join('&'),
                post: post               
             }
          },
@@ -219,13 +230,54 @@
 
             xhr.send($.param(data.post));
          },
+         
          receiveData: function (xhr) {
-            console.log(xhr);
+            // this.metaData = xhr.responseText;
+            this.parseResponse(xhr.responseText);
+            // this.UI.render();
          },
-         render: function () {
-            
+         
+         parseResponse: function (response) {
+            response = response.split('|');
+            this.easyEats = [];
+            this.alert = false;
+            this.outdated = parseFloat(response.shift().substr(1), 10) == this.version;
+            var udb = this;
+            $.each(response, function () {
+               var arr = this.split(':');
+               if (arr[0] == "T") {
+                  udb.easyEats.push({
+                     x:                   arr[1],
+                     y:                   arr[2],
+                     barricadeLevel:      arr[3],
+                     barricadeLevelAge:   arr[4],
+                     indoorSurvivors:     arr[5],
+                     indoorSurvivorsAge:  arr[6],
+                     name:                arr[7]
+                  });                  
+               } else if( arr[0] == "ALERT" ) {
+                  arr.shift();
+                  this.alert = arr.join(':').substr(-8);
+               } else {
+                  //{coords}:{barricadeAge}:1:{barricadeLevel}:{survivorAge}:{indoorSurvivors}
+                  loc = udb.getLocationByCoord(udb.parseResponseCoords(arr[0]));
+                  $.extend(loc, {
+                     barricadeLevel:      arr[3],
+                     barricadeLevelAge:   arr[1],
+                     indoorSurvivors:     arr[5],
+                     indoorSurvivorsAge:  arr[4]
+                  });
+               };
+            });
+         },
+         
+         parseResponseCoords: function (coord) {
+            return {
+               x: coords.substr(0,2),
+               y: coords.substr(2)
+            }
          }
-
+         
       }
 
       UDBrains.fn.init.prototype = UDBrains.fn;
