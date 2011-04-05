@@ -493,102 +493,102 @@ function playerLocation() {
 *
 * Coming soon: send and receive data on players with the Tagteamtech server.
 **/
-function exchangeData() {	
-	// Get our coordinates
-	var coords = gCoords;
-	
-	// Begin the query string
-	var qs = '?';
-	
-	// Search form inputs for map squares to add to query
-	var query = "//td[contains(@class,'b c')]/form/input[@name='v']";
-	var grid = document.evaluate(query, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
-	for (var i = 0; i < grid.snapshotLength; i++) {
-		var input = grid.snapshotItem(i);
-		if(ncoords = input.value.match(/^(\d+)-(\d+)$/)) 
-			qs += convertCoordsToBXY([ncoords[1],ncoords[2]]) + '&';
-	}
-	qs = qs.replace(/\&$/,'');
-	qs = qs + '&' + convertCoordsToBXY(gCoords);
-	// alert(qs);
-	
-	// Begin the post array
-	var postarr = [];
-	
-	// Inside or outside a building
-	if(gPlayerLocation >= 2) {
-		// Create our Barricade Report
-		postarr.push([ convertCoordsToBXY(gCoords), '1', getCurrentCades() ].join(':')); 
-	}
-	
-	// Inside a building
-	if(gPlayerLocation == 3) { 
-		// Count zeds in this building
-		postarr.push([ convertCoordsToBXY(coords), '3', countLocalZeds() ].join(':'));
-		postarr.push([ convertCoordsToBXY(coords), '5', countSurvivors() ].join(':'));
-	}
-	
-	postarr.push(countRuins());
-
-	// Outside a building or empty square
-	if(gPlayerLocation <= 2) {
-		// Count zeds on this and other blocks
-		postarr.push(countZeds());
-	}
-	
-	// Build the post data string
-	var data = 'user='+[ gUDID, version, convertCoordsToBXY(coords), gPlayerLocation ].join(':')+'&data='+postarr.join('|');
-	if (gSurvivorIds)
-		data += '&survivors='+gSurvivorIds.join("|");
-
-	// Debugging: print query and data
-	//divAdd("qs: "+qs+"<br>data: "+data);
-	
-	// Make connection to server
-	makexmlhttpRequest({
-		method: 'POST',
-//		url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
-//		url: 'http://127.0.0.1:8080/udb'+qs,
-		url: 'http://old.somethingdead.com:50609/udb'+qs,
-		headers: {
-			"Accept": "text/plain",
-			"Content-type": "application/x-www-form-urlencoded"
-		},
-		data: encodeURI(data),
-		onload: function(xhr) {
-			// Debugging: print response
-			//alert(xhr.responseText);
-			
-			// If Error, throw alert box
-            if(xhr.responseText.match(/Error:/))
-                alert('Sorry, something is broken :(');
-			
-			// Begin to parse the response data
-			var arr = xhr.responseText.split('|');
-			for(var i=0; i < arr.length; i++) {
-				// Build and exec regexps
-				var version_matches = arr[i].match(/^v(.*)/); // Contains version info?
-				var alert_matches = arr[i].match(/^(Alert: .*?)ENDALERT/); // Is an alert?
-				
-				// Add a div with alert text
-				if(alert_matches)
-					divAdd(alert_matches[1]);
-				
-				// Check to see if upgrade is needed
-				else if(version_matches)
-					checkVersion(version_matches[1]);
-
-				else if (arr[i].match(/^T:/))
-					processTastyData(arr[i].split(':'));
-				else if (arr[i].match(/^N:/))
-					processNews(arr[i]);
-				// Handle the report
-				else
-					displayData(arr[i]);
-			}
-		}
-	});
-}
+// function exchangeData() {    
+//  // Get our coordinates
+//  var coords = gCoords;
+//  
+//  // Begin the query string
+//  var qs = '?';
+//  
+//  // Search form inputs for map squares to add to query
+//  var query = "//td[contains(@class,'b c')]/form/input[@name='v']";
+//  var grid = document.evaluate(query, document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+//  for (var i = 0; i < grid.snapshotLength; i++) {
+//      var input = grid.snapshotItem(i);
+//      if(ncoords = input.value.match(/^(\d+)-(\d+)$/)) 
+//          qs += convertCoordsToBXY([ncoords[1],ncoords[2]]) + '&';
+//  }
+//  qs = qs.replace(/\&$/,'');
+//  qs = qs + '&' + convertCoordsToBXY(gCoords);
+//  // alert(qs);
+//  
+//  // Begin the post array
+//  var postarr = [];
+//  
+//  // Inside or outside a building
+//  if(gPlayerLocation >= 2) {
+//      // Create our Barricade Report
+//      postarr.push([ convertCoordsToBXY(gCoords), '1', getCurrentCades() ].join(':')); 
+//  }
+//  
+//  // Inside a building
+//  if(gPlayerLocation == 3) { 
+//      // Count zeds in this building
+//      postarr.push([ convertCoordsToBXY(coords), '3', countLocalZeds() ].join(':'));
+//      postarr.push([ convertCoordsToBXY(coords), '5', countSurvivors() ].join(':'));
+//  }
+//  
+//  postarr.push(countRuins());
+// 
+//  // Outside a building or empty square
+//  if(gPlayerLocation <= 2) {
+//      // Count zeds on this and other blocks
+//      postarr.push(countZeds());
+//  }
+//  
+//  // Build the post data string
+//  var data = 'user='+[ gUDID, version, convertCoordsToBXY(coords), gPlayerLocation ].join(':')+'&data='+postarr.join('|');
+//  if (gSurvivorIds)
+//      data += '&survivors='+gSurvivorIds.join("|");
+// 
+//  // Debugging: print query and data
+//  //divAdd("qs: "+qs+"<br>data: "+data);
+//  
+//  // Make connection to server
+//  makexmlhttpRequest({
+//      method: 'POST',
+// //       url: 'http://www.alloscomp.com/udbrain/api2.php'+qs,
+// //       url: 'http://127.0.0.1:8080/udb'+qs,
+//      url: 'http://old.somethingdead.com:50609/udb'+qs,
+//      headers: {
+//          "Accept": "text/plain",
+//          "Content-type": "application/x-www-form-urlencoded"
+//      },
+//      data: encodeURI(data),
+//      onload: function(xhr) {
+//          // Debugging: print response
+//          //alert(xhr.responseText);
+//          
+//          // If Error, throw alert box
+//             if(xhr.responseText.match(/Error:/))
+//                 alert('Sorry, something is broken :(');
+//          
+//          // Begin to parse the response data
+//          var arr = xhr.responseText.split('|');
+//          for(var i=0; i < arr.length; i++) {
+//              // Build and exec regexps
+//              var version_matches = arr[i].match(/^v(.*)/); // Contains version info?
+//              var alert_matches = arr[i].match(/^(Alert: .*?)ENDALERT/); // Is an alert?
+//              
+//              // Add a div with alert text
+//              if(alert_matches)
+//                  divAdd(alert_matches[1]);
+//              
+//              // Check to see if upgrade is needed
+//              else if(version_matches)
+//                  checkVersion(version_matches[1]);
+// 
+//              else if (arr[i].match(/^T:/))
+//                  processTastyData(arr[i].split(':'));
+//              else if (arr[i].match(/^N:/))
+//                  processNews(arr[i]);
+//              // Handle the report
+//              else
+//                  displayData(arr[i]);
+//          }
+//      }
+//  });
+// }
 
 function processNews(line)
 {
