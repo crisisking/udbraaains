@@ -833,7 +833,7 @@ gUDID = getUDID();
 if(gUDID != -1) {
 //	alert(timezone);
 
-    checkSurvivors();
+    countSurvivors();
     player_payload = {players:[]};
     
     for(var i=0; i < gSurvivorIds.length; i += 1) {
