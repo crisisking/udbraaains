@@ -194,8 +194,8 @@
          if (this.isEmptyLot())
             var barricadeText = 'no building';
          else
-            var barricadeText = $('.gp .gt').text().match(reg)[3];
-         return this.barricadeLevels[barricadeText];
+            var barricadeText = $('.gp .gt').text().match(reg);
+         return this.barricadeLevels[barricadeText ? barricadeText[3] : 0];
       },
 
       getLocationByCoord: function (locx, locy) {
