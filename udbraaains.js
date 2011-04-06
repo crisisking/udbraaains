@@ -253,7 +253,6 @@
    UDBrains.UI.ordersPane = {
       url: 'http://brains.somethingdead.com/orders/',
       init: function (udb) {
-         this.url = this.url
          var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url).css({
             width: '100%',
             height: '200px',
@@ -272,21 +271,27 @@
    
    UDBrains.UI.colorNames = {
       init: function (udb) {
-          var profile_links = $('div.gt a[href^=profile]'),
-              ids = [];
-          
-          profile_links.each(function (index, element) {
-              ids.push($(element).attr('href').split('=')[1]);
+          var ids = udb.surroundings.position.survivors.map(function (survivor) {
+             return survivor.id;
           });
-          
           $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
               $.each(data, function (index, elem) {
                  $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code); 
               });
           }, 'json');
-
       } 
    }
-
+   
+   UDBrains.UI.suburbTitle = {
+      mapURL: 'http://map.aypok.co.uk/index.php?suburb=',
+      init: function (udb) {
+         var coords = udb.surroundings.position.coords;
+         var link = $('<a>').attr('href', this.mapURL+this.calculateSuburb(coords.x, coords.y));
+         $('.sb').append(' - ['+coords.x+','+coords.y+']').wrapInner(link);
+      },
+      calculateSuburb: function (x,y) {
+         return Math.ceil((x+1)/10) + Math.floor(y/10) * 10;
+      }
+   }
 
 })(jQuery);
