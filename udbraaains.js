@@ -275,7 +275,7 @@
               ids = [];
           
           profile_links.each(function (index, element) {
-              ids.push($(element).attr('href').text().split('=')[1]);
+              ids.push($(element).attr('href').split('=')[1]);
           });
           
           $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
