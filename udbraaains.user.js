@@ -20,7 +20,7 @@
    }
    
   appendScript('http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', function () {
-     appendScript('http://scripts.somethingdead.com/udbraaains.js', function () {
+     appendScript('http://scripts.somethingdead.com/udbraaains.js?' + new Date().getTime(), function () {
      
      });      
   });
