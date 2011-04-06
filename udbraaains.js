@@ -16,6 +16,7 @@
          name: "",
          id: 0
       },
+      UI: {},
       init: function () {
          var udb = this;
          $(document).ready(function () {
@@ -23,6 +24,7 @@
             udb.populateUser();
             udb.sendReport();
             $(udb).trigger('ready', [this]);
+            udb.renderUI();
          });
          return this;
       },
@@ -233,13 +235,39 @@
          'heavily barricaded' :              7,
          'very heavily barricaded' :         8,
          'extremely heavily barricaded' :    9
+      },
+      
+      renderUI: function () {
+         for( ext in this.UI ) {
+            this.UI[ext].init(this);
+         }
       }
 
    }
 
    UDBrains.fn.init.prototype = UDBrains.fn;
 
-   window.UDBrains = UDBrains();         
+   UDBrains = window.UDBrains = UDBrains();
+   
+   
+   UDBrains.UI.ordersPane = {
+      url: 'http://brains.somethingdead.com/orders/',
+      init: function (udb) {
+         var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url).css({
+            width: '100%',
+            height: '200px',
+            border: '4px solid #445544'
+         });
+         var ordersLink = $('<a>').attr('href', '#orders').bind('click', function () {            
+            localStorage.ordersVisible = $('#orders').toggle().is(':visible');
+         }).text('Click here to toggle orders.');
+         $('.gp').append(ordersLink);
+         $('.gp').append(iframe);
+         if (localStorage.ordersVisible == "false")
+            iframe.hide();
+         
+      }
+   }
 
 
 })(jQuery);
