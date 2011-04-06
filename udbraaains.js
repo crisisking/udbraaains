@@ -22,7 +22,7 @@
          $(document).ready(function () {
             udb.populateSurroundings();
             udb.populateUser();
-            udb.sendReport();
+            //udb.sendReport();
             $(udb).trigger('ready', [this]);
             udb.renderUI();
          });
@@ -267,6 +267,24 @@
             iframe.hide();
          
       }
+   }
+   
+   UDBrains.UI.colorNames = {
+      init: function (udb) {
+          var profile_links = $('div.gt a[href^=profile]'),
+              ids = [];
+          
+          profile_links.each(function (index, element) {
+              ids.push(element.attr('href').split('=')[1]);
+          });
+          
+          $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
+              $.each(data, function (index, elem) {
+                 $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code); 
+              });
+          }, 'json');
+
+      } 
    }
 
 
