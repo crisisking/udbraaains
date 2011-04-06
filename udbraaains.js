@@ -274,6 +274,9 @@
           var ids = udb.surroundings.position.survivors.map(function (survivor) {
              return survivor.id;
           });
+          
+          ids.push(udb.user.id);
+          
           $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
               $.each(data, function (index, elem) {
                  $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code); 
