@@ -253,6 +253,7 @@
    UDBrains.UI.ordersPane = {
       url: 'http://brains.somethingdead.com/orders/',
       init: function (udb) {
+         this.url = this.url
          var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url).css({
             width: '100%',
             height: '200px',
