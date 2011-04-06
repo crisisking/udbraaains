@@ -171,6 +171,12 @@ class RequestHandler(asynchat.async_chat,
         self.request_version = "HTTP/1.1"
         # buffer the response and headers to avoid several calls to select()
         self.wfile = cStringIO.StringIO()
+        
+    def send_error(self, status_code, message):
+        RequestHandler.send_error(self, status_code, message)
+        if self.headers.has_key('Origin') and self.headers['Origin'] in ('http://urbandead.com', 'http://www.urbandead.com'):
+            self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
+        
 
     def close(self) :
         global request_count

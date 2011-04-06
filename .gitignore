@@ -1,2 +1,5 @@
+brains/brains.db
+*.pyc
 *.DS_Store
 old_udbraaains.user.js
+

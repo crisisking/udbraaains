@@ -22,7 +22,7 @@
          $(document).ready(function () {
             udb.populateSurroundings();
             udb.populateUser();
-            udb.sendReport();
+            //udb.sendReport();
             $(udb).trigger('ready', [this]);
             udb.renderUI();
          });
@@ -210,13 +210,13 @@
       },
 
       sendReport: function () {
-         // $.ajax({
-         //    type: "POST",
-         //    url: this.reportURL,
-         //    data: ,
-         //    dataType: 'json',
-         //    success: this.receiveData
-         // });
+         $.ajax({
+            type: "POST",
+            url: this.reportURL,
+            //data: {data: JSON.stringify({user: this.user, surroundings: this.surroundings})},
+            dataType: 'json',
+            success: this.receiveData
+         });
       },
       
       receiveData: function (data, status, xhr) {
@@ -268,6 +268,24 @@
             iframe.hide();
          
       }
+   }
+   
+   UDBrains.UI.colorNames = {
+      init: function (udb) {
+          var profile_links = $('div.gt a[href^=profile]'),
+              ids = [];
+          
+          profile_links.each(function (index, element) {
+              ids.push(element.attr('href').text().split('=')[1]);
+          });
+          
+          $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
+              $.each(data, function (index, elem) {
+                 $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code); 
+              });
+          }, 'json');
+
+      } 
    }
 
 
