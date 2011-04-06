@@ -210,13 +210,13 @@
       },
 
       sendReport: function () {
-         $.ajax({
-            type: "POST",
-            url: this.reportURL,
-            data: {data: JSON.stringify({user: this.user, surroundings: this.surroundings})},
-            dataType: 'json',
-            success: this.receiveData
-         });
+         // $.ajax({
+         //    type: "POST",
+         //    url: this.reportURL,
+         //    data: ,
+         //    dataType: 'json',
+         //    success: this.receiveData
+         // });
       },
       
       receiveData: function (data, status, xhr) {
@@ -253,6 +253,7 @@
    UDBrains.UI.ordersPane = {
       url: 'http://brains.somethingdead.com/orders/',
       init: function (udb) {
+         this.url = this.url
          var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url).css({
             width: '100%',
             height: '200px',
