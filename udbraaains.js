@@ -287,6 +287,7 @@
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
          var link = $('<a>').attr('href', this.mapURL+this.calculateSuburb(coords.x, coords.y));
+         link.attr('target', '_blank');
          $('.sb').append(' - ['+coords.x+','+coords.y+']').wrapInner(link);
       },
       calculateSuburb: function (x,y) {
