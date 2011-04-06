@@ -213,7 +213,7 @@
          $.ajax({
             type: "POST",
             url: this.reportURL,
-            data: {data: JSON.stringify({user: this.user, surroundings: this.surroundings})},
+            //data: {data: JSON.stringify({user: this.user, surroundings: this.surroundings})},
             dataType: 'json',
             success: this.receiveData
          });
