@@ -15,9 +15,9 @@ class Category(models.Model):
 class Player(models.Model):
     
     name = models.CharField(max_length=20, null=False)
-    profile_id = models.IntegerField(null=True)
+    profile_id = models.IntegerField(null=False, unique=True)
     group_name = models.CharField(max_length=50, blank=True)
-    category = models.ForeignKey(Category, null=False)
+    category = models.ForeignKey(Category, null=True)
 
     def __unicode__(self):
         return self.name
