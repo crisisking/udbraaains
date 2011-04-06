@@ -221,7 +221,6 @@
       
       receiveData: function (data, status, xhr) {
          //placeholder
-         console.log('xhr');
       },
 
       barricadeLevels: {
@@ -239,6 +238,7 @@
       
       renderUI: function () {
          for( ext in this.UI ) {
+            
             this.UI[ext].init(this);
          }
       }
@@ -246,9 +246,8 @@
    }
 
    UDBrains.fn.init.prototype = UDBrains.fn;
-
-   UDBrains = window.UDBrains = UDBrains();
    
+   UDBrains.UI = UDBrains.fn.UI;
    
    UDBrains.UI.ordersPane = {
       url: 'http://brains.somethingdead.com/orders/',
@@ -265,7 +264,6 @@
          $('.gp').append(iframe);
          if (localStorage.ordersVisible == "false")
             iframe.hide();
-         
       }
    }
    
@@ -297,5 +295,8 @@
          return Math.ceil((x+1)/10) + Math.floor(y/10) * 10;
       }
    }
+   
+   UDBrains = window.UDBrains = UDBrains();
+   
 
 })(jQuery);
