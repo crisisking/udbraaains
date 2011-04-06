@@ -253,7 +253,6 @@
    UDBrains.UI.ordersPane = {
       url: 'http://brains.somethingdead.com/orders/',
       init: function (udb) {
-         this.url = this.url
          var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url).css({
             width: '100%',
             height: '200px',
@@ -282,6 +281,17 @@
           }, 'json');
       } 
    }
-
+   
+   UDBrains.UI.suburbTitle = {
+      mapURL: 'http://map.aypok.co.uk/index.php?suburb=',
+      init: function (udb) {
+         var coords = udb.surroundings.position.coords;
+         var link = $('<a>').attr('href', this.mapURL+this.calculateSuburb(coords.x, coords.y));
+         $('.sb').append(' - ['+coords.x+','+coords.y+']').wrapInner(link);
+      },
+      calculateSuburb: function (x,y) {
+         return Math.ceil((x+1)/10) + Math.floor(y/10) * 10;
+      }
+   }
 
 })(jQuery);
