@@ -19,14 +19,11 @@
    	head.appendChild(script);
    }
    
-   document.addEventListener('DOMContentLoaded', function () {
-      //prevent load blocking
-      appendScript('http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', function () {
-         appendScript('http://scripts.somethingdead.com/udbraaains.js', function () {
-         
-         });      
-      });      
-   }, false);
+  appendScript('http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', function () {
+     appendScript('http://scripts.somethingdead.com/udbraaains.js', function () {
+     
+     });      
+  });
    
    
 })();
