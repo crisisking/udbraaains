@@ -57,3 +57,4 @@ def scrape_profile(profile_id):
     if group == 'none' or not group:
         group = ''
     return name, group
+

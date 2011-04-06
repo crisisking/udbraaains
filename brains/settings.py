@@ -1,5 +1,9 @@
 # Django settings for brains project.
 
+import djcelery
+djcelery.setup_loader()
+
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -119,7 +123,7 @@ INSTALLED_APPS = (
     'namelist',
     'south',
     'gunicorn',
-
+    'djcelery',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -150,3 +154,14 @@ BRAINS_SCRAPE_SETTINGS = {
     'username': None,
     'password': None,
 }
+
+BROKER_BACKEND = "redis"
+BROKER_HOST = "127.0.0.1"
+BROKER_PORT = 6379
+BROKER_VHOST = "0"
+CELERY_IGNORE_RESULT = True
+REDIS_HOST = "127.0.0.1"
+REDIS_PORT = 6379
+REDIS_DB = 0
+REDIS_CONNECT_RETRY = True
+CELERY_DISABLE_RATE_LIMITS=True

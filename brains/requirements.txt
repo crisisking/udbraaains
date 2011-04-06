@@ -4,3 +4,5 @@ gevent==0.13.3
 gunicorn==0.12.1
 lxml==2.3
 requests
+django-celery
+redis
