@@ -223,11 +223,11 @@
             url: this.reportURL,
             data: {data: JSON.stringify({user: this.user, surroundings: surroundings})},
             dataType: 'json',
-            success: this.receiveData
+            success: this.receiveReport
          });
       },
       
-      receiveData: function (data, status, xhr) {
+      receiveReport: function (data, status, xhr) {
          //placeholder
       },
 
