@@ -210,10 +210,18 @@
       },
 
       sendReport: function () {
+         //Copy the surroundings object so we can prune some of the data off of it.
+         var surroundings = $.extend({}, this.surroundings);
+         surroundings.map = surroundings.map.map(function (row) {
+            return row.map(function (col) {
+               delete col.element;
+               return col;
+            });
+         });
          $.ajax({
             type: "POST",
             url: this.reportURL,
-            //data: {data: JSON.stringify({user: this.user, surroundings: this.surroundings})},
+            data: {data: JSON.stringify({user: this.user, surroundings: surroundings})},
             dataType: 'json',
             success: this.receiveData
          });
