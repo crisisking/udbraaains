@@ -1,5 +1,9 @@
 # Django settings for brains project.
 
+import djcelery
+djcelery.setup_loader()
+
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -104,9 +108,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'urls'
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
+
 )
 
 INSTALLED_APPS = (
@@ -121,7 +123,7 @@ INSTALLED_APPS = (
     'namelist',
     'south',
     'gunicorn',
-
+    'djcelery',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -146,3 +148,20 @@ LOGGING = {
         },
     }
 }
+
+# Set these to your Urban Dead account you're going to use for scraping.
+BRAINS_SCRAPE_SETTINGS = {
+    'username': None,
+    'password': None,
+}
+
+BROKER_BACKEND = "redis"
+BROKER_HOST = "127.0.0.1"
+BROKER_PORT = 6379
+BROKER_VHOST = "0"
+CELERY_IGNORE_RESULT = True
+REDIS_HOST = "127.0.0.1"
+REDIS_PORT = 6379
+REDIS_DB = 0
+REDIS_CONNECT_RETRY = True
+CELERY_DISABLE_RATE_LIMITS=True
