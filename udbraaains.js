@@ -21,6 +21,7 @@
          $(document).ready(function () {
             udb.populateSurroundings();
             udb.populateUser();
+            udb.sendReport();
             $(udb).trigger('ready', [this]);
          });
          return this;
@@ -208,10 +209,10 @@
 
       sendReport: function () {
          $.ajax({
-            type: "GET",
+            type: "POST",
             url: this.reportURL,
             data: {data: JSON.stringify({user: this.user, surroundings: this.surroundings})},
-            dataType: 'jsonp',
+            dataType: 'json',
             success: this.receiveData
          });
       },
