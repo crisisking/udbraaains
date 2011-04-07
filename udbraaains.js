@@ -258,7 +258,6 @@
             this.UI[ext].init(this);
          }
       }
-
    }
 
    UDBrains.fn.init.prototype = UDBrains.fn;
@@ -317,8 +316,8 @@
 
       init: function (udb) {
          this.coords = udb.surroundings.position.coords;
-         this.origin = this.calculateOrigin(9,9);
-         this.tiles = this.createTileArray(9,9);
+         this.origin = this.calculateOrigin(15,15);
+         this.tiles = this.createTileArray(15,15);
          this.render();
       },
       
@@ -327,6 +326,7 @@
          mapPanel.append(this.renderMap());
          this.getTileByCoords(this.coords.x, this.coords.y).addClass('pos').html('&bull;');
          this.makePretty(mapPanel);
+         this.scrapeTargets();
          $('.cp .gthome').before(mapPanel);
       },
       
@@ -357,6 +357,17 @@
                this.addClass('xborder');
             if ( (coords.y % 10) == 0 )
                this.addClass('yborder');
+         });
+      },
+      
+      markTargets: function (targets) {
+         minimap = this;
+         targets.forEach(function (target) {
+            var tile = minimap.getTileByCoords(target.x, target.y);
+            if (tile)
+               tile.css({
+                  background: "#FF9999"
+               });
          });
       },
       
@@ -419,6 +430,10 @@
       getTileByCoords: function (x, y) {
          var localx = x - this.origin.x;
          var localy = y - this.origin.y;
+         if (localx < 0 || localx > (this.tiles[0].length) )
+            return false;            
+         if (localy < 0 || localy > (this.tiles.length) )
+            return false;
          return this.tiles[localy][localx];
       },
       
@@ -427,6 +442,26 @@
             x: this.coords.x - Math.floor(x/2),
             y: this.coords.y - Math.floor(y/2)
          }
+      },
+      scrapeTargets: function () {
+         var minimap = this;
+         $.ajax({
+            type: 'GET',
+            url: 'http://brains.somethingdead.com/orders/' + this.coords.x + '/' + this.coords.y + '/',
+            dataType: 'html',
+            success: function (html) {
+               targets = html.match(/\[\d+\,\d+\]/g);
+               targets = targets.map(function (targ) {
+                  var coords = targ.match(/\[(\d+\,\d+)\]/)[1].split(',');
+                  return {
+                     x: coords[0],
+                     y: coords[1]
+                  }
+               });
+               minimap.markTargets(targets);
+            }
+         });
+         
       }
       
    }
