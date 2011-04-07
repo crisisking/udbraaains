@@ -268,7 +268,8 @@
    UDBrains.UI.ordersPane = {
       url: 'http://brains.somethingdead.com/orders/',
       init: function (udb) {
-         var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url).css({
+         var coords = udb.surroundings.position.coords;
+         var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url + coords.x + '/' + coords.y + '/').css({
             width: '100%',
             height: '200px',
             border: '4px solid #445544'
