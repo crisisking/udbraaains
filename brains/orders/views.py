@@ -4,6 +4,6 @@ from orders.models import Order
 
 def index(request):
     return render_to_response('orders/orders.html', 
-        { 'orders': Order.objects.all().order_by('date') },
+        { 'orders': Order.objects.all() },
         context_instance=RequestContext(request)
     )
