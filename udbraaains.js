@@ -315,11 +315,20 @@
    UDBrains.UI.mibbit = {
        channelURL: 'http://01.chat.mibbit.com/?server=irc.synirc.net&channel=%23urbandead',
        init: function (udb) {
-           var header = $('<h2>');
-           var link = $('<a>').attr('href', this.channelURL).attr('target', '_blank')
+           var header = $('<h2>').attr('id', 'irc-link');
+           var link = $('<a>').attr('href', this.channelURL).attr('target', '_blank');
            link.text('Come hang out on IRC!');
+           var hide = $('<a>').attr('href','javascript:;').css({
+              float: 'right',
+              fontSize: '10px'
+           }).text('[hide]').bind('click', function () {
+              header.hide();
+              localStorage.hideIRC = true;
+           });
+           hide.appendTo(header);
            link.appendTo(header);
-           header.prependTo('.gp .gt');
+           if(!localStorage.hideIRC || localStorage.hideIRC != 'true')
+              header.prependTo('.gp .gt');
        }
    }
    
