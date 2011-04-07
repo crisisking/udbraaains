@@ -282,7 +282,7 @@
          if (localStorage.ordersVisible == "false")
             iframe.hide();
       }
-   }
+   };
    
    UDBrains.UI.colorNames = {
       init: function (udb) {
@@ -298,7 +298,7 @@
               });
           }, 'json');
       } 
-   }
+   };
    
    UDBrains.UI.suburbTitle = {
       mapURL: 'http://map.aypok.co.uk/index.php?suburb=',
@@ -311,6 +311,123 @@
       calculateSuburb: function (x,y) {
          return Math.ceil((x+1)/10) + Math.floor(y/10) * 10;
       }
+   };
+   
+   UDBrains.UI.minimap = {
+      init: function (udb) {
+         this.coords = udb.surroundings.position.coords;
+         this.suburbOrigin = this.calculateSuburbOrigin();
+         this.suburbTiles = this.createTileArray(10,10,this.suburbOrigin);
+         this.localOrigin = this.calculateLocalOrigin();
+         this.localTiles = this.createTileArray(9,9,this.localOrigin);
+         this.render();
+      },
+      createTileArray: function (x, y, origin) {
+         var arr = new Array(y);
+         var minimap = this;
+         var coords = $.extend({}, origin);
+         $.each(arr, function (row) {
+            arr[row] = new Array(x);
+            $.each(arr[row], function (col) {
+               arr[row][col] = $('<td>').css({
+                  width: '10px',
+                  height: '10px',
+                  border: '1px solid #BBCCBB',
+                  padding: 0
+               }).data({
+                  x: coords.x,
+                  y: coords.y
+               });
+               coords.x++
+            });
+            coords.x = origin.x;
+            coords.y++
+         });
+         return arr;
+      },
+      getSuburbTileByCoords: function (x, y) {
+         var localx = x - this.suburbOrigin.x;
+         var localy = y - this.suburbOrigin.y;
+         return this.suburbTiles[localy][localx];
+      },
+      calculateSuburbOrigin: function () {
+         return {
+            x: Math.floor(this.coords.x/10) * 10,
+            y: Math.floor(this.coords.y/10) * 10
+         }
+      },
+      getLocalTileByCoords: function (x, y) {
+         var localx = x - this.localOrigin.x;
+         var localy = y - this.localOrigin.y;
+         return this.localTiles[localy][localx];
+      },
+      calculateLocalOrigin: function () {
+         return {
+            x: this.coords.x - 4,
+            y: this.coords.y - 4
+         }
+      },
+      render: function () {
+         var mapPanel = $('<div>').addClass('gt').css('overflow', 'hidden');
+         $('.cp .gthome').before(mapPanel);
+         
+         //Highlight the current tile
+         this.getSuburbTileByCoords(this.coords.x, this.coords.y)
+            .add(this.getLocalTileByCoords(this.coords.x, this.coords.y))
+            .css({
+               // background: '#fff',
+               lineHeight: '1px',
+               fontSize: '12px',
+               textAlign: 'center'
+               // color: '#000'
+            })
+            .append('&bull;');
+         mapPanel.append(this.renderMap('Suburb', this.suburbTiles));
+         mapPanel.append(this.renderMap('Surroundings', this.localTiles));
+         this.markLocalOOB();
+         $('.oob').css('background', '#BBCCBB');
+      },
+      renderMap: function (title, tiles) {
+        var div = $('<div>').addClass('suburbmap').css({
+           float: 'left',
+           width: '45%',
+           padding: '0 1%',
+        });
+        var title = $('<h4>').append(title).css({
+           margin: 0,
+           textAlign: 'center'
+        });
+        var map = this.renderTable(tiles);
+        div.append(title);
+        div.append(map);
+        return div;
+      },
+      renderTable: function (tiles) {
+         var table = $('<table>').addClass('minimap').css({
+            borderCollapse: 'collapse',
+            border: '1px solid #BBCCBB',
+            margin: '0 auto'
+         });
+         $.each(tiles, function () {
+            var tr = $('<tr>');
+            $.each(this, function () {
+               tr.append(this);
+            });
+            table.append(tr);
+         });
+         return table;
+      },
+      markLocalOOB: function () {
+         $.each(this.localTiles, function () {
+            $.each(this, function () {
+               var coords = this.data();
+               if ( coords.x < 0 || coords.y < 0 )
+                  this.addClass('oob');
+                  // console.log(coords);
+            });
+         });
+      }      
+      
    }
    
    UDBrains.UI.mibbit = {
