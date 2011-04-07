@@ -7,7 +7,7 @@ class Order(models.Model):
     # Last updated timestamp, used for sorting
     date = models.DateTimeField(auto_now_add=True, auto_now=True)
     # When we will strike
-    striketime = models.DateTimeField()
+    striketime = models.DateTimeField(null=True)
     message = models.TextField()
     subject = models.CharField(max_length=250)
     # Coordinates of where this news applies
