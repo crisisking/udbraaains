@@ -7,6 +7,10 @@ class Order(models.Model):
     date = models.DateTimeField(auto_now_add=True, auto_now=True)
     message = models.TextField()
     subject = models.CharField(max_length=250)
+    # Coordinates of where this news applies
+    # By default, set it to the middle of the map
+    x = models.IntegerField(default=50)
+    y = models.IntegerField(default=50)
 
     def __unicode__(self):
         return self.subject

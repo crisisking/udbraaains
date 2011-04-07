@@ -6,13 +6,15 @@
         body { font-family:trebuchet ms, verdana, sans-serif; color: #bcb; background-color: #565; }
         a { color:#f99; text-decoration:none; }
         a:visited { color:#c99; }
+	h1 { padding-bottom: 0; margin-bottom: 0; }
+	h2 { padding-top: 0; margin-top: 0; font-size: small; }
     </style>
 </head>
 <body>
     <div id="news">
         {% for order in orders %}
         <div id="newsitem">
-            <h1>{{ order.subject }}</h1>
+            <h1>{{ order.subject }} [{{ order.x }}, {{ order.y }}]</h1>
             <h2>Posted {{ order.date|timesince }} ago by {{ order.user.username }}</h2>
             {{ order.message|linebreaks}}
         </div>
