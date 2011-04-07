@@ -314,27 +314,97 @@
    };
    
    UDBrains.UI.minimap = {
+
       init: function (udb) {
          this.coords = udb.surroundings.position.coords;
-         this.suburbOrigin = this.calculateSuburbOrigin();
-         this.suburbTiles = this.createTileArray(10,10,this.suburbOrigin);
-         this.localOrigin = this.calculateLocalOrigin();
-         this.localTiles = this.createTileArray(9,9,this.localOrigin);
+         this.origin = this.calculateOrigin(9,9);
+         this.tiles = this.createTileArray(9,9);
          this.render();
       },
-      createTileArray: function (x, y, origin) {
+      
+      render: function () {
+         var mapPanel = $('<div>').attr('id', 'mappanel').addClass('gt');
+         mapPanel.append(this.renderMap());
+         this.getTileByCoords(this.coords.x, this.coords.y).addClass('pos').html('&bull;');
+         this.makePretty(mapPanel);
+         $('.cp .gthome').before(mapPanel);
+      },
+      
+      renderMap: function () {
+         var table = $('<table>').addClass('minimap');
+         $.each(this.tiles, function () {
+            var tr = $('<tr>');
+            $.each(this, function () {
+               tr.append(this);
+            });
+            table.append(tr);
+         });
+         return table;
+      },
+            
+      markOOB: function () {
+         this.forEachTile(function () {
+            var coords = this.data();
+            if ( coords.x < 0 || coords.y < 0 || coords.x > 99 || coords.y > 99 )
+               this.addClass('oob');
+         });
+      },
+      
+      markBorders: function () {
+         this.forEachTile(function () {
+            var coords = this.data();
+            if ( (coords.x % 10) == 0 )
+               this.addClass('xborder');
+            if ( (coords.y % 10) == 0 )
+               this.addClass('yborder');
+         });
+      },
+      
+      forEachTile: function (func) {
+         $.each(this.tiles, function () {
+            $.each(this, func);
+         });
+      },
+      
+      makePretty: function (map) {
+         this.markBorders();
+         this.markOOB();
+         map.find('td').css({
+            width: '10px',
+            height: '10px',
+            border: '1px solid #BBCCBB',
+            padding: 0,
+            lineHeight: '1px',
+            fontSize: '12px',
+            textAlign: 'center'
+         });
+         map.find('table.minimap').css({
+            borderCollapse: 'collapse',
+            border: '1px solid #BBCCBB'
+            // margin: '0 auto'
+         });
+         map.find('.xborder').css({
+            borderLeftWidth: '2px',
+            borderLeftColor: '#fff'
+         });
+         map.find('.yborder').css({
+            borderTopWidth: '2px',
+            borderTopColor: '#fff'
+         });
+         map.find('.oob').css({
+            background: "#BBCCBB"
+         });
+      },
+      
+      createTileArray: function (x, y) {
          var arr = new Array(y);
          var minimap = this;
-         var coords = $.extend({}, origin);
+         var coords = $.extend({}, this.origin);
+         var origin = this.origin;
          $.each(arr, function (row) {
             arr[row] = new Array(x);
             $.each(arr[row], function (col) {
-               arr[row][col] = $('<td>').css({
-                  width: '10px',
-                  height: '10px',
-                  border: '1px solid #BBCCBB',
-                  padding: 0
-               }).data({
+               arr[row][col] = $('<td>').data({
                   x: coords.x,
                   y: coords.y
                });
@@ -345,88 +415,19 @@
          });
          return arr;
       },
-      getSuburbTileByCoords: function (x, y) {
-         var localx = x - this.suburbOrigin.x;
-         var localy = y - this.suburbOrigin.y;
-         return this.suburbTiles[localy][localx];
+      
+      getTileByCoords: function (x, y) {
+         var localx = x - this.origin.x;
+         var localy = y - this.origin.y;
+         return this.tiles[localy][localx];
       },
-      calculateSuburbOrigin: function () {
+      
+      calculateOrigin: function (x, y) {
          return {
-            x: Math.floor(this.coords.x/10) * 10,
-            y: Math.floor(this.coords.y/10) * 10
+            x: this.coords.x - Math.floor(x/2),
+            y: this.coords.y - Math.floor(y/2)
          }
-      },
-      getLocalTileByCoords: function (x, y) {
-         var localx = x - this.localOrigin.x;
-         var localy = y - this.localOrigin.y;
-         return this.localTiles[localy][localx];
-      },
-      calculateLocalOrigin: function () {
-         return {
-            x: this.coords.x - 4,
-            y: this.coords.y - 4
-         }
-      },
-      render: function () {
-         var mapPanel = $('<div>').addClass('gt').css('overflow', 'hidden');
-         $('.cp .gthome').before(mapPanel);
-         
-         //Highlight the current tile
-         this.getSuburbTileByCoords(this.coords.x, this.coords.y)
-            .add(this.getLocalTileByCoords(this.coords.x, this.coords.y))
-            .css({
-               // background: '#fff',
-               lineHeight: '1px',
-               fontSize: '12px',
-               textAlign: 'center'
-               // color: '#000'
-            })
-            .append('&bull;');
-         mapPanel.append(this.renderMap('Suburb', this.suburbTiles));
-         mapPanel.append(this.renderMap('Surroundings', this.localTiles));
-         this.markLocalOOB();
-         $('.oob').css('background', '#BBCCBB');
-      },
-      renderMap: function (title, tiles) {
-        var div = $('<div>').addClass('suburbmap').css({
-           float: 'left',
-           width: '45%',
-           padding: '0 1%',
-        });
-        var title = $('<h4>').append(title).css({
-           margin: 0,
-           textAlign: 'center'
-        });
-        var map = this.renderTable(tiles);
-        div.append(title);
-        div.append(map);
-        return div;
-      },
-      renderTable: function (tiles) {
-         var table = $('<table>').addClass('minimap').css({
-            borderCollapse: 'collapse',
-            border: '1px solid #BBCCBB',
-            margin: '0 auto'
-         });
-         $.each(tiles, function () {
-            var tr = $('<tr>');
-            $.each(this, function () {
-               tr.append(this);
-            });
-            table.append(tr);
-         });
-         return table;
-      },
-      markLocalOOB: function () {
-         $.each(this.localTiles, function () {
-            $.each(this, function () {
-               var coords = this.data();
-               if ( coords.x < 0 || coords.y < 0 )
-                  this.addClass('oob');
-                  // console.log(coords);
-            });
-         });
-      }      
+      }
       
    }
    
