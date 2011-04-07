@@ -3,7 +3,7 @@ from namelist.scrape import get_user_profile_id, scrape_profile, NotFound
 from namelist.models import Player, Category
 
 @task()
-def import_user(profile_name_or_id, category=None, user=None):
+def import_user(profile_name_or_id, category=None, user=None, join_date=None):
     try:
         profile_id = int(profile_name_or_id)
     except ValueError:
@@ -20,5 +20,6 @@ def import_user(profile_name_or_id, category=None, user=None):
     if created:
         player.category = category
         player.name = info[0]
+        player.join_date = info[2]
     player.group_name = info[1]
     player.save()

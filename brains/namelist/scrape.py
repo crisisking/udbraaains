@@ -1,9 +1,8 @@
-import requests
-import lxml.html
-import cookielib
-from functools import wraps
+import datetime
 import cStringIO as StringIO
 from django.conf import settings
+import requests
+import lxml.html
 from namelist.models import Player
 
 
@@ -16,21 +15,6 @@ COOKIES = cookielib.CookieJar()
 
 class NotFound(Exception):
     pass
-
-def check_login(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            if COOKIES._cookies['urbandead.com']['/']['player'].is_expired():
-                login()
-        except KeyError:
-            login()
-        return func(*args, **kwargs)
-    return wrapper
-        
-
-def login():
-    requests.post(LOGIN_URL, data={'username': USERNAME, 'password': PASSWORD}, cookies=COOKIES)
 
 
 def get_user_profile_id(name):
@@ -46,7 +30,6 @@ def get_user_profile_id(name):
         io.close()
 
 
-@check_login
 def scrape_profile(profile_id):
     io = StringIO.StringIO()
     io.write(requests.get(PROFILE_URL, params={'id': profile_id}, cookies=COOKIES).content)
@@ -54,7 +37,9 @@ def scrape_profile(profile_id):
     profile_xml = lxml.html.parse(io)
     name = profile_xml.xpath('/html/body/div/h1/span')[0].text_content()
     group = profile_xml.xpath('/html/body/div/table/tr[3]/td[4]')[0].text_content()
+    join_date = profile_xml.xpath('/html/body/div/table/tr[4]/td[2]')[0].text_content()
+    
     if not group:
         group = 'none'
-    return name, group
+    return name, group, datetime.datetime.strptime(join_date, '%Y-%m-%d %H:%M:%S')
 
