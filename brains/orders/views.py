@@ -5,6 +5,8 @@ from orders.models import Order
 
 def index(request, x, y):
 
+    x = int(x)
+    y = int(y)
     # Fetch the orders
     fresh_order = list(Order.objects.all().order_by('-date'))
     fresh_order.sort(key=lambda o: user_coord_dist(x, y, o.x, o.y))
