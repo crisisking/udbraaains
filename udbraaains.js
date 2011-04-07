@@ -71,9 +71,17 @@
             });
             // Current position specific data.
             $.extend(udb.surroundings.position, {
-               barricades: udb.getBarricadeLevel()
+               barricades:       udb.getBarricadeLevel(),
+               christmasTree:    udb.hasXmasTree()
             });
          });
+      },
+      
+      hasXmasTree: function () {
+        /*
+         A recently-cut fir tree has been propped up in a crude stand. The bar has been decorated with a historical tapestry and a carved pumpkin.
+        */
+        return ($('.gp .gt').text().search(/A recently-cut fir tree/) != -1);
       },
 
       isPositionElement: function (elem) {
