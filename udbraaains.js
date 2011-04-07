@@ -313,7 +313,7 @@
    }
    
    UDBrains.UI.mibbit = {
-       channelURL = 'http://01.chat.mibbit.com/?server=irc.synirc.net&channel=%23urbandead',
+       channelURL: 'http://01.chat.mibbit.com/?server=irc.synirc.net&channel=%23urbandead',
        init: function (udb) {
            var header = $('<h2>');
            var link = $('<a>').attr('href', channelURL).attr('target', '_blank')
