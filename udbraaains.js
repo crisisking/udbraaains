@@ -316,7 +316,7 @@
        channelURL: 'http://01.chat.mibbit.com/?server=irc.synirc.net&channel=%23urbandead',
        init: function (udb) {
            var header = $('<h2>');
-           var link = $('<a>').attr('href', channelURL).attr('target', '_blank')
+           var link = $('<a>').attr('href', this.channelURL).attr('target', '_blank')
            link.text('Come hang out on IRC!');
            link.appendTo(header);
            header.insertBefore('.gp .gt');
