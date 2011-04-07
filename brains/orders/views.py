@@ -3,10 +3,7 @@ from django.shortcuts import render
 from django.template import RequestContext
 from orders.models import Order
 
-def index(request):
-    # customise response to put closest orders first
-    x = request.GET.get("x", 50)
-    y = request.GET.get("y", 50)
+def index(request, x, y):
 
     # Fetch the orders
     fresh_order = list(Order.objects.all().order_by('-date'))
