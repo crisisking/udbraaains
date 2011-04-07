@@ -4,16 +4,16 @@ from namelist.models import Player, Category
 
 @task()
 def import_user(profile_name_or_id, category=None, user=None):
-    if isinstance(profile_name_or_id, basestring):
+    try:
+        profile_id = int(profile_name_or_id)
+    except ValueError:
         try:
             profile_id = get_user_profile_id(profile_name_or_id)
         except NotFound:
             if user:
                 user.message_set.create(message="Couldn't create {0}".format(profile_name_or_id))
             return
-    else:
-        profile_id = profile_name_or_id
-        
+
     info = scrape_profile(profile_id)
 
     player, created = Player.objects.get_or_create(profile_id=profile_id)
