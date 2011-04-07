@@ -17,8 +17,8 @@ def import_user(profile_name_or_id, category=None, user=None):
     info = scrape_profile(profile_id)
 
     player, created = Player.objects.get_or_create(profile_id=profile_id)
-    if player[1]:
-        player[0].category = category
-        player[0].name = info[0]
-    player[0].group_name = info[1]
-    player[0].save()
+    if created:
+        player.category = category
+        player.name = info[0]
+    player.group_name = info[1]
+    player.save()
