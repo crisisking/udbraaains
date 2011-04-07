@@ -54,7 +54,7 @@ def scrape_profile(profile_id):
     profile_xml = lxml.html.parse(io)
     name = profile_xml.xpath('/html/body/div/h1/span')[0].text_content()
     group = profile_xml.xpath('/html/body/div/table/tr[3]/td[4]')[0].text_content()
-    if group == 'none' or not group:
-        group = ''
+    if not group:
+        group = 'none'
     return name, group
 
