@@ -7,10 +7,10 @@ def index(request, x, y):
 
     # Fetch the orders
     fresh_order = list(Order.objects.all().order_by('-date'))
-    fresh_order.sort(key=lambda o: user_coord_dist(x, y, o.x, o.y)
+    fresh_order.sort(key=lambda o: user_coord_dist(x, y, o.x, o.y))
 
     # Return orders sorted by distance
-    return render('orders/orders.html', { 'orders': fresh_orders })
+    return render(request, 'orders/orders.html', dict(orders=fresh_order))
 
 def user_coord_dist(x1, y1, x2, y2):
     # Pythagoras
