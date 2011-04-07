@@ -39,7 +39,7 @@ class PlayerAdmin(admin.ModelAdmin):
             if form.is_valid():
                 print form.cleaned_data['names']
                 for name in form.cleaned_data['names']:
-                    import_user.delay(request.user, name, category=form.cleaned_data['category'])
+                    import_user.delay(name, category=form.cleaned_data['category'], user=request.user)
                 self.message_user(request, 'Importing users...')
                 return redirect('admin:namelist_player_changelist')
                 
