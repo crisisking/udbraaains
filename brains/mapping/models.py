@@ -58,6 +58,6 @@ class Location(models.Model):
     barricade_level = models.PositiveSmallIntegerField(default=0)
     zombies_present = models.PositiveIntegerField(default=0)
     is_ruined = models.BooleanField(default=False)
-    is_illuminated = models.BooleanField(default=True)
+    is_illuminated = models.BooleanField(default=False)
     has_tree = models.BooleanField(default=False, db_index=True)
     report_date = models.DateTimeField(auto_now=True, null=True)
