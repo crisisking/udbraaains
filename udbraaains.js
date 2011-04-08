@@ -117,6 +117,7 @@
       isMapTileLit: function (elem) {
          //.ml = lit tile
          //.mrl = ruined + powered
+         var button = $(elem).find('input[type=submit]');
          return ( button.hasClass('ml') || button.hasClass('mrl') );
       },
       
