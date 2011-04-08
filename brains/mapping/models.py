@@ -48,6 +48,9 @@ class Location(models.Model):
         ('fact', 'Factory'),
     )
     
+    class Meta:
+        unique_together = ('x', 'y')
+    
     x = models.PositiveSmallIntegerField()
     y = models.PositiveSmallIntegerField()
     name = models.CharField(max_length=300)
