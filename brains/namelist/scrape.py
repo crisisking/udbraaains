@@ -30,7 +30,7 @@ def get_user_profile_id(name):
 
 def scrape_profile(profile_id):
     io = StringIO.StringIO()
-    io.write(requests.get(PROFILE_URL, params={'id': profile_id}, cookies=COOKIES).content)
+    io.write(requests.get(PROFILE_URL, params={'id': profile_id}).content)
     io.seek(0)
     profile_xml = lxml.html.parse(io)
     name = profile_xml.xpath('/html/body/div/h1/span')[0].text_content()
