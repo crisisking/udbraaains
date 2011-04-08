@@ -484,7 +484,7 @@
            hide.appendTo(header);
            link.appendTo(header);
            if(!localStorage.hideIRC || localStorage.hideIRC != 'true')
-              header.prependTo('.gp .gt');
+              header.prependTo('.gp div.gt');
        }
    }
    
