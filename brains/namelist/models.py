@@ -1,5 +1,6 @@
-from django.db import models
 import datetime
+from django.db import models
+from mapping.models import Location
 
 class Category(models.Model):
     
@@ -21,6 +22,9 @@ class Player(models.Model):
     category = models.ForeignKey(Category, null=True)
     join_date = models.DateTimeField(default=datetime.datetime.now)
     scrape_date = models.DateTimeField(auto_now=True, auto_now_add=True)
+    location = models.ForeignKey(Location, null=True)
+    is_dead = models.BooleanField(default=False)
+
 
     def __unicode__(self):
         return self.name

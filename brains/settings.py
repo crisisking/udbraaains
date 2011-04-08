@@ -121,6 +121,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'orders',
     'namelist',
+    'mapping',
     'south',
     'gunicorn',
     'djcelery',
