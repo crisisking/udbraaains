@@ -21,10 +21,10 @@ class PlayerAddForm(forms.Form):
 
 
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category']
+    list_display = ['name', 'category', 'location']
     list_filter = ['category', 'group_name']
     search_fields = ['category__name', 'name', 'group_name']
-    readonly_fields = ['scrape_date']
+    readonly_fields = ['scrape_date', 'location']
     
     def get_urls(self):
         urls = super(PlayerAdmin, self).get_urls()
