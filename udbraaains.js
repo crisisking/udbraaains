@@ -106,8 +106,9 @@
       
       isMapTileRuined: function (elem) {
          //.mr = ruined or inside dark
-         if(this.isPositionElement(elem)){
-            return false;//fucking special cases
+         if(this.isPositionElement(elem) && this.isInside() ){
+            // when inside and on the current tile we have to scrape the description
+            return $('.gp .gt').text().search(/has fallen into ruin/) >= 0;
          } else {
             return $(elem).find('input[type=submit]').hasClass('mr');
          }
