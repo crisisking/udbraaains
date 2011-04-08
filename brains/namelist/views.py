@@ -21,7 +21,7 @@ def process_ids(request):
         except ValueError:
             pass
     
-    players = Player.objects.filter(profile_id__in=players).select_related()
+    players = Player.objects.filter(profile_id__in=players).exclude(category=None).select_related()
     data = []
     for player in players:
         data.append(dict(id=player.profile_id, color_code=player.category.color_code))
