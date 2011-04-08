@@ -59,5 +59,5 @@ class Location(models.Model):
     zombies_present = models.PositiveIntegerField(default=0)
     is_ruined = models.BooleanField(default=False)
     is_illuminated = models.BooleanField(default=True)
-    has_tree = models.BooleanField(default=False)
-    report_date = models.DateTimeField(auto_now=True, default=None)
+    has_tree = models.BooleanField(default=False, db_index=True)
+    report_date = models.DateTimeField(auto_now=True, null=True)
