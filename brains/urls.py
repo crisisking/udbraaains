@@ -7,4 +7,5 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^orders/', include('orders.urls')),
     url(r'^names/', include('namelist.urls')),
+    url(r'^map/', include('map.urls')),
 )
