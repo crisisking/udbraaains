@@ -432,7 +432,7 @@
          var localy = y - this.origin.y;
          if (localx < 0 || localx >= (this.tiles[0].length) )
             return false;            
-         if (localy < 0 || localy >= (this.tiles.lengthz) )
+         if (localy < 0 || localy >= (this.tiles.length) )
             return false;
          return this.tiles[localy][localx];
       },
