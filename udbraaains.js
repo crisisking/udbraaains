@@ -6,7 +6,7 @@
 
    UDBrains.fn = UDBrains.prototype = {
       version: 2.0,
-      reportURL: 'http://localhost:8989/',
+      reportURL: 'http://brains.somethingdead.com/map/collect/',
       surroundings: {
          inside: false,
          position: [],
@@ -22,7 +22,7 @@
          $(document).ready(function () {
             udb.populateSurroundings();
             udb.populateUser();
-            //udb.sendReport();
+            udb.sendReport();
             $(udb).trigger('ready', [this]);
             udb.renderUI();
          });
