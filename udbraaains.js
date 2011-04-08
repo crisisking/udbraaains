@@ -430,9 +430,10 @@
       getTileByCoords: function (x, y) {
          var localx = x - this.origin.x;
          var localy = y - this.origin.y;
-         if (localx < 0 || localx > (this.tiles[0].length) )
+         console.log(localx,localy)
+         if (localx < 0 || localx >= (this.tiles[0].length) )
             return false;            
-         if (localy < 0 || localy > (this.tiles.length) )
+         if (localy < 0 || localy >= (this.tiles.lengthz) )
             return false;
          return this.tiles[localy][localx];
       },
