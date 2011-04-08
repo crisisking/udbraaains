@@ -57,7 +57,11 @@ class Location(models.Model):
     building_type = models.CharField(max_length=4, choices=LOCATION_TYPES)
     barricade_level = models.PositiveSmallIntegerField(default=0)
     zombies_present = models.PositiveIntegerField(default=0)
+    suburb = models.CharField(max_length=50)
     is_ruined = models.BooleanField(default=False)
     is_illuminated = models.BooleanField(default=False)
     has_tree = models.BooleanField(default=False, db_index=True)
     report_date = models.DateTimeField(auto_now=True, null=True)
+
+    def __unicode__(self):
+        return u'{name} [{x}, {y}]'.format(name=self.name, x=self.x, y=self.y)
