@@ -188,7 +188,8 @@
       
       getHPDataForSurvivor: function (survivor) {
          var reg = new RegExp( survivor.name + "\\s\\((\\d+)HP\\)" );
-         return $('.gp .gt').text().match(reg)[1];
+         var match = $('.gp .gt').text().match(reg);
+         return match ? match[1] : null;
       },
 
       getZombieCountFromMapTile: function (elem) {
