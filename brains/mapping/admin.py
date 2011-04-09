@@ -19,5 +19,9 @@ class LocationAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+class ReportAdmin(admin.ModelAdmin):
+    readonly_fields = ['reported_by']
+
+
 admin.site.register(Location, LocationAdmin)
-admin.site.register(Report)
+admin.site.register(Report, ReportAdmin)
