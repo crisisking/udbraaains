@@ -8,8 +8,8 @@
 
       version: 2.0,
 
-      reportURL: 'http://brains.somethingdead.com/map/collect/',
-      // reportURL: 'http://localhost:8989',
+      // reportURL: 'http://brains.somethingdead.com/map/collect/',
+      reportURL: 'http://localhost:8989',
 
       surroundings: {
          inside: false,
@@ -368,7 +368,7 @@
             targetMap: this.grid(15, 15, coords, 'targets'),
             survivorMap: this.grid(15, 15, coords, 'survivors'),
             barricadeMap: this.grid(15, 15, coords, 'barricades'),
-            zombieMap: this.grid(15, 15, coords, 'zombie')
+            zombieMap: this.grid(15, 15, coords, 'zombies')
          };
          udb.report.annotation.forEach(function (data) {
             if (data.survivor_count) {
