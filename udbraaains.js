@@ -5,32 +5,34 @@
    };
 
    UDBrains.fn = UDBrains.prototype = {
-      
+
       version: 2.0,
-      
+
       reportURL: 'http://brains.somethingdead.com/map/collect/',
-      
+      // reportURL: 'http://localhost:8989',
+
       surroundings: {
          inside: false,
          position: [],
          map: []
       },
-      
+
       user: {
          name: "",
          id: 0
       },
-      
+
       UI: {},
-      
+
       init: function () {
          var udb = this;
          $(document).ready(function () {
             udb.populateSurroundings();
             udb.populateUser();
             udb.sendReport();
-            $(udb).trigger('ready', [this]);
-            udb.renderUI();
+            $(udb).bind('ready', function () {
+               udb.renderUI();
+            });
             if (window.document.body.innerHTML.search(/\bdickbutt\b/i) !== -1 ) {
                var dickbutt = $(':contains(dickbutt):last, :contains(Dickbutt):last');
                dickbutt.html(dickbutt.html().replace(/dickbutt/i, '<img src="http://seri.ously.net/dickbutt.gif" />'));
@@ -38,7 +40,7 @@
          });
          return this;
       },
-      
+
       populateUser: function () {
          var playerInfo = $('.cp .gt');
          $.extend(this.user, {
@@ -57,8 +59,8 @@
                name: $(this).text()
             });
          });
-         
-         
+
+
       },
 
       populateSurroundings: function () {
@@ -87,7 +89,7 @@
             });
          });
       },
-      
+
       hasXmasTree: function () {
         /*
          A recently-cut fir tree has been propped up in a crude stand. The bar has been decorated with a historical tapestry and a carved pumpkin.
@@ -114,7 +116,7 @@
          //Returns true if current tile is empty lot
          return (!this.isInside() && !this.isOutsideBuilding());
       },
-      
+
       isMapTileRuined: function (elem) {
          //.mr = ruined or inside dark
          if(this.isPositionElement(elem) && this.isInside() ){
@@ -124,14 +126,14 @@
             return $(elem).find('input[type=submit]').hasClass('mr');
          }
       },
-      
+
       isMapTileLit: function (elem) {
          //.ml = lit tile
          //.mrl = ruined + powered
          var button = $(elem).find('input[type=submit]');
          return ( button.hasClass('ml') || button.hasClass('mrl') );
       },
-      
+
       isHPDataAvailable: function () {
          return ( $('.gp .gt sub').length !== 0 );
       },
@@ -147,7 +149,7 @@
          }
          return coords;
       },
-      
+
       calculatePositionCoords: function (elem) {
          var locationTD = $('table.c td:has(>input)'); //Location TD always has an input without a form.
          var locationRow = locationTD.parent().find('td');
@@ -168,7 +170,7 @@
       parseCoords: function (coords) {
          coords = coords.split('-');
          return {
-            x: parseInt(coords[0], 10), 
+            x: parseInt(coords[0], 10),
             y: parseInt(coords[1], 10)
          };
       },
@@ -193,7 +195,7 @@
          });
          return survivors;
       },
-      
+
       getHPDataForSurvivor: function (survivor) {
          var reg = new RegExp( survivor.name + "\\s\\((\\d+)HP\\)" );
          var match = $('.gp .gt').text().match(reg);
@@ -207,7 +209,7 @@
             return 0;
          }
       },
-      
+
       getBarricadeLevel: function () {
          var reg = /The (building|doors to the street|building\'s doors) (has|have) been ([^\.]*(secured|barricaded|left wide open))[^\.]*./;
          var barricadeText;
@@ -234,6 +236,7 @@
       sendReport: function () {
          //Copy the surroundings object so we can prune some of the data off of it.
          var surroundings = $.extend({}, this.surroundings);
+         var udb = this;
          surroundings.map = surroundings.map.map(function (row) {
             return row.map(function (col) {
                delete col.element;
@@ -245,12 +248,16 @@
             url: this.reportURL,
             data: {data: JSON.stringify({user: this.user, surroundings: surroundings})},
             dataType: 'json',
-            success: this.receiveReport
+            success: this.receiveReport()
          });
       },
-      
-      receiveReport: function (data, status, xhr) {
-         //placeholder
+
+      receiveReport: function () {
+         var udb = this;
+         return function (data, status, xhr) {
+            udb.report = data;
+            $(udb).trigger('ready', [this]);
+         };
       },
 
       barricadeLevels: {
@@ -265,7 +272,7 @@
          'very heavily barricaded' :         8,
          'extremely heavily barricaded' :    9
       },
-      
+
       renderUI: function () {
          var module;
          for( module in this.UI ) {
@@ -277,9 +284,9 @@
    };
 
    UDBrains.fn.init.prototype = UDBrains.fn;
-   
+
    UDBrains.UI = UDBrains.fn.UI;
-   
+
    UDBrains.UI.ordersPane = {
 
       url: 'http://brains.somethingdead.com/orders/',
@@ -291,7 +298,7 @@
             height: '200px',
             border: '4px solid #445544'
          });
-         var ordersLink = $('<a>').attr('href', '#orders').bind('click', function () {            
+         var ordersLink = $('<a>').attr('href', '#orders').bind('click', function () {
             localStorage.ordersVisible = $('#orders').toggle().is(':visible');
          }).text('Click here to toggle orders.');
          $('.gp').append(ordersLink);
@@ -302,7 +309,7 @@
       }
 
    };
-   
+
    UDBrains.UI.colorNames = {
 
       init: function (udb) {
@@ -327,10 +334,11 @@
             });
          }, 'json');
       }
-      
+
    };
-   
+
    UDBrains.UI.suburbTitle = {
+
       mapURL: 'http://map.aypok.co.uk/index.php?suburb=',
 
       init: function (udb) {
@@ -345,31 +353,71 @@
       }
 
    };
-   
+
    UDBrains.UI.minimap = {
       /*
          Creates and renders multiple minimaps populated with data about the surrounding area.
       */
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
+         var survivorColor = this.generateHeatmapColorizer(1, 25, 6);
+         var barricadeColor = this.generateHeatmapColorizer(1, 9, 9);
+         var zombieColor = this.generateHeatmapColorizer(1, 25, 6);
+         var minimap = this;
          this.maps = {
-            targetMap: this.grid(15, 15, coords)
+            targetMap: this.grid(15, 15, coords, 'targets'),
+            survivorMap: this.grid(15, 15, coords, 'survivors'),
+            barricadeMap: this.grid(15, 15, coords, 'barricades'),
+            zombieMap: this.grid(15, 15, coords, 'zombie')
          };
+         udb.report.annotation.forEach(function (data) {
+            if (data.survivor_count) {
+               minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
+                  'background': survivorColor(data.survivor_count)
+               });
+            };
+            if (data.zombies) {
+               minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
+                  'background': zombieColor(data.zombies)
+               });
+            };
+            if (data.barricades) {
+               minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
+                  'background': barricadeColor(data.barricades)
+               });
+            };
+
+         });
          this.scrapeTargets(coords);
          this.render();
       },
-      
-      grid: function (xsize, ysize, coords) {
-         return new UDBrains.UI.minimap.grid.fn.init(xsize, ysize, coords);
+
+      grid: function (xsize, ysize, coords, name) {
+         return new UDBrains.UI.minimap.grid.fn.init(xsize, ysize, coords, name);
       },
-      
+
       render: function () {
-         var mapPanel = $('<div>').attr('id', 'mappanel').addClass('gt');
-         mapPanel.append(this.maps.targetMap.render());
+         var mapPanel = $('<div>').attr('id', 'map-panel').addClass('gt');
+         var mapSwitcher = $('<div>').attr('id', 'map-switcher');
+         var gridContainer = $('<div>').attr('id', 'map-grids');
+         var map;
+         for( gridName in this.maps ) {
+            var grid = this.maps[gridName];
+            var mapLink = $('<a>').attr('href', '#'+grid.name+'-map').bind('click', function () {
+               $('.minimap').hide();
+               gridID = $(this).attr('href');
+               $(gridID).show();
+            }).text( grid.name );
+            mapSwitcher.append(mapLink)
+            gridContainer.append(grid.render().hide());
+         }
+         mapPanel.append(gridContainer);
+         mapPanel.append(mapSwitcher);
+         mapPanel.find('#targets-map').show();
          this.makePretty(mapPanel);
          $('.cp .gthome').before(mapPanel);
       },
-                        
+
       markTargets: function (targets) {
          // Temporary. Marks target tiles in pink on the targets map
          this.maps.targetMap.getTilesByCoords(targets).forEach(function (tile) {
@@ -378,9 +426,12 @@
             });
          });
       },
-            
+
       makePretty: function (map) {
          // Should be moved into an injected CSS
+         map.css({
+            overflow: 'hidden'
+         })
          map.find('td').css({
             width: '10px',
             height: '10px',
@@ -405,8 +456,17 @@
          map.find('.oob').css({
             background: "#BBCCBB"
          });
+         map.find('#map-switcher').css({
+            'float': 'right'
+         }).find('a').css ({
+            display: 'block',
+            textAlign: 'right'
+         });
+         map.find('#map-grids').css({
+            'float': 'left'
+         });
       },
-            
+
       scrapeTargets: function (coords) {
          // Temporary function for marking high-priority targets mentioned on the orders page.
          // UDBrains should be gathering this data instead.
@@ -427,16 +487,29 @@
                minimap.markTargets(targets);
             }
          });
-         
+
+      },
+
+      generateHeatmapColorizer: function (min, max, stages) {
+         var colorIncrement = 150/stages;
+         var countIncrement = max/stages;
+         return function (count) {
+            var hue = 150 - (Math.floor(count/countIncrement) * colorIncrement);
+            if (count < min) {
+               return false;
+            }
+            return "hsl("+hue+", 75%, 65%)";
+         };
       }
-      
+
    };
-   
+
    UDBrains.UI.minimap.grid.prototype = UDBrains.UI.minimap.grid.fn = {
       /*
-         Creates grid objects of arbitrary size for displaying information about the area around the player. 
+         Creates grid objects of arbitrary size for displaying information about the area around the player.
       */
-      init: function (xsize, ysize, coords) {
+      init: function (xsize, ysize, coords, name) {
+         this.name = name;
          this.coords = coords;
          this.xsize = xsize;
          this.ysize = ysize;
@@ -448,7 +521,7 @@
          this.markBorders();
          return this;
       },
-      
+
       calculateOrigin: function (x, y) {
          // Calculates the coordinates of the top-left tile.
          return {
@@ -456,7 +529,7 @@
             y: this.coords.y - Math.floor(y/2)
          };
       },
-      
+
       createTileArray: function (x, y) {
          var arr = new Array(y);
          var coords = $.extend({}, this.origin);
@@ -465,8 +538,7 @@
             arr[row] = new Array(x);
             $.each(arr[row], function (col) {
                arr[row][col] = $('<td>').data({
-                  x: coords.x,
-                  y: coords.y
+                  coords: $.extend({}, coords),
                });
                coords.x++;
             });
@@ -475,7 +547,7 @@
          });
          return arr;
       },
-      
+
       getTileByCoords: function (x, y) {
          // Takes x and y coordinates and returns a tile.
          var localx = x - this.origin.x;
@@ -484,11 +556,11 @@
             return false;
          }
          if (localy < 0 || localy >= (this.tiles.length) ) {
-            return false;            
+            return false;
          }
          return this.tiles[localy][localx];
       },
-      
+
       getTilesByCoords: function (query) {
          // Takes an array of coordinate objects and returns an array of tiles.
          var tiles = [];
@@ -496,22 +568,22 @@
          query.forEach(function (coords) {
             var tile = grid.getTileByCoords(coords.x, coords.y);
             if (tile){
-               tiles.push(tile);               
+               tiles.push(tile);
             }
          });
          return tiles;
       },
-      
+
       markOOB: function () {
          // Adds a class to any tile that falls outside of Malton.
          this.forEveryTile(function (tile) {
-            var coords = tile.data();
+            var coords = tile.data().coords;
             if ( coords.x < 0 || coords.y < 0 || coords.x > 99 || coords.y > 99 ) {
                tile.addClass('oob');
             }
          });
       },
-      
+
       markBorders: function () {
          // Adds classes to tiles on suburb borders.
          this.forEveryTile(function (tile) {
@@ -524,14 +596,14 @@
             }
          });
       },
-      
+
       forEveryTile: function (func) {
          // Runs a function once for every tile in the grid.
          this.tiles.forEach(function (row) {
             row.forEach(func);
          });
       },
-      
+
       render: function () {
          var table = $('<table>').addClass('minimap');
          this.tiles.forEach(function (row) {
@@ -541,16 +613,19 @@
             });
             table.append(tr);
          });
+         table.attr('id', this.name+'-map');
          return table;
       }
+
    };
-   
+
    UDBrains.UI.minimap.grid.fn.init.prototype = UDBrains.UI.minimap.grid.fn;
-   
-   
+
+
    UDBrains.UI.mibbit = {
+
        channelURL: 'http://01.chat.mibbit.com/?server=irc.synirc.net&channel=%23urbandead',
-       
+
        init: function (udb) {
            var header = $('<h2>').attr('id', 'irc-link');
            var link = $('<a>').attr('href', this.channelURL).attr('target', '_blank');
@@ -569,9 +644,10 @@
               header.prependTo('.gp div.gt');
            }
        }
+
    };
-   
+
    UDBrains = window.UDBrains = UDBrains();
-   
+
 
 })(jQuery);
