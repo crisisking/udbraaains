@@ -8,8 +8,7 @@
 
       version: 2.0,
 
-      // reportURL: 'http://brains.somethingdead.com/map/collect/',
-      reportURL: 'http://localhost:8989',
+      reportURL: 'http://brains.somethingdead.com/map/collect/',
 
       surroundings: {
          inside: false,
