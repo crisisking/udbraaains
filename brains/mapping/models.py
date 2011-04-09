@@ -56,6 +56,7 @@ class Location(models.Model):
     name = models.CharField(max_length=300)
     building_type = models.CharField(max_length=4, choices=LOCATION_TYPES)
     suburb = models.CharField(max_length=50)
+    has_tree = models.BooleanField(default=False, db_index=True)
 
 
     def __unicode__(self):
@@ -65,10 +66,9 @@ class Location(models.Model):
 class Report(models.Model):
     is_ruined = models.BooleanField(default=False)
     is_illuminated = models.BooleanField(default=False)
-    has_tree = models.BooleanField(default=False, db_index=True)
     report_date = models.DateTimeField(auto_now=True, null=True)
-    barricade_level = models.PositiveSmallIntegerField(default=0)
     zombies_present = models.PositiveIntegerField(default=0)
+    barricade_level = models.PositiveSmallIntegerField(default=0)
     reported_by = models.ForeignKey('namelist.Player')
     reported_date = models.DateTimeField(auto_now_add=True)
     origin = models.IPAddressField()
