@@ -590,7 +590,7 @@
       markBorders: function () {
          // Adds classes to tiles on suburb borders.
          this.forEveryTile(function (tile) {
-            var coords = tile.data();
+            var coords = tile.data().coords;
             if ( (coords.x % 10) === 0 ) {
                tile.addClass('xborder');
             }
