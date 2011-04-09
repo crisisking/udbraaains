@@ -61,7 +61,7 @@ def receive_data(request):
         christmas_trees = Location.objects.filter(has_tree=True).values('x', 'y').distinct()
         trees = []
         for location in christmas_trees:
-            trees.append({'x': location.x, 'y', location.y})
+            trees.append({'x': location.x, 'y': location.y})
 
         # Get all priority targets and other worthless players
         priority_targets = Player.objects.exclude(category__name__in=[None, u"Goon"])
