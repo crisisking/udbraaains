@@ -8,8 +8,8 @@
 
       version: 2.0,
 
-      reportURL: 'http://brains.somethingdead.com/map/collect/',
-      // reportURL: 'http://localhost:8989',
+      // reportURL: 'http://brains.somethingdead.com/map/collect/',
+      reportURL: 'http://localhost:8989',
 
       surroundings: {
          inside: false,
@@ -374,17 +374,17 @@
                if (data.survivor_count) {
                   minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
                      'background': survivorColor(data.survivor_count)
-                  });
+                  }).addClass('color');
                };
                if (data.zombies) {
                   minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
                      'background': zombieColor(data.zombies)
-                  });
+                  }).addClass('color');
                };
                if (data.barricades) {
                   minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
                      'background': barricadeColor(data.barricades)
-                  });
+                  }).addClass('color');
                };
             });
 
@@ -442,6 +442,8 @@
             lineHeight: '1px',
             fontSize: '12px',
             textAlign: 'center'
+         }).filter('.pos.color').css({
+            color: '#000'
          });
          map.find('table.minimap').css({
             borderCollapse: 'collapse',
