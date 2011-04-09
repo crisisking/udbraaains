@@ -373,17 +373,17 @@
                if (data.survivor_count) {
                   minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
                      'background': survivorColor(data.survivor_count)
-                  }).addClass('color');
+                  }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'survivors: ' + data.survivor_count );
                };
-               if (data.zombies) {
-                  minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
-                     'background': zombieColor(data.zombies)
-                  }).addClass('color');
-               };
+               // if (data.zombies) {
+               //    minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
+               //       'background': zombieColor(data.zombies)
+               //    }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'zombies: ' + data.zombies );
+               // };
                if (data.barricades) {
                   minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
                      'background': barricadeColor(data.barricades)
-                  }).addClass('color');
+                  }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'barricade: ' + data.barricades );
                };
             });
 
@@ -542,7 +542,7 @@
             $.each(arr[row], function (col) {
                arr[row][col] = $('<td>').data({
                   coords: $.extend({}, coords),
-               });
+               }).attr('title', '['+coords.x+','+coords.y+']');
                coords.x++;
             });
             coords.x = origin.x;
