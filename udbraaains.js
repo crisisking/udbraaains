@@ -291,18 +291,27 @@
    
    UDBrains.UI.colorNames = {
       init: function (udb) {
-          var ids = udb.surroundings.position.survivors.map(function (survivor) {
-             return survivor.id;
-          });
-          
-          ids.push(udb.user.id);
-          
-          $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
-              $.each(data, function (index, elem) {
-                 $('a[href="profile.cgi?id=' + elem.id + '"]').add('option[value='+elem.id+']').css('color', elem.color_code); 
-              });
-          }, 'json');
-      } 
+         var ids = udb.surroundings.position.survivors.map(function (survivor) {
+            return survivor.id;
+         });
+
+         ids.push(udb.user.id);
+
+         $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
+            $.each(data, function (index, elem) {
+               $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code);
+               //Goon color is the same as default, so check for that and use it as a background instead
+               if (elem.color_code == "#000000") 
+                  $('option[value='+elem.id+']').css({
+                     color: '#fff',
+                     background: elem.color_code
+                  });
+               else
+                  $('option[value='+elem.id+']').css('color', elem.color_code);
+
+            });
+            }, 'json');
+         } 
    };
    
    UDBrains.UI.suburbTitle = {
