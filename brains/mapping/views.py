@@ -22,8 +22,8 @@ def receive_data(request):
         # Grab all locations in a 15x15 square, centered on the player's position
         x_range = range(origin_x-1, origin_x+15) + range(origin_x, origin_x-15, -1)
         y_range = range(origin_y-1, origin_y+15) + range(origin_y, origin_y-15, -1)
-        locations = Location.objects.filter(x__in=[x_range], 
-                                            y__in=[y_range])
+        locations = Location.objects.filter(x__in=x_range, 
+                                            y__in=y_range)
 
         for location in locations:
 
