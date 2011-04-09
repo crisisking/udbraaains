@@ -56,6 +56,8 @@ def process_data(data, ip):
     for record in reports:
         report = Report()
         location = Location.objects.get(x=record['coords']['x'], y=record['coords']['y'])
+        location.player_set.clear()
+        location.save()
         report.location = location
         report.is_ruined = record['ruined']
         report.is_illuminated = record['illuminated']
