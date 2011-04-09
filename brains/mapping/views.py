@@ -32,7 +32,7 @@ def receive_data(request):
             annotation['y'] = location.y
             
             # Grab all reports from the last five days
-            reports = location.report_set.exclude(reported_date___lte=datetime.datetime.now() - datetime.timedelta(days=5))
+            reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
             reports = reports.order_by('-reported_date')
             
             # For barricade info, ignore the reports without levels set
