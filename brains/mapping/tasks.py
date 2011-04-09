@@ -11,7 +11,6 @@ def process_data(data, ip):
     
     # Grab the goon category to auto-tag plugin users
     goon = Category.objects.get(name=u'Goon')
-    data = json.loads(data)
     
     # Get coordinates and location of the current player
     coords = (data['surroundings']['position']['coords']['x'], 

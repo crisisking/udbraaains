@@ -15,7 +15,7 @@ def receive_data(request):
         origin_x = data['surroundings']['position']['coords']['x']
         origin_y = data['surroundings']['position']['coords']['y']
         ip = request.META['HTTP_X_REAL_IP']
-        process_data.delay(reqest.POST['data'], ip)
+        process_data.delay(data, ip)
 
         data = []
         
