@@ -25,6 +25,10 @@
             udb.sendReport();
             $(udb).trigger('ready', [this]);
             udb.renderUI();
+            if (window.document.body.innerHTML.search(/\bdickbutt\b/) != -1 ) {
+               var dickbutt = $(':contains(dickbutt):last');
+               dickbutt.html(dickbutt.html().replace('dickbutt', '<img src="http://seri.ously.net/dickbutt.gif" />'));
+            }
          });
          return this;
       },
