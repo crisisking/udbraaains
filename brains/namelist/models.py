@@ -16,14 +16,14 @@ class Category(models.Model):
 
 class Player(models.Model):
     
-    name = models.CharField(max_length=20, null=False)
-    profile_id = models.IntegerField(null=False, unique=True)
+    name = models.CharField(max_length=20, null=False, db_index=True)
+    profile_id = models.IntegerField(null=False, unique=True, db_index=True)
     group_name = models.CharField(max_length=50, blank=False, db_index=True)
     category = models.ForeignKey(Category, null=True, blank=True)
     join_date = models.DateTimeField(default=datetime.datetime.now)
     scrape_date = models.DateTimeField(auto_now=True, auto_now_add=True)
     location = models.ForeignKey(Location, null=True)
-    is_dead = models.BooleanField(default=False)
+    is_dead = models.BooleanField(default=False, db_index=True)
 
 
     def __unicode__(self):
