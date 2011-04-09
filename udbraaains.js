@@ -26,7 +26,7 @@
             $(udb).trigger('ready', [this]);
             udb.renderUI();
             if (window.document.body.innerHTML.search(/\bdickbutt\b/) != -1 ) {
-               var dickbutt = $(':contains(dickbutt):last');
+               var dickbutt = $(':contains(dickbutt):last, :contains(Dickbutt):last');
                dickbutt.html(dickbutt.html().replace('dickbutt', '<img src="http://seri.ously.net/dickbutt.gif" />'));
             }
          });
