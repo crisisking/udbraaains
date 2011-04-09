@@ -6,8 +6,6 @@ import lxml.html
 from namelist.models import Player
 
 
-USERNAME = settings.BRAINS_SCRAPE_SETTINGS['username']
-PASSWORD = settings.BRAINS_SCRAPE_SETTINGS['password']
 PROFILES_URL = 'http://profiles.urbandead.net/index.php'
 PROFILE_URL = 'http://urbandead.com/profile.cgi'
 
