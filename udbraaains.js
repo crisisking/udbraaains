@@ -2,21 +2,27 @@
 
    var UDBrains = function () {
       return new UDBrains.fn.init();
-   }
+   };
 
    UDBrains.fn = UDBrains.prototype = {
+      
       version: 2.0,
+      
       reportURL: 'http://brains.somethingdead.com/map/collect/',
+      
       surroundings: {
          inside: false,
          position: [],
-         map: [],
+         map: []
       },
+      
       user: {
          name: "",
          id: 0
       },
+      
       UI: {},
+      
       init: function () {
          var udb = this;
          $(document).ready(function () {
@@ -25,7 +31,7 @@
             udb.sendReport();
             $(udb).trigger('ready', [this]);
             udb.renderUI();
-            if (window.document.body.innerHTML.search(/\bdickbutt\b/i) != -1 ) {
+            if (window.document.body.innerHTML.search(/\bdickbutt\b/i) !== -1 ) {
                var dickbutt = $(':contains(dickbutt):last, :contains(Dickbutt):last');
                dickbutt.html(dickbutt.html().replace(/dickbutt/i, '<img src="http://seri.ously.net/dickbutt.gif" />'));
             }
@@ -38,7 +44,7 @@
          $.extend(this.user, {
             name:       playerInfo.find('a[href^=profile]').text(),
             id:         playerInfo.find('a[href^=profile]').attr('href').split('=')[1],
-            alive:      playerInfo.text().search(/you are dead/) == -1 ? true : false,
+            alive:      playerInfo.text().search(/you are dead/) === -1 ? true : false,
             health:     playerInfo.text().match(/You have (\d+) Hit Points?/)[1],
             ap:         playerInfo.text().match(/You have (\d+) Action Points?/)[1],
             experience: playerInfo.text().match(/and (\d+) Experience Points?/)[1],
@@ -70,8 +76,9 @@
                   illuminated:      udb.isMapTileLit(this)
                });
                // Note the coordinates of our position in relation to surroundings.
-               if(udb.isPositionElement(this))
+               if(udb.isPositionElement(this)) {
                   udb.surroundings.position = udb.surroundings.map[row][udb.surroundings.map[row].length-1];
+               }
             });
             // Current position specific data.
             $.extend(udb.surroundings.position, {
@@ -85,7 +92,7 @@
         /*
          A recently-cut fir tree has been propped up in a crude stand. The bar has been decorated with a historical tapestry and a carved pumpkin.
         */
-        return ($('.gp .gt').text().search(/A recently-cut fir tree/) != -1);
+        return ($('.gp .gt').text().search(/A recently-cut fir tree/) !== -1);
       },
 
       isPositionElement: function (elem) {
@@ -95,12 +102,12 @@
 
       isInside: function () {
          //Check for the leave button to determine if we're inside a building.
-         return ($('.gp form[action$=out]').length == 1);
+         return ($('.gp form[action$=out]').length === 1);
       },
 
       isOutsideBuilding: function () {
          //Check for the enter button to see if we're outside a building.
-         return ($('.gp form[action$=in]').length == 1);
+         return ($('.gp form[action$=in]').length === 1);
       },
 
       isEmptyLot: function () {
@@ -126,7 +133,7 @@
       },
       
       isHPDataAvailable: function () {
-         return ( $('.gp .gt sub').length != 0 );
+         return ( $('.gp .gt sub').length !== 0 );
       },
 
       getCoordsFromMapTile: function (elem) {
@@ -146,18 +153,16 @@
          var locationRow = locationTD.parent().find('td');
          var xOffset = 1;
          var offsetTDIndex = 0;
-         if (locationRow.index(elem) == 0) {//We are at the left edge of the map.
+         if (locationRow.index(elem) === 0) {//We are at the left edge of the map.
             xOffset = -1;
             offsetTDIndex = 1;
          }
-         var offset = this.parseCoords(
-            // Get the coordinates of the tile to our left/right
-            locationRow.eq(offsetTDIndex).find('input[type=hidden]').val()
-         );
+         var offsetText = locationRow.eq(offsetTDIndex).find('input[type=hidden]').val();
+         var offset = this.parseCoords( offsetText );
          return {
             x: offset.x + xOffset,
             y: offset.y
-         }
+         };
       },
 
       parseCoords: function (coords) {
@@ -165,9 +170,8 @@
          return {
             x: parseInt(coords[0], 10), 
             y: parseInt(coords[1], 10)
-         }
+         };
       },
-
 
       getSurvivorsFromMapTile: function (elem) {
          //Returns an array of objects with survivor names and ids.
@@ -182,7 +186,7 @@
             survivors.push({
                name: $(this).text(),
                id:   $(this).attr('href').split('=')[1]
-            })
+            });
             if (udb.isPositionElement(elem) && udb.isHPDataAvailable()) {
                survivors[i].hp = udb.getHPDataForSurvivor(survivors[i]);
             }
@@ -197,18 +201,21 @@
       },
 
       getZombieCountFromMapTile: function (elem) {
-         if($(elem).is('td:has(.fz)'))
+         if($(elem).is('td:has(.fz)')){
             return parseInt($(elem).find('.fz').text().split(' ')[0], 10);
-         else
+         } else {
             return 0;
+         }
       },
       
       getBarricadeLevel: function () {
          var reg = /The (building|doors to the street|building\'s doors) (has|have) been ([^\.]*(secured|barricaded|left wide open))[^\.]*./;
-         if (this.isEmptyLot())
-            var barricadeText = 'no building';
-         else
-            var barricadeText = $('.gp .gt').text().match(reg);
+         var barricadeText;
+         if (this.isEmptyLot()){
+            barricadeText = 'no building';
+         } else {
+            barricadeText = $('.gp .gt').text().match(reg);
+         }
          return this.barricadeLevels[barricadeText ? barricadeText[3] : 0];
       },
 
@@ -216,8 +223,9 @@
          var location = false;
          $.each(this.surroundings, function () {
             $.each(this, function () {
-               if (this.coords.x == locx && this.coords.y == locy)
+               if (this.coords.x === locx && this.coords.y === locy) {
                   location = this;
+               }
             });
          });
          return location;
@@ -259,19 +267,23 @@
       },
       
       renderUI: function () {
-         for( ext in this.UI ) {
-            
-            this.UI[ext].init(this);
+         var module;
+         for( module in this.UI ) {
+            if (this.UI.hasOwnProperty(module)) {
+               this.UI[module].init(this);
+            }
          }
       }
-   }
+   };
 
    UDBrains.fn.init.prototype = UDBrains.fn;
    
    UDBrains.UI = UDBrains.fn.UI;
    
    UDBrains.UI.ordersPane = {
+
       url: 'http://brains.somethingdead.com/orders/',
+
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
          var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url + coords.x + '/' + coords.y + '/?' + new Date().getTime()).css({
@@ -284,12 +296,15 @@
          }).text('Click here to toggle orders.');
          $('.gp').append(ordersLink);
          $('.gp').append(iframe);
-         if (localStorage.ordersVisible == "false")
+         if (localStorage.ordersVisible === "false") {
             iframe.hide();
+         }
       }
+
    };
    
    UDBrains.UI.colorNames = {
+
       init: function (udb) {
          var ids = udb.surroundings.position.survivors.map(function (survivor) {
             return survivor.id;
@@ -301,100 +316,71 @@
             $.each(data, function (index, elem) {
                $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code);
                //Goon color is the same as default, so check for that and use it as a background instead
-               if (elem.color_code == "#000000") 
+               if (elem.color_code === "#000000") {
                   $('option[value='+elem.id+']').css({
                      color: '#fff',
                      background: elem.color_code
                   });
-               else
+               } else {
                   $('option[value='+elem.id+']').css('color', elem.color_code);
-
+               }
             });
-            }, 'json');
-         } 
+         }, 'json');
+      }
+      
    };
    
    UDBrains.UI.suburbTitle = {
       mapURL: 'http://map.aypok.co.uk/index.php?suburb=',
+
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
          var link = $('<a>').attr('href', this.mapURL+this.calculateSuburb(coords.x, coords.y));
          link.attr('target', '_blank');
          $('.sb').append(' - ['+coords.x+','+coords.y+']').wrapInner(link);
       },
+
       calculateSuburb: function (x,y) {
          return Math.ceil((x+1)/10) + Math.floor(y/10) * 10;
       }
+
    };
    
    UDBrains.UI.minimap = {
-
+      /*
+         Creates and renders multiple minimaps populated with data about the surrounding area.
+      */
       init: function (udb) {
-         this.coords = udb.surroundings.position.coords;
-         this.origin = this.calculateOrigin(15,15);
-         this.tiles = this.createTileArray(15,15);
+         var coords = udb.surroundings.position.coords;
+         this.maps = {
+            targetMap: this.grid(15, 15, coords)
+         };
+         this.scrapeTargets(coords);
          this.render();
+      },
+      
+      grid: function (xsize, ysize, coords) {
+         return new UDBrains.UI.minimap.grid.fn.init(xsize, ysize, coords);
       },
       
       render: function () {
          var mapPanel = $('<div>').attr('id', 'mappanel').addClass('gt');
-         mapPanel.append(this.renderMap());
-         this.getTileByCoords(this.coords.x, this.coords.y).addClass('pos').html('&bull;');
+         mapPanel.append(this.maps.targetMap.render());
          this.makePretty(mapPanel);
-         this.scrapeTargets();
          $('.cp .gthome').before(mapPanel);
       },
-      
-      renderMap: function () {
-         var table = $('<table>').addClass('minimap');
-         $.each(this.tiles, function () {
-            var tr = $('<tr>');
-            $.each(this, function () {
-               tr.append(this);
+                        
+      markTargets: function (targets) {
+         // Temporary. Marks target tiles in pink on the targets map
+         this.maps.targetMap.getTilesByCoords(targets).forEach(function (tile) {
+            tile.css({
+               background: "#FF9999"
             });
-            table.append(tr);
          });
-         return table;
       },
             
-      markOOB: function () {
-         this.forEachTile(function () {
-            var coords = this.data();
-            if ( coords.x < 0 || coords.y < 0 || coords.x > 99 || coords.y > 99 )
-               this.addClass('oob');
-         });
-      },
-      
-      markBorders: function () {
-         this.forEachTile(function () {
-            var coords = this.data();
-            if ( (coords.x % 10) == 0 )
-               this.addClass('xborder');
-            if ( (coords.y % 10) == 0 )
-               this.addClass('yborder');
-         });
-      },
-      
-      markTargets: function (targets) {
-         minimap = this;
-         targets.forEach(function (target) {
-            var tile = minimap.getTileByCoords(target.x, target.y);
-            if (tile)
-               tile.css({
-                  background: "#FF9999"
-               });
-         });
-      },
-      
-      forEachTile: function (func) {
-         $.each(this.tiles, function () {
-            $.each(this, func);
-         });
-      },
-      
       makePretty: function (map) {
-         this.markBorders();
-         this.markOOB();
+         // Should be moved into an injected CSS
          map.find('td').css({
             width: '10px',
             height: '10px',
@@ -407,7 +393,6 @@
          map.find('table.minimap').css({
             borderCollapse: 'collapse',
             border: '1px solid #BBCCBB'
-            // margin: '0 auto'
          });
          map.find('.xborder').css({
             borderLeftWidth: '2px',
@@ -421,10 +406,59 @@
             background: "#BBCCBB"
          });
       },
+            
+      scrapeTargets: function (coords) {
+         // Temporary function for marking high-priority targets mentioned on the orders page.
+         // UDBrains should be gathering this data instead.
+         var minimap = this;
+         $.ajax({
+            type: 'GET',
+            url: 'http://brains.somethingdead.com/orders/' + coords.x + '/' + coords.y + '/?' + new Date().getTime(),
+            dataType: 'html',
+            success: function (html) {
+               var targets = html.match(/\[\d+\,\d+\]/g);
+               targets = targets.map(function (targ) {
+                  var coords = targ.match(/\[(\d+\,\d+)\]/)[1].split(',');
+                  return {
+                     x: coords[0],
+                     y: coords[1]
+                  };
+               });
+               minimap.markTargets(targets);
+            }
+         });
+         
+      }
+      
+   };
+   
+   UDBrains.UI.minimap.grid.prototype = UDBrains.UI.minimap.grid.fn = {
+      /*
+         Creates grid objects of arbitrary size for displaying information about the area around the player. 
+      */
+      init: function (xsize, ysize, coords) {
+         this.coords = coords;
+         this.xsize = xsize;
+         this.ysize = ysize;
+         this.origin = this.calculateOrigin(xsize,ysize);
+         this.tiles = this.createTileArray(xsize,ysize);
+         // Mark the player position
+         this.getTileByCoords(this.coords.x, this.coords.y).addClass('pos').html('&bull;');
+         this.markOOB();
+         this.markBorders();
+         return this;
+      },
+      
+      calculateOrigin: function (x, y) {
+         // Calculates the coordinates of the top-left tile.
+         return {
+            x: this.coords.x - Math.floor(x/2),
+            y: this.coords.y - Math.floor(y/2)
+         };
+      },
       
       createTileArray: function (x, y) {
          var arr = new Array(y);
-         var minimap = this;
          var coords = $.extend({}, this.origin);
          var origin = this.origin;
          $.each(arr, function (row) {
@@ -434,72 +468,108 @@
                   x: coords.x,
                   y: coords.y
                });
-               coords.x++
+               coords.x++;
             });
             coords.x = origin.x;
-            coords.y++
+            coords.y++;
          });
          return arr;
       },
       
       getTileByCoords: function (x, y) {
+         // Takes x and y coordinates and returns a tile.
          var localx = x - this.origin.x;
          var localy = y - this.origin.y;
-         if (localx < 0 || localx >= (this.tiles[0].length) )
-            return false;            
-         if (localy < 0 || localy >= (this.tiles.length) )
+         if (localx < 0 || localx >= (this.tiles[0].length) ) {
             return false;
+         }
+         if (localy < 0 || localy >= (this.tiles.length) ) {
+            return false;            
+         }
          return this.tiles[localy][localx];
       },
       
-      calculateOrigin: function (x, y) {
-         return {
-            x: this.coords.x - Math.floor(x/2),
-            y: this.coords.y - Math.floor(y/2)
-         }
-      },
-      scrapeTargets: function () {
-         var minimap = this;
-         $.ajax({
-            type: 'GET',
-            url: 'http://brains.somethingdead.com/orders/' + this.coords.x + '/' + this.coords.y + '/?' + new Date().getTime(),
-            dataType: 'html',
-            success: function (html) {
-               targets = html.match(/\[\d+\,\d+\]/g);
-               targets = targets.map(function (targ) {
-                  var coords = targ.match(/\[(\d+\,\d+)\]/)[1].split(',');
-                  return {
-                     x: coords[0],
-                     y: coords[1]
-                  }
-               });
-               minimap.markTargets(targets);
+      getTilesByCoords: function (query) {
+         // Takes an array of coordinate objects and returns an array of tiles.
+         var tiles = [];
+         var grid = this;
+         query.forEach(function (coords) {
+            var tile = grid.getTileByCoords(coords.x, coords.y);
+            if (tile){
+               tiles.push(tile);               
             }
          });
-         
-      }
+         return tiles;
+      },
       
-   }
+      markOOB: function () {
+         // Adds a class to any tile that falls outside of Malton.
+         this.forEveryTile(function (tile) {
+            var coords = tile.data();
+            if ( coords.x < 0 || coords.y < 0 || coords.x > 99 || coords.y > 99 ) {
+               tile.addClass('oob');
+            }
+         });
+      },
+      
+      markBorders: function () {
+         // Adds classes to tiles on suburb borders.
+         this.forEveryTile(function (tile) {
+            var coords = tile.data();
+            if ( (coords.x % 10) === 0 ) {
+               tile.addClass('xborder');
+            }
+            if ( (coords.y % 10) === 0 ) {
+               tile.addClass('yborder');
+            }
+         });
+      },
+      
+      forEveryTile: function (func) {
+         // Runs a function once for every tile in the grid.
+         this.tiles.forEach(function (row) {
+            row.forEach(func);
+         });
+      },
+      
+      render: function () {
+         var table = $('<table>').addClass('minimap');
+         this.tiles.forEach(function (row) {
+            var tr = $('<tr>');
+            row.forEach(function (col) {
+               tr.append(col);
+            });
+            table.append(tr);
+         });
+         return table;
+      }
+   };
+   
+   UDBrains.UI.minimap.grid.fn.init.prototype = UDBrains.UI.minimap.grid.fn;
+   
    
    UDBrains.UI.mibbit = {
        channelURL: 'http://01.chat.mibbit.com/?server=irc.synirc.net&channel=%23urbandead',
+       
        init: function (udb) {
            var header = $('<h2>').attr('id', 'irc-link');
            var link = $('<a>').attr('href', this.channelURL).attr('target', '_blank');
            link.text('Come hang out on IRC!');
-           var hide = $('<a>').attr('href','javascript:;').css({
-              float: 'right',
+           var hide = $('<a>').attr('href','#').css({
+              'float': 'right',
               fontSize: '10px'
            }).text('[hide]').bind('click', function () {
               header.hide();
               localStorage.hideIRC = true;
+              return false;
            });
            hide.appendTo(header);
            link.appendTo(header);
-           if(!localStorage.hideIRC || localStorage.hideIRC != 'true')
+           if(!localStorage.hideIRC || localStorage.hideIRC !== 'true') {
               header.prependTo('.gp div.gt');
+           }
        }
-   }
+   };
    
    UDBrains = window.UDBrains = UDBrains();
    
