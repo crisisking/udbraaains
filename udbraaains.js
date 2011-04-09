@@ -274,7 +274,7 @@
       url: 'http://brains.somethingdead.com/orders/',
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
-         var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url + coords.x + '/' + coords.y + '/').css({
+         var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url + coords.x + '/' + coords.y + '/?' + new Date().getTime()).css({
             width: '100%',
             height: '200px',
             border: '4px solid #445544'
@@ -462,7 +462,7 @@
          var minimap = this;
          $.ajax({
             type: 'GET',
-            url: 'http://brains.somethingdead.com/orders/' + this.coords.x + '/' + this.coords.y + '/',
+            url: 'http://brains.somethingdead.com/orders/' + this.coords.x + '/' + this.coords.y + '/?' + new Date().getTime(),
             dataType: 'html',
             success: function (html) {
                targets = html.match(/\[\d+\,\d+\]/g);
