@@ -64,6 +64,7 @@ def process_data(data, ip):
         report.barricade_level = barricade_level
         report.origin = ip
         report.reported_by = player
+        report.zombies_present = record['zombies']
         report.save()
         barricade_level = None
         
