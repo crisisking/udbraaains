@@ -1,5 +1,5 @@
 from django.contrib import admin
-from mapping.models import Location
+from mapping.models import Location, Report
 
 class LocationAdmin(admin.ModelAdmin):
     
@@ -20,3 +20,4 @@ class LocationAdmin(admin.ModelAdmin):
         return False
 
 admin.site.register(Location, LocationAdmin)
+admin.site.register(Report)
