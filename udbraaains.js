@@ -367,8 +367,8 @@
          this.maps = {
             targetMap: this.grid(15, 15, coords, 'targets'),
             survivorMap: this.grid(15, 15, coords, 'survivors'),
-            barricadeMap: this.grid(15, 15, coords, 'barricades'),
-            zombieMap: this.grid(15, 15, coords, 'zombies')
+            barricadeMap: this.grid(15, 15, coords, 'barricades')
+            // zombieMap: this.grid(15, 15, coords, 'zombies')
          };
          udb.report.annotation.forEach(function (data) {
             if (data.survivor_count) {
