@@ -407,6 +407,7 @@
                $('.minimap').hide();
                gridID = $(this).attr('href');
                $(gridID).show();
+               return false;
             }).text( grid.name );
             mapSwitcher.append(mapLink)
             gridContainer.append(grid.render().hide());
