@@ -150,17 +150,12 @@ LOGGING = {
     }
 }
 
-# Set these to your Urban Dead account you're going to use for scraping.
-BRAINS_SCRAPE_SETTINGS = {
-    'username': None,
-    'password': None,
-}
 
 BROKER_BACKEND = "redis"
 BROKER_HOST = "127.0.0.1"
 BROKER_PORT = 6379
 BROKER_VHOST = "0"
-CELERY_RESULT_BACKEND = "redis"
+CELERY_IGNORE_RESULT = True
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
 REDIS_DB = 0
