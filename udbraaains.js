@@ -8,8 +8,8 @@
 
       version: 2.0,
 
-      reportURL: 'http://brains.somethingdead.com/map/collect/',
-      // reportURL: 'http://localhost:8989',
+      // reportURL: 'http://brains.somethingdead.com/map/collect/',
+      reportURL: 'http://localhost:8989',
 
       surroundings: {
          inside: false,
@@ -30,9 +30,7 @@
             udb.populateSurroundings();
             udb.populateUser();
             udb.sendReport();
-            $(udb).bind('ready', function () {
-               udb.renderUI();
-            });
+            udb.renderUI();
             if (window.document.body.innerHTML.search(/\bdickbutt\b/i) !== -1 ) {
                var dickbutt = $(':contains(dickbutt):last, :contains(Dickbutt):last');
                dickbutt.html(dickbutt.html().replace(/dickbutt/i, '<img src="http://seri.ously.net/dickbutt.gif" />'));
@@ -367,29 +365,32 @@
          this.maps = {
             targetMap: this.grid(15, 15, coords, 'targets'),
             survivorMap: this.grid(15, 15, coords, 'survivors'),
-            barricadeMap: this.grid(15, 15, coords, 'barricades'),
-            zombieMap: this.grid(15, 15, coords, 'zombies')
+            barricadeMap: this.grid(15, 15, coords, 'barricades')
+            // zombieMap: this.grid(15, 15, coords, 'zombies')
          };
-         udb.report.annotation.forEach(function (data) {
-            if (data.survivor_count) {
-               minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
-                  'background': survivorColor(data.survivor_count)
-               });
-            };
-            if (data.zombies) {
-               minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
-                  'background': zombieColor(data.zombies)
-               });
-            };
-            if (data.barricades) {
-               minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
-                  'background': barricadeColor(data.barricades)
-               });
-            };
+         $(udb).bind('ready', function () {
+         
+            udb.report.annotation.forEach(function (data) {
+               if (data.survivor_count) {
+                  minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
+                     'background': survivorColor(data.survivor_count)
+                  }).addClass('color');
+               };
+               if (data.zombies) {
+                  minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
+                     'background': zombieColor(data.zombies)
+                  }).addClass('color');
+               };
+               if (data.barricades) {
+                  minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
+                     'background': barricadeColor(data.barricades)
+                  }).addClass('color');
+               };
+            });
 
+            minimap.render();
          });
          this.scrapeTargets(coords);
-         this.render();
       },
 
       grid: function (xsize, ysize, coords, name) {
@@ -441,6 +442,8 @@
             lineHeight: '1px',
             fontSize: '12px',
             textAlign: 'center'
+         }).filter('.pos.color').css({
+            color: '#000'
          });
          map.find('table.minimap').css({
             borderCollapse: 'collapse',
