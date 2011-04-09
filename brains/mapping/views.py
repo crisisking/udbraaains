@@ -6,6 +6,9 @@ from mapping.models import Location, Report
 from mapping.tasks import process_data
 from namelist.models import Category, Player
 
+import redis
+
+REDIS_CONN = redis.Redis(db=5)
 
 @csrf_exempt
 def receive_data(request):
@@ -62,7 +65,7 @@ def receive_data(request):
         christmas_trees = Location.objects.filter(has_tree=True).values('x', 'y').distinct()
         trees = []
         for location in christmas_trees:
-            trees.append({'x': location.x, 'y': location.y})
+            trees.append({'x': location['x'], 'y': location['y']})
 
         # Get all priority targets and other worthless players
         priority_targets = Player.objects.exclude(category=None).exclude(category__name=u"Goon")
