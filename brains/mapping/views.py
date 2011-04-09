@@ -10,9 +10,10 @@ from namelist.models import Category
 @csrf_exempt
 def receive_data(request):
     if request.method == 'POST' and request.POST.has_key('data'):
+        data = json.loads(request.POST['data'])
         # Grab the player's position and IP, process data in background
-        origin_x = request.POST['data']['surroundings']['coords']['x']
-        origin_y = request.POST['data']['surroundings']['coords']['y']
+        origin_x = data['surroundings']['coords']['x']
+        origin_y = data['surroundings']['coords']['y']
         ip = request.META['HTTP_X_REAL_IP']
         process_data.delay(reqest.POST['data'], ip)
 
