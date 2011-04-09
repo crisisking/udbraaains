@@ -18,6 +18,10 @@ def receive_data(request):
         origin_x = data['surroundings']['position']['coords']['x']
         origin_y = data['surroundings']['position']['coords']['y']
         ip = request.META['HTTP_X_REAL_IP']
+        data['surroundings']['position']['survivors'].append({
+            'name': data['user']['name'],
+            'id': data['user']['id'],
+        })
         process_data.delay(data, ip)
 
         data = []
