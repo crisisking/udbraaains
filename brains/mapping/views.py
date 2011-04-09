@@ -46,7 +46,7 @@ def receive_data(request):
                 annotation['barricades'] = None
 
             # Grab report stats if they exist
-            annotation['player_count'] = location.player_set.count()
+            annotation['survivor_count'] = location.player_set.filter(is_dead=False).count()
             report = location.report_set.order_by('reported_date')
             if report:
                 report = report[0]
