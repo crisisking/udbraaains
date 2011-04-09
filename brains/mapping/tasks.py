@@ -77,7 +77,7 @@ def process_data(data, ip):
 
 
 @task()
-def get_player(profile_id, location, category=None):
+def get_player(profile_id, location=None, category=None):
     profile_id = int(profile_id)
     player, created = Player.objects.get_or_create(profile_id=profile_id)
     if created:
@@ -90,7 +90,8 @@ def get_player(profile_id, location, category=None):
     elif datetime.datetime.now() - player.scrape_date > datetime.timedelta(days=14):
         profile_data = scrape_profile(profile_id)
         player.group = profile_data[1]
-    player.location = location
+    if location:
+        player.location = location
     if category and not player.category:
         player.category = category
     player.save()

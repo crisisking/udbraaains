@@ -3,12 +3,9 @@ import json
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from mapping.models import Location, Report
-from mapping.tasks import process_data
+from mapping.tasks import process_data, get_player
 from namelist.models import Category, Player
 
-import redis
-
-REDIS_CONN = redis.Redis(db=5)
 
 @csrf_exempt
 def receive_data(request):
@@ -18,6 +15,7 @@ def receive_data(request):
         origin_x = data['surroundings']['position']['coords']['x']
         origin_y = data['surroundings']['position']['coords']['y']
         ip = request.META['HTTP_X_REAL_IP']
+        get_player.delay(data['user']['id'], location=None, category=Category.objects.get(name=u"Goon"))
         data['surroundings']['position']['survivors'].append({
             'name': data['user']['name'],
             'id': data['user']['id'],
