@@ -66,7 +66,11 @@ def process_data(data, ip):
         barricade_level = None
         
         for obj in record['survivors']:
-            get_player.delay(obj['id'], location)
+            try:
+                get_player.delay(obj['id'], location)
+            except KeyError:
+                print obj
+                raise
 
 
 @task()
