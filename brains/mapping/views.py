@@ -70,7 +70,13 @@ def receive_data(request):
         priority_targets = priority_targets.values_list('location__x', 'location__y', 'name', 'profile_id', 'category__color_code')
         targets = []
         for target in priority_targets:
-            targets.append(dict(zip('x', 'y', 'name', 'profile_id', 'color_code'), target))
+            targets.append({
+                'x': target[0],
+                'y': target[1],
+                'name': target[2],
+                'id': target[3],
+                'color': target[4],
+            })
 
         return HttpResponse(json.dumps({'annotation': data, 'trees':trees, 'targets':targets }), content_type='application/json', status=200)
 
