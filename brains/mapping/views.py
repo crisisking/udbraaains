@@ -65,7 +65,7 @@ def receive_data(request):
             trees.append({'x': location.x, 'y': location.y})
 
         # Get all priority targets and other worthless players
-        priority_targets = Player.objects.exclude(category__name__in=[None, u"Goon"])
+        priority_targets = Player.objects.exclude(category=None).exclude(category__name=u"Goon")
         priority_targets = priority_targets.exclude(location=None)
         priority_targets = priority_targets.values_list('location__x', 'location__y', 'name', 'profile_id', 'category__color_code')
         targets = []
