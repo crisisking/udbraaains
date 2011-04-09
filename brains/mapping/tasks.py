@@ -70,7 +70,7 @@ def process_data(data, ip):
         
         for obj in record['survivors']:
             try:
-                get_player.delay(obj['id'], location, goon)
+                get_player.delay(obj['id'], location)
             except KeyError:
                 print obj
                 raise
