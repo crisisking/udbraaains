@@ -30,7 +30,7 @@ def process_data(data, ip):
     location.save()
     
     # Pull out barricade info
-    barricade_level = position['barricades']
+    barricade_level = position.get('barricades')
     
     # Throw away these keys so we can process the player's position with the other
     # visible positions
@@ -46,12 +46,12 @@ def process_data(data, ip):
             reports.append(cell)
     
     # Process reports
-    for report in reports:
+    for record in reports:
         report = Report()
-        location = Location.objects.get(x=report['coords']['x'], y=report['coords']['y'])
+        location = Location.objects.get(x=record['coords']['x'], y=record['coords']['y'])
         report.location = location
-        report.is_ruined = report['ruined']
-        report.is_illuminated = report['illuminated']
+        report.is_ruined = record['ruined']
+        report.is_illuminated = record['illuminated']
         report.barricade_level = barricade_level
         report.origin = ip
         report.reported_by = player
