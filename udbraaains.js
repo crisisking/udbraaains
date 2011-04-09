@@ -30,9 +30,7 @@
             udb.populateSurroundings();
             udb.populateUser();
             udb.sendReport();
-            $(udb).bind('ready', function () {
-               udb.renderUI();
-            });
+            udb.renderUI();
             if (window.document.body.innerHTML.search(/\bdickbutt\b/i) !== -1 ) {
                var dickbutt = $(':contains(dickbutt):last, :contains(Dickbutt):last');
                dickbutt.html(dickbutt.html().replace(/dickbutt/i, '<img src="http://seri.ously.net/dickbutt.gif" />'));
@@ -370,26 +368,29 @@
             barricadeMap: this.grid(15, 15, coords, 'barricades')
             // zombieMap: this.grid(15, 15, coords, 'zombies')
          };
-         udb.report.annotation.forEach(function (data) {
-            if (data.survivor_count) {
-               minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
-                  'background': survivorColor(data.survivor_count)
-               });
-            };
-            if (data.zombies) {
-               minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
-                  'background': zombieColor(data.zombies)
-               });
-            };
-            if (data.barricades) {
-               minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
-                  'background': barricadeColor(data.barricades)
-               });
-            };
+         $(udb).bind('ready', function () {
+         
+            udb.report.annotation.forEach(function (data) {
+               if (data.survivor_count) {
+                  minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
+                     'background': survivorColor(data.survivor_count)
+                  });
+               };
+               if (data.zombies) {
+                  minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
+                     'background': zombieColor(data.zombies)
+                  });
+               };
+               if (data.barricades) {
+                  minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
+                     'background': barricadeColor(data.barricades)
+                  });
+               };
+            });
 
+            minimap.render();
          });
          this.scrapeTargets(coords);
-         this.render();
       },
 
       grid: function (xsize, ysize, coords, name) {
