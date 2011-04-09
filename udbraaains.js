@@ -328,73 +328,40 @@
    };
    
    UDBrains.UI.minimap = {
-
+      /*
+         Creates and renders multiple minimaps populated with data about the surrounding area.
+      */
       init: function (udb) {
-         this.coords = udb.surroundings.position.coords;
-         this.origin = this.calculateOrigin(15,15);
-         this.tiles = this.createTileArray(15,15);
+         var coords = udb.surroundings.position.coords;
+         this.maps = {
+            targetMap: this.grid(15, 15, coords)
+         };
+         this.scrapeTargets(coords);
          this.render();
+      },
+      
+      grid: function (xsize, ysize, coords) {
+         return new UDBrains.UI.minimap.grid.fn.init(xsize, ysize, coords);
       },
       
       render: function () {
          var mapPanel = $('<div>').attr('id', 'mappanel').addClass('gt');
-         mapPanel.append(this.renderMap());
-         this.getTileByCoords(this.coords.x, this.coords.y).addClass('pos').html('&bull;');
+         mapPanel.append(this.maps.targetMap.render());
          this.makePretty(mapPanel);
-         this.scrapeTargets();
          $('.cp .gthome').before(mapPanel);
       },
-      
-      renderMap: function () {
-         var table = $('<table>').addClass('minimap');
-         $.each(this.tiles, function () {
-            var tr = $('<tr>');
-            $.each(this, function () {
-               tr.append(this);
+                        
+      markTargets: function (targets) {
+         // Temporary. Marks target tiles in pink on the targets map
+         this.maps.targetMap.getTilesByCoords(targets).forEach(function (tile) {
+            tile.css({
+               background: "#FF9999"
             });
-            table.append(tr);
          });
-         return table;
       },
             
-      markOOB: function () {
-         this.forEachTile(function () {
-            var coords = this.data();
-            if ( coords.x < 0 || coords.y < 0 || coords.x > 99 || coords.y > 99 )
-               this.addClass('oob');
-         });
-      },
-      
-      markBorders: function () {
-         this.forEachTile(function () {
-            var coords = this.data();
-            if ( (coords.x % 10) == 0 )
-               this.addClass('xborder');
-            if ( (coords.y % 10) == 0 )
-               this.addClass('yborder');
-         });
-      },
-      
-      markTargets: function (targets) {
-         minimap = this;
-         targets.forEach(function (target) {
-            var tile = minimap.getTileByCoords(target.x, target.y);
-            if (tile)
-               tile.css({
-                  background: "#FF9999"
-               });
-         });
-      },
-      
-      forEachTile: function (func) {
-         $.each(this.tiles, function () {
-            $.each(this, func);
-         });
-      },
-      
       makePretty: function (map) {
-         this.markBorders();
-         this.markOOB();
+         // Should be moved into an injected CSS
          map.find('td').css({
             width: '10px',
             height: '10px',
@@ -407,7 +374,6 @@
          map.find('table.minimap').css({
             borderCollapse: 'collapse',
             border: '1px solid #BBCCBB'
-            // margin: '0 auto'
          });
          map.find('.xborder').css({
             borderLeftWidth: '2px',
@@ -420,6 +386,56 @@
          map.find('.oob').css({
             background: "#BBCCBB"
          });
+      },
+            
+      scrapeTargets: function (coords) {
+         // Temporary function for marking high-priority targets mentioned on the orders page.
+         // UDBrains should be gathering this data instead.
+         var minimap = this;
+         $.ajax({
+            type: 'GET',
+            url: 'http://brains.somethingdead.com/orders/' + coords.x + '/' + coords.y + '/?' + new Date().getTime(),
+            dataType: 'html',
+            success: function (html) {
+               targets = html.match(/\[\d+\,\d+\]/g);
+               targets = targets.map(function (targ) {
+                  var coords = targ.match(/\[(\d+\,\d+)\]/)[1].split(',');
+                  return {
+                     x: coords[0],
+                     y: coords[1]
+                  }
+               });
+               minimap.markTargets(targets);
+            }
+         });
+         
+      }
+      
+   };
+   
+   UDBrains.UI.minimap.grid.prototype = UDBrains.UI.minimap.grid.fn = {
+      /*
+         Creates grid objects of arbitrary size for displaying information about the area around the player. 
+      */
+      init: function (xsize, ysize, coords) {
+         this.coords = coords;
+         this.xsize = xsize;
+         this.ysize = ysize;
+         this.origin = this.calculateOrigin(xsize,ysize);
+         this.tiles = this.createTileArray(xsize,ysize);
+         // Mark the player position
+         this.getTileByCoords(this.coords.x, this.coords.y).addClass('pos').html('&bull;');
+         this.markOOB();
+         this.markBorders();
+         return this;
+      },
+      
+      calculateOrigin: function (x, y) {
+         // Calculates the coordinates of the top-left tile.
+         return {
+            x: this.coords.x - Math.floor(x/2),
+            y: this.coords.y - Math.floor(y/2)
+         };
       },
       
       createTileArray: function (x, y) {
@@ -443,6 +459,7 @@
       },
       
       getTileByCoords: function (x, y) {
+         // Takes x and y coordinates and returns a tile.
          var localx = x - this.origin.x;
          var localy = y - this.origin.y;
          if (localx < 0 || localx >= (this.tiles[0].length) )
@@ -452,34 +469,60 @@
          return this.tiles[localy][localx];
       },
       
-      calculateOrigin: function (x, y) {
-         return {
-            x: this.coords.x - Math.floor(x/2),
-            y: this.coords.y - Math.floor(y/2)
-         }
-      },
-      scrapeTargets: function () {
-         var minimap = this;
-         $.ajax({
-            type: 'GET',
-            url: 'http://brains.somethingdead.com/orders/' + this.coords.x + '/' + this.coords.y + '/?' + new Date().getTime(),
-            dataType: 'html',
-            success: function (html) {
-               targets = html.match(/\[\d+\,\d+\]/g);
-               targets = targets.map(function (targ) {
-                  var coords = targ.match(/\[(\d+\,\d+)\]/)[1].split(',');
-                  return {
-                     x: coords[0],
-                     y: coords[1]
-                  }
-               });
-               minimap.markTargets(targets);
-            }
+      getTilesByCoords: function (query) {
+         // Takes an array of coordinate objects and returns an array of tiles.
+         var tiles = [];
+         var grid = this;
+         query.forEach(function (coords) {
+            var tile = grid.getTileByCoords(coords.x, coords.y);
+            if (tile)
+               tiles.push(tile);
          });
-         
-      }
+         return tiles;
+      },
       
-   }
+      markOOB: function () {
+         // Adds a class to any tile that falls outside of Malton.
+         this.forEveryTile(function (tile) {
+            var coords = tile.data();
+            if ( coords.x < 0 || coords.y < 0 || coords.x > 99 || coords.y > 99 )
+               tile.addClass('oob');
+         });
+      },
+      
+      markBorders: function () {
+         // Adds classes to tiles on suburb borders.
+         this.forEveryTile(function (tile) {
+            var coords = tile.data();
+            if ( (coords.x % 10) == 0 )
+               tile.addClass('xborder');
+            if ( (coords.y % 10) == 0 )
+               tile.addClass('yborder');
+         });
+      },
+      
+      forEveryTile: function (func) {
+         // Runs a function once for every tile in the grid.
+         this.tiles.forEach(function (row) {
+            row.forEach(func);
+         });
+      },
+      
+      render: function () {
+         var table = $('<table>').addClass('minimap');
+         this.tiles.forEach(function (row) {
+            var tr = $('<tr>');
+            row.forEach(function (col) {
+               tr.append(col);
+            });
+            table.append(tr);
+         });
+         return table;
+      }
+   };
+   
+   UDBrains.UI.minimap.grid.fn.init.prototype = UDBrains.UI.minimap.grid.fn;
+   
    
    UDBrains.UI.mibbit = {
        channelURL: 'http://01.chat.mibbit.com/?server=irc.synirc.net&channel=%23urbandead',
