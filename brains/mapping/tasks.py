@@ -4,6 +4,7 @@ from celery.task import task
 from mapping.models import Report, Location
 from namelist.models import Player, Category
 from namelist.scrape import scrape_profile
+import redis
 
 @task()
 def process_data(data, ip):
@@ -34,8 +35,14 @@ def process_data(data, ip):
     
     # Throw away these keys so we can process the player's position with the other
     # visible positions
-    del position['barricades']
-    del position['christmasTree']
+    try:
+        del position['barricades']
+    except KeyError:
+        pass
+    try:
+        del position['christmasTree']
+    except KeyError:
+        pass
 
     reports = []
     reports.append(position)
@@ -81,3 +88,4 @@ def get_player(profile_id, location, category=None):
         player.category = category
     player.save()
     return player
+
