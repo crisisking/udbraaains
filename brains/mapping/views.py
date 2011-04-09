@@ -40,7 +40,7 @@ def receive_data(request):
             if barricades:
                     annotation['barricades'] = barricades[0].barricade_level
             else:
-                annotations['barricades'] = None
+                annotation['barricades'] = None
 
             # Grab report stats if they exist
             annotation['player_count'] = location.player_set.count()
@@ -52,10 +52,10 @@ def receive_data(request):
                 annotation['zombies'] = report.zombies_present
                 annotation['report_age'] = unicode(datetime.datetime.now() - report.reported_date)
             else:
-                annotations['ruined'] = None
-                annotations['illuminated'] = None
-                annotations['zombies'] = None
-                annotations['report_date'] = None
+                annotation['ruined'] = None
+                annotation['illuminated'] = None
+                annotation['zombies'] = None
+                annotation['report_date'] = None
             data.append(annotation)
             
         # Find all reported Christmas trees for smashing
@@ -72,6 +72,6 @@ def receive_data(request):
         for target in priority_targets:
             targets.append(dict(zip('x', 'y', 'name', 'profile_id', 'color_code'), target))
 
-        return HttpResponse(json.dumps({'annotations': data, 'trees':trees, 'targets':targets }), content_type='application/json', status=200)
+        return HttpResponse(json.dumps({'annotation': data, 'trees':trees, 'targets':targets }), content_type='application/json', status=200)
 
     return HttpResponse(status=405)
