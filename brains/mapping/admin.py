@@ -7,9 +7,7 @@ class LocationAdmin(admin.ModelAdmin):
         {'fields': (
             ('name', 'suburb'), 
             ('x', 'y'), 
-            'building_type', 
-            ('barricade_level', 'zombies_present'),
-            ('is_ruined', 'is_illuminated', 'has_tree')
+            'building_type'
         )}
     ),)
     list_display = ['name', 'x', 'y', 'suburb']
