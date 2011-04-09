@@ -58,7 +58,7 @@ def process_data(data, ip):
         report.save()
         barricade_level = None
         
-        for obj in report['survivors']:
+        for obj in record['survivors']:
             get_player.delay(obj['id'], location)
 
 
