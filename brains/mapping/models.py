@@ -64,11 +64,11 @@ class Location(models.Model):
 
 
 class Report(models.Model):
+    location = models.ForeignKey(Location)
     is_ruined = models.BooleanField(default=False)
     is_illuminated = models.BooleanField(default=False)
-    report_date = models.DateTimeField(auto_now=True, null=True)
     zombies_present = models.PositiveIntegerField(default=0)
-    barricade_level = models.PositiveSmallIntegerField(default=0)
+    barricade_level = models.PositiveSmallIntegerField(default=0, null=True)
     reported_by = models.ForeignKey('namelist.Player')
     reported_date = models.DateTimeField(auto_now_add=True)
     origin = models.IPAddressField()
