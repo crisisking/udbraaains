@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from mapping.models import Location, Report
 from mapping.tasks import process_data
-from namelist.models import Category
+from namelist.models import Category, Player
 
 
 @csrf_exempt
