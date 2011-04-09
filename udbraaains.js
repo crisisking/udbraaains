@@ -299,7 +299,7 @@
           
           $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
               $.each(data, function (index, elem) {
-                 $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code); 
+                 $('a[href="profile.cgi?id=' + elem.id + '"]').add('option[value='+elem.id+']').css('color', elem.color_code); 
               });
           }, 'json');
       } 
