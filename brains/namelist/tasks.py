@@ -18,8 +18,9 @@ def import_user(profile_name_or_id, category=None, user=None, join_date=None):
 
     player, created = Player.objects.get_or_create(profile_id=profile_id)
     if created:
-        player.category = category
         player.name = info[0]
         player.join_date = info[2]
     player.group_name = info[1]
+    if not player.category:
+        player.category = category
     player.save()
