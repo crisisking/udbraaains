@@ -26,6 +26,10 @@
       init: function () {
          var udb = this;
          $(document).ready(function () {
+            if ( $('table.c td:has(input)').length === 0 ) {
+               //don't run on pages without a movement map
+               return;
+            }
             udb.populateSurroundings();
             udb.populateUser();
             udb.sendReport();
