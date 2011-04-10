@@ -17,7 +17,7 @@ def process_data(data, ip):
     coords = (data['surroundings']['position']['coords']['x'], 
                 data['surroundings']['position']['coords']['y'])
 
-    location = Location.objects.get(x=coords[0], y=coords[1])
+    p_location = Location.objects.get(x=coords[0], y=coords[1])
     
     # Grab the player object, update is dead flag
     player = get_player(data['user']['id'], category=goon)
@@ -28,8 +28,9 @@ def process_data(data, ip):
     # Update Christmas tree flag on the location
     position = data['surroundings']['position']
     
+    # Build primary report
     report = Report()
-    report.location = location
+    report.location = p_location
     report.inside = data['surroundings']['inside']
     report.has_tree = position['christmasTree']
     report.barricade_level = position.get('barricades')
@@ -41,9 +42,14 @@ def process_data(data, ip):
     report.origin = ip
     report.save()
     
+    # Add players to the primary report
+    results = []
     for profile_id in position['survivors']:
-        get_player.delay(profile_id, report)
-        
+        results.append(get_player.delay(profile_id, report))
+    
+    report.players.add(player)
+    
+    # Throw away the middle cell, we've already processed it
     del position['surroundings']['map'][1][1]
 
     if not report.inside:
@@ -56,6 +62,13 @@ def process_data(data, ip):
                 secondary.location = location
                 secondary.origin = ip
                 secondary.save()
+                build_annotation.delay(location)
+
+
+    while len(results) > 0:
+        results = [result for result in results if not results.ready()]
+        
+    build_annotation.delay(p_location)
 
 
 @task()
@@ -79,3 +92,35 @@ def get_player(profile_id, report=None, category=None, force_refresh=False):
     player.save()
     return player
 
+
+@task()
+def build_annotation(location):
+
+    conn = redis.Redis(db=6)
+    reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
+    reports.order_by('-reported_date')
+    annotation = {}
+    annotation['zombies'] = reports[0] if reports else None
+
+    primaries = reports.filter(zombies_only=False)
+    if primaries:
+        inside = primaries.filter(inside=True)
+        outside = primaries.filter(inside=False)
+        
+        annotation['barricades'] = primaries[0].barricade_level
+        annotation['ruined'] = primaries[0].is_ruined
+        annotation['illuminated'] = primaries[0].is_illuminated
+        
+        annotation['report_age'] = unicode(datetime.datetime.now() - primaries[0].reported_date)
+        annotation['survivor_count'] = None
+        
+        if inside:
+            annotation['survivor_count'] = inside[0].players.count()
+            
+        if outside:
+            total = annotation['survivor_count'] or 0
+            annotation['survivor_count'] = totals + outside[0].players.count()
+    
+    transaction['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
+    
+    
