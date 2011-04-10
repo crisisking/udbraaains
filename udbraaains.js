@@ -212,7 +212,7 @@
       },
 
       getBarricadeLevel: function () {
-         var reg = /The|A (building|doors to the street|building\'s doors|hole in the fencing) (has|have) been ([^\.]*(secured|barricaded|left wide open))[^\.]*./;
+         var reg = /(building|doors to the street|building\'s doors|hole in the fencing) (has|have) been ([^\.]*(secured|barricaded|left wide open))[^\.]*./;
          var barricadeText;
          if (this.isEmptyLot()){
             barricadeText = 'no building';
