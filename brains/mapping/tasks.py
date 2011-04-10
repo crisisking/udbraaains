@@ -23,59 +23,39 @@ def process_data(data, ip):
     player = get_player(data['user']['id'], category=goon)
     player.is_dead = not data['user']['alive']
     player.save()
-    
+
 
     # Update Christmas tree flag on the location
     position = data['surroundings']['position']
-    location.has_tree = position['christmasTree']
-    location.save()
     
-    # Pull out barricade info
-    barricade_level = position.get('barricades')
+    report = Report()
+    report.location = location
+    report.inside = data['surroundings']['inside']
+    report.has_tree = position['christmasTree']
+    report.barricade_level = position.get('barricades')
+    report.is_ruined = postion['ruined']
+    report.is_illuminated = position['illuminated']
+    report.zombies_present = position['zombies']
+    report.zombies_only = False
+    report.reported_by = player
+    report.origin = ip
+    report.save()
     
-    # Throw away these keys so we can process the player's position with the other
-    # visible positions
-    try:
-        del position['barricades']
-    except KeyError:
-        pass
-    try:
-        del position['christmasTree']
-    except KeyError:
-        pass
+    for profile_id in position['survivors']:
+        get_player.delay(profile_id, report)
+        
+    del position['surroundings']['map'][1][1]
 
-    reports = []
-    reports.append(position)
-    
-    # Flatten the map
-    for row in data['surroundings']['map']:
-        for cell in row:
-            reports.append(cell)
-    
-    # Process reports
-    for record in reports:
-        report = Report()
-        location = Location.objects.get(x=record['coords']['x'], y=record['coords']['y'])
-        report.location = location
-        report.is_ruined = record['ruined']
-        report.is_illuminated = record['illuminated']
-        report.barricade_level = barricade_level
-        report.origin = ip
-        report.reported_by = player
-        report.zombies_present = record['zombies']
-        report.save()
-        
-        # This is done to stop from clobbering barricade info for surrounding squares.
-        # The first report processed is for the square the player is on, 
-        # so it will be updated with the correct info.
-        barricade_level = None
-        
-        for obj in record['survivors']:
-            try:
-                get_player.delay(obj['id'], report)
-            except KeyError:
-                print obj
-                raise
+    if not report.inside:
+        for row in position['surroundings']['map']:
+            for col in row:
+                location = Location.objects.get(x=col['coords']['x'], y=col['coords']['y'])
+                secondary = Report()
+                secondary.reported_by = player
+                secondary.zombies_present = col['zombies']
+                secondary.location = location
+                secondary.origin = ip
+                secondary.save()
 
 
 @task()
