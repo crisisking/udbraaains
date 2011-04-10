@@ -26,6 +26,10 @@
       init: function () {
          var udb = this;
          $(document).ready(function () {
+            if ( $('table.c td:has(input)').length === 0 ) {
+               //don't run on pages without a movement map
+               return;
+            }
             udb.populateSurroundings();
             udb.populateUser();
             udb.sendReport();
@@ -364,8 +368,8 @@
          this.maps = {
             targetMap: this.grid(15, 15, coords, 'targets'),
             survivorMap: this.grid(15, 15, coords, 'survivors'),
-            barricadeMap: this.grid(15, 15, coords, 'barricades')
-            // zombieMap: this.grid(15, 15, coords, 'zombies')
+            barricadeMap: this.grid(15, 15, coords, 'barricades'),
+            zombieMap: this.grid(15, 15, coords, 'zombies')
          };
          $(udb).bind('ready', function () {
          
@@ -375,11 +379,11 @@
                      'background': survivorColor(data.survivor_count)
                   }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'survivors: ' + data.survivor_count );
                };
-               // if (data.zombies) {
-               //    minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
-               //       'background': zombieColor(data.zombies)
-               //    }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'zombies: ' + data.zombies );
-               // };
+               if (data.zombies) {
+                  minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
+                     'background': zombieColor(data.zombies)
+                  }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'zombies: ' + data.zombies );
+               };
                if (data.barricades) {
                   minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
                      'background': barricadeColor(data.barricades)
