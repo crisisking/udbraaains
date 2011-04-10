@@ -498,12 +498,15 @@
       },
 
       generateHeatmapColorizer: function (min, max, stages) {
-         var colorIncrement = 150/stages;
+         var maxhue = 200;
+         var colorIncrement = maxhue/stages;
          var countIncrement = max/stages;
          return function (count) {
-            var hue = 150 - (Math.floor(count/countIncrement) * colorIncrement);
+            var hue = maxhue - Math.floor((count/countIncrement) * colorIncrement);
             if (count < min) {
                return false;
+            } else if ( count > max ) {
+               hue = maxhue;
             }
             return "hsl("+hue+", 75%, 65%)";
          };
