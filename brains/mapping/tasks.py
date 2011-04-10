@@ -77,10 +77,10 @@ def process_data(data, ip):
 
 
 @task()
-def get_player(profile_id, location=None, category=None):
+def get_player(profile_id, location=None, category=None, force_refresh=False):
     profile_id = int(profile_id)
     player, created = Player.objects.get_or_create(profile_id=profile_id)
-    if created:
+    if created or force_refresh:
         profile_data = scrape_profile(profile_id)
         player.name = profile_data[0]
         player.group = profile_data[1]
