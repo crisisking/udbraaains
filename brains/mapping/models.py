@@ -67,6 +67,8 @@ class Report(models.Model):
     location = models.ForeignKey(Location)
     is_ruined = models.BooleanField(default=False)
     is_illuminated = models.BooleanField(default=False)
+    inside = models.BooleanField(default=False, db_index=True)
+    players = models.ManyToManyField('namelist.Player', related_name='reported_at')
     zombies_present = models.PositiveIntegerField(default=0)
     barricade_level = models.PositiveSmallIntegerField(default=0, null=True)
     reported_by = models.ForeignKey('namelist.Player')

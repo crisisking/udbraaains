@@ -22,7 +22,6 @@ class Player(models.Model):
     category = models.ForeignKey(Category, null=True, blank=True)
     join_date = models.DateTimeField(default=datetime.datetime.now)
     scrape_date = models.DateTimeField(auto_now=True, auto_now_add=True)
-    location = models.ForeignKey(Location, null=True)
     is_dead = models.BooleanField(default=False, db_index=True)
 
 

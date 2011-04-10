@@ -20,7 +20,7 @@ def process_data(data, ip):
     location = Location.objects.get(x=coords[0], y=coords[1])
     
     # Grab the player object, update is dead flag
-    player = get_player(data['user']['id'], location, category=goon)
+    player = get_player(data['user']['id'], category=goon)
     player.is_dead = not data['user']['alive']
     player.save()
     
@@ -56,8 +56,6 @@ def process_data(data, ip):
     for record in reports:
         report = Report()
         location = Location.objects.get(x=record['coords']['x'], y=record['coords']['y'])
-        location.player_set.clear()
-        location.save()
         report.location = location
         report.is_ruined = record['ruined']
         report.is_illuminated = record['illuminated']
@@ -70,14 +68,14 @@ def process_data(data, ip):
         
         for obj in record['survivors']:
             try:
-                get_player.delay(obj['id'], location)
+                get_player.delay(obj['id'], report)
             except KeyError:
                 print obj
                 raise
 
 
 @task()
-def get_player(profile_id, location=None, category=None, force_refresh=False):
+def get_player(profile_id, report=None, category=None, force_refresh=False):
     profile_id = int(profile_id)
     player, created = Player.objects.get_or_create(profile_id=profile_id)
     if created or force_refresh:
@@ -90,8 +88,8 @@ def get_player(profile_id, location=None, category=None, force_refresh=False):
     elif datetime.datetime.now() - player.scrape_date > datetime.timedelta(days=14):
         profile_data = scrape_profile(profile_id)
         player.group = profile_data[1]
-    if location:
-        player.location = location
+    if report:
+        report.players.add(player)
     if category and not player.category:
         player.category = category
     player.save()
