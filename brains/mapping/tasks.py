@@ -64,6 +64,10 @@ def process_data(data, ip):
         report.reported_by = player
         report.zombies_present = record['zombies']
         report.save()
+        
+        # This is done to stop from clobbering barricade info for surrounding squares.
+        # The first report processed is for the square the player is on, 
+        # so it will be updated with the correct info.
         barricade_level = None
         
         for obj in record['survivors']:
