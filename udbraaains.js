@@ -361,9 +361,9 @@
       */
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
-         var survivorColor = this.generateHeatmapColorizer(1, 25, 6);
+         var survivorColor = this.generateHeatmapColorizer(1, 15, 6);
          var barricadeColor = this.generateHeatmapColorizer(1, 9, 9);
-         var zombieColor = this.generateHeatmapColorizer(1, 25, 6);
+         var zombieColor = this.generateHeatmapColorizer(1, 15, 6);
          var minimap = this;
          this.maps = {
             targetMap: this.grid(15, 15, coords, 'targets'),
