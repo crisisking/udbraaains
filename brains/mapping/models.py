@@ -56,7 +56,6 @@ class Location(models.Model):
     name = models.CharField(max_length=300)
     building_type = models.CharField(max_length=4, choices=LOCATION_TYPES)
     suburb = models.CharField(max_length=50)
-    has_tree = models.BooleanField(default=False, db_index=True)
 
 
     def __unicode__(self):
@@ -74,4 +73,5 @@ class Report(models.Model):
     reported_by = models.ForeignKey('namelist.Player')
     reported_date = models.DateTimeField(auto_now_add=True, db_index=True)
     origin = models.IPAddressField()
+    has_tree = models.BooleanField(default=False, db_index=True)
 
