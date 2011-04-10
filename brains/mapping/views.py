@@ -15,7 +15,6 @@ def receive_data(request):
         origin_x = data['surroundings']['position']['coords']['x']
         origin_y = data['surroundings']['position']['coords']['y']
         ip = request.META['HTTP_X_REAL_IP']
-        get_player.delay(data['user']['id'], location=None, category=Category.objects.get(name=u"Goon"))
         data['surroundings']['position']['survivors'].append({
             'name': data['user']['name'],
             'id': data['user']['id'],
@@ -49,9 +48,8 @@ def receive_data(request):
 
             # Grab report stats if they exist
             annotation['survivor_count'] = location.player_set.filter(is_dead=False).count()
-            report = location.report_set.order_by('reported_date')
-            if report:
-                report = report[0]
+            if reports:
+                report = reports[0]
                 annotation['ruined'] = report.is_ruined
                 annotation['illuminated'] = report.is_illuminated
                 annotation['zombies'] = report.zombies_present
