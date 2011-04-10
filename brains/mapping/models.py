@@ -70,6 +70,6 @@ class Report(models.Model):
     zombies_present = models.PositiveIntegerField(default=0)
     barricade_level = models.PositiveSmallIntegerField(default=0, null=True)
     reported_by = models.ForeignKey('namelist.Player')
-    reported_date = models.DateTimeField(auto_now_add=True)
+    reported_date = models.DateTimeField(auto_now_add=True, db_index=True)
     origin = models.IPAddressField()
 
