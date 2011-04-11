@@ -34,7 +34,7 @@ def process_data(data, ip):
     report.inside = data['surroundings']['inside']
     report.has_tree = position['christmasTree']
     report.barricade_level = position.get('barricades')
-    report.is_ruined = postion['ruined']
+    report.is_ruined = position['ruined']
     report.is_illuminated = position['illuminated']
     report.zombies_present = position['zombies']
     report.zombies_only = False
