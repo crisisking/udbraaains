@@ -95,7 +95,7 @@
         /*
          A recently-cut fir tree has been propped up in a crude stand. The bar has been decorated with a historical tapestry and a carved pumpkin.
         */
-        return ($('.gp .gt').text().search(/A recently-cut fir tree/) !== -1);
+        return ($('.gp .gt').text().search(/recently-cut fir tree|plastic Christmas tree/) !== -1);
       },
 
       isPositionElement: function (elem) {
