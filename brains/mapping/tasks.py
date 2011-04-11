@@ -25,7 +25,6 @@ def process_data(data, ip):
     player.save()
 
 
-    # Update Christmas tree flag on the location
     position = data['surroundings']['position']
     
     # Build primary report
@@ -50,10 +49,10 @@ def process_data(data, ip):
     report.players.add(player)
     
     # Throw away the middle cell, we've already processed it
-    del position['surroundings']['map'][1][1]
+    del data['surroundings']['map'][1][1]
 
     if not report.inside:
-        for row in position['surroundings']['map']:
+        for row in data['surroundings']['map']:
             for col in row:
                 location = Location.objects.get(x=col['coords']['x'], y=col['coords']['y'])
                 secondary = Report()
