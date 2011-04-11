@@ -20,6 +20,8 @@
          name: "",
          id: 0
       },
+      
+      characters: {},
 
       UI: {},
 
@@ -32,6 +34,7 @@
             }
             udb.populateSurroundings();
             udb.populateUser();
+            udb.updateCharacters();
             udb.sendReport();
             udb.renderUI();
             if (window.document.body.innerHTML.search(/\bdickbutt\b/i) !== -1 ) {
@@ -60,8 +63,6 @@
                name: $(this).text()
             });
          });
-
-
       },
 
       populateSurroundings: function () {
@@ -89,6 +90,19 @@
                christmasTree:    udb.hasXmasTree()
             });
          });
+      },
+      
+      updateCharacters: function() {
+         if (localStorage.characters) {
+            this.characters = JSON.parse(localStorage.characters);
+         };
+         this.characters[this.user.id] = {
+            user:       this.user,
+            position:   {
+               coords: this.surroundings.position.coords
+            }
+         };
+         localStorage.characters = JSON.stringify(this.characters);
       },
 
       hasXmasTree: function () {
@@ -174,6 +188,15 @@
             x: parseInt(coords[0], 10),
             y: parseInt(coords[1], 10)
          };
+      },
+      
+      eachCharacter: function (func) {
+         var character;
+         for( character in this.characters ) {
+            if (this.characters.hasOwnProperty(character)) {
+               func(this.characters[character]);
+            }
+         }
       },
 
       getSurvivorsFromMapTile: function (elem) {
