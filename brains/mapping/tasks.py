@@ -125,7 +125,8 @@ def build_annotation(location):
         for key in ('barricades', 'ruined', 'illuminated', 'report_age', 'survivor_count'):
             annotation[key] = None
 
-
+    annotation['x'] = location.x
+    annotation['y'] = location.y
     conn['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
     
     
