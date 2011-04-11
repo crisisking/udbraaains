@@ -119,7 +119,7 @@ def build_annotation(location):
             
         if outside:
             total = annotation['survivor_count'] or 0
-            annotation['survivor_count'] = totals + outside[0].players.count()
+            annotation['survivor_count'] = total + outside[0].players.count()
             
     else:
         for key in ('barricades', 'ruined', 'illuminated', 'report_age', 'survivor_count'):
