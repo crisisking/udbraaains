@@ -21,7 +21,7 @@ class PlayerAddForm(forms.Form):
 
 
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'location', 'group_name']
+    list_display = ['name', 'category', 'last_known_position', 'group_name']
     list_filter = ['category', 'group_name']
     search_fields = ['category__name', 'name', 'group_name']
     readonly_fields = ['scrape_date', 'location']

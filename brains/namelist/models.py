@@ -25,6 +25,15 @@ class Player(models.Model):
     is_dead = models.BooleanField(default=False, db_index=True)
 
 
+    def last_known_position(self):
+        """Grabs the player's last known location from the report set."""
+        reported_at = self.reported_at.order_by('-reported_date')
+        if reported_at:
+            return reported_at[0].location
+        else:
+            return u"Never seen"
+
+
     def __unicode__(self):
         return self.name
 
