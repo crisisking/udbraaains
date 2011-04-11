@@ -549,13 +549,16 @@
       createTitleString: function (data, type, name) {
          var name = name ? name : type;
          var title = '['+data.x+','+data.y+'] ' + name + ': ' + data[type];
+         if (data.report_age === null) {
+            return title;
+         };
          var ageString = data.report_age.split(',');
          var timeWords = ['hours', 'minutes', 'seconds'];
          var time = ageString.pop().split(':').map(function (num,i) {
             return [parseInt(num, 10), timeWords[i]];
          });
          var days = ageString.pop();
-         title = title + "(";
+         title = title + " (";
          if (days) {
             title = title + days;
          } else {
