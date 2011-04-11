@@ -29,7 +29,7 @@ class ReportAdmin(admin.ModelAdmin):
             ('reported_by', 'origin', 'reported_date')
         )}
     ),)
-    readonly_fields = ['players']
+    readonly_fields = ['players', 'reported_date']
 
 
 admin.site.register(Location, LocationAdmin)
