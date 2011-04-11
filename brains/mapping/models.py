@@ -76,3 +76,9 @@ class Report(models.Model):
     origin = models.IPAddressField()
     has_tree = models.BooleanField(default=False, db_index=True)
 
+    
+    def __unicode__(self):
+        return u'{location} by {player} at {date}'.format(location=self.location, 
+            player=self.reported_by, 
+            date=self.reported_date.strftime('%B %d, %Y, %I:%M %p'))
+
