@@ -502,11 +502,11 @@
          var colorIncrement = maxhue/stages;
          var countIncrement = max/stages;
          return function (count) {
-            var hue = maxhue - Math.floor((count/countIncrement) * colorIncrement);
+            var hue = maxhue - (Math.floor(count/countIncrement) * colorIncrement);
             if (count < min) {
                return false;
             } else if ( count > max ) {
-               hue = maxhue;
+               hue = 0;
             }
             return "hsl("+hue+", 75%, 65%)";
          };
