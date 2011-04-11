@@ -399,17 +399,17 @@
                if (data.survivor_count) {
                   minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
                      'background': survivorColor(data.survivor_count)
-                  }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'survivors: ' + data.survivor_count );
+                  }).addClass('color').attr('title', minimap.createTitleString(data, 'survivor_count', 'survivors'));
                };
                if (data.zombies) {
                   minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
                      'background': zombieColor(data.zombies)
-                  }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'zombies: ' + data.zombies );
+                  }).addClass('color').attr('title', minimap.createTitleString(data, 'zombies'));
                };
                if (data.barricades) {
                   minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
                      'background': barricadeColor(data.barricades)
-                  }).addClass('color').attr('title', '['+data.x+','+data.y+'] ' + 'barricade: ' + data.barricades );
+                  }).addClass('color').attr('title', minimap.createTitleString(data, 'barricades'));
                };
             });
 
@@ -544,6 +544,30 @@
             }
             return "hsl("+hue+", 75%, 65%)";
          };
+      },
+      
+      createTitleString: function (data, type, name) {
+         var name = name ? name : type;
+         var title = '['+data.x+','+data.y+'] ' + name + ': ' + data[type];
+         var ageString = data.report_age.split(',');
+         var timeWords = ['hours', 'minutes', 'seconds'];
+         var time = ageString.pop().split(':').map(function (num,i) {
+            return [parseInt(num, 10), timeWords[i]];
+         });
+         var days = ageString.pop();
+         title = title + "(";
+         if (days) {
+            title = title + days;
+         } else {
+            // Drop any units that are 0;
+            time = time.filter(function (i){return i[0] > 0});
+            // Drop the least significant data when string is long
+            if (time.length > 2) {time.pop()};
+            time = time.map(function (i) {return i.join(' ')}).join(', ');
+            title = title + time;
+         }
+         title = title + " ago)";
+         return title;
       }
 
    };
