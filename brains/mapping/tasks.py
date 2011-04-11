@@ -46,8 +46,6 @@ def process_data(data, ip):
     for profile in position['survivors']:
         results.append(get_player.delay(profile['id'], report))
     
-    report.players.add(player)
-    
     # Throw away the middle cell, we've already processed it
     del data['surroundings']['map'][1][1]
 
