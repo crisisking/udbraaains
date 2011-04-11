@@ -92,7 +92,7 @@ def build_annotation(location):
 
     conn = redis.Redis(db=6)
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
-    reports.order_by('-reported_date')
+    reports = reports.order_by('-reported_date')
     annotation = {}
     annotation['zombies'] = reports[0].zombies_present if reports else None
 
@@ -100,21 +100,21 @@ def build_annotation(location):
     if primaries:
         inside = primaries.filter(inside=True)
         outside = primaries.filter(inside=False)
-        
+    
         annotation['barricades'] = primaries[0].barricade_level
         annotation['ruined'] = primaries[0].is_ruined
         annotation['illuminated'] = primaries[0].is_illuminated
-        
+    
         annotation['report_age'] = unicode(datetime.datetime.now() - primaries[0].reported_date)
         annotation['survivor_count'] = None
-        
+    
         if inside:
             annotation['survivor_count'] = inside[0].players.count()
-            
+        
         if outside:
             total = annotation['survivor_count'] or 0
             annotation['survivor_count'] = total + outside[0].players.count()
-            
+        
     else:
         for key in ('barricades', 'ruined', 'illuminated', 'report_age', 'survivor_count'):
             annotation[key] = None
