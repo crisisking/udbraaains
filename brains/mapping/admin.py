@@ -20,7 +20,7 @@ class LocationAdmin(admin.ModelAdmin):
         return False
 
 class ReportAdmin(admin.ModelAdmin):
-    readonly_fields = ['reported_by']
+    readonly_fields = ['reported_by', 'players', 'origin', 'location']
 
 
 admin.site.register(Location, LocationAdmin)
