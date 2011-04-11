@@ -44,8 +44,8 @@ def process_data(data, ip):
     
     # Add players to the primary report
     results = []
-    for profile_id in position['survivors']:
-        results.append(get_player.delay(profile_id, report))
+    for profile in position['survivors']:
+        results.append(get_player.delay(profile['id'], report))
     
     report.players.add(player)
     
