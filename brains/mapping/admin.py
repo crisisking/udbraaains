@@ -26,10 +26,14 @@ class ReportAdmin(admin.ModelAdmin):
             ('is_ruined', 'is_illuminated', 'has_tree'),
             ('zombies_present', 'barricade_level'),
             'players',
-            ('reported_by', 'origin', 'reported_date')
+            ('reported_by', 'origin'),
+            'reported_date',
         )}
     ),)
-    readonly_fields = ['players', 'reported_date']
+
+    readonly_fields = ['location', 'zombies_only', 'inside', 'is_ruined',
+        'is_illuminated', 'has_tree', 'zombies_present', 'barricade_level', 
+        'players', 'reported_by', 'origin', 'reported_date']
 
 
 admin.site.register(Location, LocationAdmin)
