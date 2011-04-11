@@ -426,6 +426,7 @@
          var mapPanel = $('<div>').attr('id', 'map-panel').addClass('gt');
          var mapSwitcher = $('<div>').attr('id', 'map-switcher');
          var gridContainer = $('<div>').attr('id', 'map-grids');
+         var defaultMap = "#targets-map";
          var map;
          for( gridName in this.maps ) {
             var grid = this.maps[gridName];
@@ -434,6 +435,7 @@
                mapSwitcher.find('a').css({borderColor: '#556655'});
                $(this).css({borderColor: '#BBCCBB'});
                gridID = $(this).attr('href');
+               localStorage.lastMinimap = gridID;
                $(gridID).show();
                return false;
             }).text( grid.name );
@@ -442,8 +444,11 @@
          }
          mapPanel.append(gridContainer);
          mapPanel.append(mapSwitcher);
-         mapPanel.find('#targets-map').show();
-         mapSwitcher.find('a[href*=targets]').addClass('default');
+         if (localStorage.lastMinimap) {
+            defaultMap = localStorage.lastMinimap;
+         };
+         mapPanel.find(defaultMap).show();
+         mapSwitcher.find('a[href*='+defaultMap+']').addClass('default');
          this.makePretty(mapPanel);
          $('.cp .gthome').before(mapPanel);
       },
