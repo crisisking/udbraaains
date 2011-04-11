@@ -24,7 +24,7 @@ def receive_data(request):
         data = []
 
         # Grab all locations in a 15x15 square, centered on the player's position
-        x_range = range(origin_x+1, origin+8) + range(origin_x, origin_x-8, -1)
+        x_range = range(origin_x+1, origin_x+8) + range(origin_x, origin_x-8, -1)
         y_range = range(origin_y+1, origin_y+8) + range(origin_y, origin_y-8, -1)
 
         for x in x_range:
