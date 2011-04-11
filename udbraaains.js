@@ -395,7 +395,6 @@
             zombieMap: this.grid(15, 15, coords, 'zombies')
          };
          $(udb).bind('ready', function () {
-         
             udb.report.annotation.forEach(function (data) {
                if (data.survivor_count) {
                   minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
@@ -432,6 +431,8 @@
             var grid = this.maps[gridName];
             var mapLink = $('<a>').attr('href', '#'+grid.name+'-map').bind('click', function () {
                $('.minimap').hide();
+               mapSwitcher.find('a').css({borderColor: '#556655'});
+               $(this).css({borderColor: '#BBCCBB'});
                gridID = $(this).attr('href');
                $(gridID).show();
                return false;
@@ -442,6 +443,7 @@
          mapPanel.append(gridContainer);
          mapPanel.append(mapSwitcher);
          mapPanel.find('#targets-map').show();
+         mapSwitcher.find('a[href*=targets]').addClass('default');
          this.makePretty(mapPanel);
          $('.cp .gthome').before(mapPanel);
       },
@@ -490,7 +492,11 @@
             'float': 'right'
          }).find('a').css ({
             display: 'block',
-            textAlign: 'right'
+            textAlign: 'right',
+            borderRight: '4px solid #556655',
+            paddingRight: '6px'
+         }).filter('.default').css({
+            borderColor: "#BBCCBB"
          });
          map.find('#map-grids').css({
             'float': 'left'
