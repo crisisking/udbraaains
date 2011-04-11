@@ -22,8 +22,8 @@ class PlayerAddForm(forms.Form):
 
 class PlayerAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'last_known_position', 'group_name']
-    list_filter = ['category', 'group_name']
-    search_fields = ['name']
+    list_filter = ['category']
+    search_fields = ['^name', '^group_name']
     readonly_fields = ['scrape_date', 'last_known_position']
     
     def get_urls(self):
