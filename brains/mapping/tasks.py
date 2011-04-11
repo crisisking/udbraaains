@@ -100,7 +100,7 @@ def build_annotation(location):
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
     reports.order_by('-reported_date')
     annotation = {}
-    annotation['zombies'] = reports[0] if reports else None
+    annotation['zombies'] = reports[0].zombies_present if reports else None
 
     primaries = reports.filter(zombies_only=False)
     if primaries:
@@ -121,6 +121,7 @@ def build_annotation(location):
             total = annotation['survivor_count'] or 0
             annotation['survivor_count'] = totals + outside[0].players.count()
     
+    print annotation
     conn['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
     
     
