@@ -120,8 +120,7 @@ def build_annotation(location):
         if outside:
             total = annotation['survivor_count'] or 0
             annotation['survivor_count'] = totals + outside[0].players.count()
-    
-    print annotation
+
     conn['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
     
     
