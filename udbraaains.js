@@ -679,6 +679,87 @@
        }
 
    };
+   
+   UDBrains.UI.characterAlert = {
+      
+      collisions: [],
+      
+      init: function (udb) {
+
+         this.checkCollisions(udb);
+         this.render();
+      },
+
+      tooClose: function (coord1, coord2) {
+         // Test if the two coordinates are within a certain distance.
+         var distance = 12;
+         return ((coord1.x + distance > coord2.x)  && 
+                 (coord1.x - distance < coord2.x)) && 
+                ((coord1.y - distance < coord2.y)  && 
+                 (coord1.y + distance > coord2.y));  
+      },
+
+      combine: function (arr) {
+         // Generates an array of all possible combinations of arr.
+         var combinations = [];
+         var len = arr.length
+         for (var i=0; i < arr.length; i++) {
+            var item = arr[i];
+            var curs = len - 1;
+            while(curs != i) {
+               combinations.push([item, arr[curs]]);
+               curs = curs - 1;
+            }
+         };
+         return combinations;
+      },
+      
+      checkCollisions: function (udb) {
+         // Populates this.collisions with any characters that are too close to each other.
+         var charAlert = this;
+         var charArray = [];
+         udb.eachCharacter(function (character) {
+            charArray.push(character);
+         });
+         var combinations = this.combine(charArray);
+         this.collisions = combinations.filter(function (elem) {
+            return charAlert.tooClose( elem[0].position.coords,  elem[1].position.coords );
+         });
+      },
+      
+      render: function () {
+         if (this.collisions.length === 0) {
+            // Do nothing if there aren't any characters that are too close.
+            return;
+         };
+         var alerts = $('<div>').attr('id', 'characer-alert').addClass('gt');
+         alerts.append($('<h4>').text('These characters may be too close:'));
+         this.collisions.forEach(function (chars) {
+            var text = [ 
+               chars[0].user.name,
+               ' ['+ chars[0].position.coords.x +','+ chars[0].position.coords.y +']',
+               ' and ',
+               chars[1].user.name,
+               ' ['+ chars[1].position.coords.x +','+ chars[1].position.coords.y +']'
+            ].join('');
+            var li = $('<li>').append(text);
+            alerts.append(li);
+         });
+         this.style(alerts);
+         $('.cp .gthome').before(alerts);
+      },
+
+      style: function(alerts) {
+         alerts.css({
+            fontSize: '12px'
+         })
+         alerts.find('h4').css({
+            fontSize: '13px',
+            marginTop: 0
+         })
+      }
+      
+   }
 
    UDBrains = window.UDBrains = UDBrains();
 
