@@ -555,7 +555,7 @@
          var ageString = data.report_age.split(',');
          var timeWords = ['hours', 'minutes', 'seconds'];
          var time = ageString.pop().split(':').map(function (num,i) {
-            return [parseInt(num, 10), timeWords[i]];
+            return [Math.ceil(parseFloat(num, 10)), timeWords[i]];
          });
          var days = ageString.pop();
          title = title + " (";
