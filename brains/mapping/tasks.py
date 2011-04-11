@@ -61,9 +61,6 @@ def process_data(data, ip):
                 secondary.save()
                 build_annotation.delay(location)
 
-
-    while len(results) > 0:
-        results = [result for result in results if not result.ready()]
         
     build_annotation.delay(p_location)
 
