@@ -405,6 +405,7 @@
          var barricadeColor = this.generateHeatmapColorizer(1, 9, 9);
          var zombieColor = this.generateHeatmapColorizer(1, 15, 6);
          var minimap = this;
+         this.colorblind = UDBrains.preferences.colorblind;
          this.maps = {
             targetMap: this.grid(15, 15, coords, 'targets'),
             survivorMap: this.grid(15, 15, coords, 'survivors'),
@@ -549,7 +550,7 @@
       },
 
       generateHeatmapColorizer: function (min, max, stages) {
-         var colorblind = UDBrains.preferences.colorblind;
+         var colorblind = this.colorblind;
          if (colorblind === true){
             var maxhue = 100;
          } else {   
