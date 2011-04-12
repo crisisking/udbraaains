@@ -24,9 +24,14 @@
       characters: {},
 
       UI: {},
+      
+      preferences: {
+         colorblind: false
+      },
 
       init: function () {
          var udb = this;
+         this.readPrefs();
          $(document).ready(function () {
             if ( $('table.c td:has(input)').length === 0 ) {
                //don't run on pages without a movement map
@@ -43,6 +48,18 @@
             }
          });
          return this;
+      },
+      
+      readPrefs: function () {
+         if (localStorage.UDBrainsPrefs) {
+            var savedSettings = JSON.parse(localStorage.UDBrainsPrefs);
+            this.preferences = $.extend(this.preferences, savedSettings);
+         };
+      },
+      
+      setPrefs: function (obj) {
+         this.preferences = $.extend(this.preferences, obj);
+         localStorage.UDBrainsPrefs = JSON.stringify(this.preferences);
       },
 
       populateUser: function () {
@@ -532,7 +549,12 @@
       },
 
       generateHeatmapColorizer: function (min, max, stages) {
-         var maxhue = 200;
+         var colorblind = UDBrains.preferences.colorblind;
+         if (colorblind === true){
+            var maxhue = 100;
+         } else {   
+            var maxhue = 200;
+         }
          var colorIncrement = maxhue/stages;
          var countIncrement = max/stages;
          return function (count) {
@@ -542,7 +564,11 @@
             } else if ( count > max ) {
                hue = 0;
             }
-            return "hsl("+hue+", 75%, 65%)";
+            if (colorblind) {
+               return "hsl(0, 75%, "+ hue +"%)";
+            } else {
+               return "hsl("+hue+", 75%, 65%)";               
+            }
          };
       },
       
