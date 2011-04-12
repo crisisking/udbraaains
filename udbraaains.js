@@ -401,11 +401,11 @@
       */
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
+         this.colorblind = udb.preferences.colorblind;
          var survivorColor = this.generateHeatmapColorizer(1, 15, 6);
          var barricadeColor = this.generateHeatmapColorizer(1, 9, 9);
          var zombieColor = this.generateHeatmapColorizer(1, 15, 6);
          var minimap = this;
-         this.colorblind = udb.preferences.colorblind;
          this.maps = {
             targetMap: this.grid(15, 15, coords, 'targets'),
             survivorMap: this.grid(15, 15, coords, 'survivors'),
@@ -566,7 +566,7 @@
                hue = 0;
             }
             if (colorblind) {
-               return "hsl(0, 75%, "+ hue +"%)";
+               return "hsl(0, 0%, "+ hue +"%)";
             } else {
                return "hsl("+hue+", 75%, 65%)";               
             }
