@@ -31,7 +31,7 @@
 
       init: function () {
          var udb = this;
-         this.readPrefs();
+         udb.readPrefs();
          $(document).ready(function () {
             if ( $('table.c td:has(input)').length === 0 ) {
                //don't run on pages without a movement map
@@ -405,7 +405,7 @@
          var barricadeColor = this.generateHeatmapColorizer(1, 9, 9);
          var zombieColor = this.generateHeatmapColorizer(1, 15, 6);
          var minimap = this;
-         this.colorblind = UDBrains.preferences.colorblind;
+         this.colorblind = udb.preferences.colorblind;
          this.maps = {
             targetMap: this.grid(15, 15, coords, 'targets'),
             survivorMap: this.grid(15, 15, coords, 'survivors'),
