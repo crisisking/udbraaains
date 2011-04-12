@@ -16,7 +16,7 @@ class Category(models.Model):
 
 class Player(models.Model):
     
-    name = models.CharField(max_length=20, null=False, db_index=True)
+    name = models.CharField(max_length=50, null=False, db_index=True)
     profile_id = models.IntegerField(null=False, unique=True, db_index=True)
     group_name = models.CharField(max_length=50, blank=True, null=True, default=None, db_index=True)
     category = models.ForeignKey(Category, null=True, blank=True)
