@@ -832,7 +832,13 @@
            return function(a, b) {
                var a_to_origin = Math.sqrt(Math.pow(a.x - coords.x) + Math.pow(a.y - coords.y));
                var b_to_origin = Math.sqrt(Math.pow(b.x - coords.x) + Math.pow(b.y - coords.y));
-               return b_to_origin - a_to_origin;
+               if(a_to_origin < b_to_origin) {
+                   return -1;
+               } else if(a_to_origin === b_to_origin) {
+                   return 0;
+               } else {
+                   return 1;
+               }
            };
        },
        
