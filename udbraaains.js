@@ -832,7 +832,7 @@
            return function(a, b) {
                var a_to_origin = Math.sqrt(Math.pow(a.x - coords.x) + Math.pow(a.y - coords.y));
                var b_to_origin = Math.sqrt(Math.pow(b.x - coords.x) + Math.pow(b.y - coords.y));
-               return a_to_origin - b_to_origin;
+               return b_to_origin - a_to_origin;
            };
        },
        
