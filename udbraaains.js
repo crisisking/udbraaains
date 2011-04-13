@@ -845,7 +845,7 @@
            $('<p>').text('Christmas Tree Tracker').appendTo(panel);
            var list = $('<ul>').appendTo(panel);
            $.each(this.trees, function (index, data) {
-               $('<li>').text('['+ data.x + ', ' + data.y ']').appendTo(list);
+               $('<li>').text('['+ data.x + ', ' + data.y + ']').appendTo(list);
            });
        }
    }
