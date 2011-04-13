@@ -27,10 +27,11 @@ class Player(models.Model):
 
     def last_known_position(self):
         """Grabs the player's last known location from the report set."""
-        reported_at = self.reported_at.order_by('-reported_date')
-        if reported_at:
-            return reported_at[0].location
-        else:
+        reports = self.reported_at.all() | self.report_set.all()
+        reports = reports.order_by('-reported_date')
+        try:
+            return reports[0].locatioin
+        except IndexError:
             return u"Never seen"
 
 
