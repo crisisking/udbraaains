@@ -126,15 +126,15 @@ def build_annotation(location):
         annotation['survivor_count'] = None
     
         if inside:
-            annotation['survivor_count'] = inside[0].players.count()
-            tree_report = inside[0]
+            report = inside[0]
+            annotation['survivor_count'] = report.players.count()
             coords_x = location.x
             coords_y = location.y
             json_coords = json.dumps({'x': coords_x, 'y': coords_y})
-            if tree_report.has_tree:
+            if report.has_tree:
                 conn.sadd('trees', json_coords)
             else:
-                conn.srem('trees', json_coords)
+                report.srem('trees', json_coords)
         
         if outside:
             total = annotation['survivor_count'] or 0
