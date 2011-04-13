@@ -830,8 +830,8 @@
 
        sort_func: function(coords) {
            return function(a, b) {
-               var a_to_origin = Math.sqrt(Math.pow(a.x - coords.x) + Math.pow(a.y - coords.y));
-               var b_to_origin = Math.sqrt(Math.pow(b.x - coords.x) + Math.pow(b.y - coords.y));
+               var a_to_origin = Math.sqrt(Math.pow(a.x - coords.x, 2) + Math.pow(a.y - coords.y, 2));
+               var b_to_origin = Math.sqrt(Math.pow(b.x - coords.x, 2) + Math.pow(b.y - coords.y, 2));
                if(a_to_origin < b_to_origin) {
                    return -1;
                } else if(a_to_origin === b_to_origin) {
