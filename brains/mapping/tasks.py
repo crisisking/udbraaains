@@ -44,7 +44,11 @@ def process_data(data, ip):
     # Add players to the primary report
     results = []
     for profile in position['survivors']:
-        results.append(get_player.delay(profile['id'], report))
+        try:
+            results.append(get_player.delay(profile['id'], report))
+        except KeyError:
+            print data, ip
+            raise
     
     # Throw away the middle cell, we've already processed it
     del data['surroundings']['map'][1][1]
