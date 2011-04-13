@@ -835,10 +835,11 @@
        },
        
        init: function(udb) {
+           var self = this;
            $(udb).bind('ready', function () {
-               this.trees = udb.report.trees;
-               this.trees.sort(this.sort_func);
-               this.render();
+               self.trees = udb.report.trees;
+               self.trees.sort(self.sort_func);
+               self.render();
            });
        },
        
