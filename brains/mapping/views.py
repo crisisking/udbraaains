@@ -21,7 +21,9 @@ def receive_data(request):
 
         process_data.delay(data, ip)
 
-        data = []
+        payload = {}
+        payload['annotation'] = []
+        payload['trees'] = [json.loads(x) for x in CONN.smembers('trees')]
 
         # Grab all locations in a 15x15 square, centered on the player's position
         x_range = range(origin_x+1, origin_x+8) + range(origin_x, origin_x-8, -1)
@@ -32,7 +34,8 @@ def receive_data(request):
                 annotation = CONN.get('location:{0}:{1}'.format(x, y))
                 if annotation:
                     data.append(json.loads(annotation))
-
-        return HttpResponse(json.dumps({'annotation': data }), content_type='application/json', status=200)
+        
+        
+        return HttpResponse(json.dumps(payload), content_type='application/json', status=200)
 
     return HttpResponse(status=405)
