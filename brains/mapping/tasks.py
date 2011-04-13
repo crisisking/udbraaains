@@ -94,6 +94,23 @@ def build_annotation(location):
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
     reports = reports.order_by('-reported_date')
     annotation = {}
+    inside_zombies = reports.filter(inside=True)
+    outside_zombies = reports.filter(inside=False)
+    annotation['zombies'] = None
+
+    try:
+        annotation['zombies'] = inside_zombies[0].zombies_present
+    except IndexError:
+        pass
+
+    try:
+        if annotation['zombies'] is not None:
+            annotation['zombies'] += outside_zombies[0].zombies_present
+        else:
+            annotations['zombies'] = outside_zombies[0].zombies_present
+    except IndexError:
+        pass
+    
     annotation['zombies'] = reports[0].zombies_present if reports else None
 
     primaries = reports.filter(zombies_only=False)
