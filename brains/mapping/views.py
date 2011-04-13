@@ -6,7 +6,6 @@ from django.views.decorators.csrf import csrf_exempt
 from mapping.models import Location, Report
 from mapping.tasks import process_data, get_player
 from namelist.models import Category, Player
-from orders.views import user_coord_dist
 import redis
 
 CONN = redis.Redis(db=6)
@@ -26,7 +25,6 @@ def receive_data(request):
         payload = {}
         payload['annotation'] = []
         payload['trees'] = [json.loads(x) for x in CONN.smembers('trees')]
-        payload['trees'].sort(key=lambda t: user_coord_dist(origin_x, origin_y, t['x'], t['y']))
 
         # Grab all locations in a 15x15 square, centered on the player's position
         x_range = range(origin_x+1, origin_x+8) + range(origin_x, origin_x-8, -1)
