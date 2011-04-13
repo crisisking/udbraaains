@@ -825,6 +825,30 @@
       }
       
    }
+   
+   UDBrains.UI.treeTracker = {
+       sort_func: function(a, b) {
+           var coords = udb.surroundings.position.coords;
+           var a_to_origin = Math.sqrt(Math.pow(a.x - coords.x) + Math.pow(a.y - coords.y));
+           var b_to_origin = Math.sqrt(Math.pow(b.x - coords.x) + Math.pow(b.y - coords.y));
+           return a_to_origin - b_to_origin;
+       },
+       
+       init: function(udb) {
+           this.trees = udb.report.trees;
+           this.trees.sort(this.sort_func);
+           this.render();
+       },
+       
+       render: function() {
+           var panel = $('<div id="tree-panel">').addClass('gt').insertBefore('.gthome');
+           $('<p>').text('Christmas Tree Tracker').appendTo(panel);
+           var list = $('<ul>').appendTo(panel);
+           $.each(this.trees, function (index, data) {
+               $('<li>').text('['+ data.x + ', ' + data.y ']').appendTo(list);
+           });
+       }
+   }
 
    UDBrains = window.UDBrains = UDBrains();
 
