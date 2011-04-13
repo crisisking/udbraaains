@@ -134,7 +134,7 @@ def build_annotation(location):
             if report.has_tree:
                 conn.sadd('trees', json_coords)
             else:
-                report.srem('trees', json_coords)
+                conn.srem('trees', json_coords)
         
         if outside:
             total = annotation['survivor_count'] or 0
