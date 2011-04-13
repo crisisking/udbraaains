@@ -33,7 +33,7 @@ def receive_data(request):
             for y in y_range:
                 annotation = CONN.get('location:{0}:{1}'.format(x, y))
                 if annotation:
-                    data.append(json.loads(annotation))
+                    payload['annotation'].append(json.loads(annotation))
         
         
         return HttpResponse(json.dumps(payload), content_type='application/json', status=200)
