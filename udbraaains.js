@@ -827,19 +827,20 @@
    }
    
    UDBrains.UI.treeTracker = {
-       sort_func: function(a, b) {
-           var coords = this.coords;
-           var a_to_origin = Math.sqrt(Math.pow(a.x - coords.x) + Math.pow(a.y - coords.y));
-           var b_to_origin = Math.sqrt(Math.pow(b.x - coords.x) + Math.pow(b.y - coords.y));
-           return a_to_origin - b_to_origin;
+
+       sort_func: function(coords) {
+           return function(a, b) {
+               var a_to_origin = Math.sqrt(Math.pow(a.x - coords.x) + Math.pow(a.y - coords.y));
+               var b_to_origin = Math.sqrt(Math.pow(b.x - coords.x) + Math.pow(b.y - coords.y));
+               return a_to_origin - b_to_origin;
+           };
        },
        
        init: function(udb) {
            var self = this;
            $(udb).bind('ready', function () {
-               self.coords = udb.surroundings.position.coords;
                self.trees = udb.report.trees;
-               self.trees.sort(self.sort_func);
+               self.trees.sort(self.sort_func(udb.surroundings.position.coords));
                self.render();
            });
        },
