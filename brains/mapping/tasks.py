@@ -107,7 +107,7 @@ def build_annotation(location):
         if annotation['zombies'] is not None:
             annotation['zombies'] += outside_zombies[0].zombies_present
         else:
-            annotations['zombies'] = outside_zombies[0].zombies_present
+            annotation['zombies'] = outside_zombies[0].zombies_present
     except IndexError:
         pass
     
