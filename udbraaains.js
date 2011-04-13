@@ -835,9 +835,11 @@
        },
        
        init: function(udb) {
-           this.trees = udb.report.trees;
-           this.trees.sort(this.sort_func);
-           this.render();
+           $(udb).bind('ready', function () {
+               this.trees = udb.report.trees;
+               this.trees.sort(this.sort_func);
+               this.render();
+           }
        },
        
        render: function() {
