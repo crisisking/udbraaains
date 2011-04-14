@@ -18,6 +18,10 @@ def receive_data(request):
         # Grab the player's position and IP, process data in background
         origin_x = data['surroundings']['position']['coords']['x']
         origin_y = data['surroundings']['position']['coords']['y']
+        
+        if origin_x < 0 or origin_x > 99 or origin_y < 0 or origin_y > 99:
+            return HttpResponse('STOP IT', status=400)
+
         ip = request.META['HTTP_X_REAL_IP']
 
         process_data.delay(data, ip)
