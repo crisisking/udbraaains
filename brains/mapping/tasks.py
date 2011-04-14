@@ -151,6 +151,6 @@ def build_annotation(location):
     annotation['x'] = location.x
     annotation['y'] = location.y
     conn['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
-    return annotation
+    return location
     
     
