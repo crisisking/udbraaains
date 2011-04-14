@@ -19,7 +19,11 @@ def process_data(data, ip):
     coords = (data['surroundings']['position']['coords']['x'], 
                 data['surroundings']['position']['coords']['y'])
 
-    p_location = Location.objects.get(x=coords[0], y=coords[1])
+    try:
+        p_location = Location.objects.get(x=coords[0], y=coords[1])
+    except Location.DoesNotExist:
+        conn.lpush('location-errors', json.dumps(dict(data=data, ip=ip)))
+        raise
     
     # Grab the player object, update is dead flag
     player = get_player(data['user']['id'], category=goon)
