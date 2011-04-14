@@ -1,5 +1,6 @@
 import json
 import datetime
+import cPickle as pickle
 from celery.task import task
 from mapping.models import Report, Location
 from namelist.models import Player, Category
@@ -135,7 +136,7 @@ def build_annotation(location):
         annotation['ruined'] = primaries[0].is_ruined
         annotation['illuminated'] = primaries[0].is_illuminated
     
-        annotation['report_date'] = unicode(datetime.datetime.now() - primaries[0].reported_date)
+        annotation['report_date'] = pickle.dumps(primaries[0].reported_date)
         annotation['survivor_count'] = None
     
         if inside:
@@ -154,8 +155,9 @@ def build_annotation(location):
             annotation['survivor_count'] = total + outside[0].players.count()
         
     else:
-        for key in ('barricades', 'ruined', 'illuminated', 'report_age', 'survivor_count'):
+        for key in ('barricades', 'ruined', 'illuminated', 'survivor_count'):
             annotation[key] = None
+        annotation['report_date'] = pickle.dumps(None)
 
     annotation['x'] = location.x
     annotation['y'] = location.y
