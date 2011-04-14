@@ -59,6 +59,7 @@ def process_data(data, ip):
     
     if not report.inside:
         for row in data['surroundings']['map']:
+            for col in row:
                 location = Location.objects.get(x=col['coords']['x'], y=col['coords']['y'])
                 if location == p_location:
                     continue
