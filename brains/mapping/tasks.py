@@ -57,13 +57,11 @@ def process_data(data, ip):
             conn.lpush('errors', json.dumps(dict(data=data, ip=ip)))
             raise
     
-    # Throw away the middle cell, we've already processed it
-    del data['surroundings']['map'][1][1]
-
     if not report.inside:
         for row in data['surroundings']['map']:
-            for col in row:
                 location = Location.objects.get(x=col['coords']['x'], y=col['coords']['y'])
+                if location == p_location:
+                    continue
                 secondary = Report()
                 secondary.reported_by = player
                 secondary.zombies_present = col['zombies']
@@ -136,7 +134,7 @@ def build_annotation(location):
         annotation['ruined'] = primaries[0].is_ruined
         annotation['illuminated'] = primaries[0].is_illuminated
     
-        annotation['report_age'] = unicode(datetime.datetime.now() - primaries[0].reported_date)
+        annotation['report_date'] = unicode(datetime.datetime.now() - primaries[0].reported_date)
         annotation['survivor_count'] = None
     
         if inside:
@@ -163,7 +161,8 @@ def build_annotation(location):
     conn['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
     del conn['update-location:{0}:{1}'.format(location.x, location.y)]
     return location
-    
+
+
 @task()
 def annotation_master():
     conn = redis.Redis(db=6)
