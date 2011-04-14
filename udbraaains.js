@@ -222,7 +222,7 @@
          var survivorLinks = $(elem).find('a[href^=profile]');
          if (this.isPositionElement(elem)) {
             // If the query is for our current position we can provide a full list.
-            survivorLinks = $('.gp .gt a');
+            survivorLinks = $('.gp .gt a[href^=profile]');
          }
          var udb = this;
          survivorLinks.each(function (i) {
@@ -318,7 +318,7 @@
          var module;
          for( module in this.UI ) {
             if (this.UI.hasOwnProperty(module)) {
-               this.UI[module].init(this);
+               this.UI[module].init(this);                  
             }
          }
       }
@@ -860,8 +860,11 @@
            });
        }
    }
-
-   UDBrains = window.UDBrains = UDBrains();
+   
+   if(!window.UDBrains) {
+      //Make sure UDBrains only runs once.
+      UDBrains = window.UDBrains = UDBrains();
+   }
 
 
 })(jQuery);
