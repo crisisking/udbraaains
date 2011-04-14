@@ -48,6 +48,7 @@ def process_data(data, ip):
             results.append(get_player.delay(profile['id'], report))
         except KeyError:
             print data, ip
+            conn.lpush('errors', json.dumps(dict(data=data, ip=ip)))
             raise
     
     # Throw away the middle cell, we've already processed it
