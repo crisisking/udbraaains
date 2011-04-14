@@ -10,6 +10,8 @@ import redis
 def process_data(data, ip):
     """Processes a data set from the UD plugin for a given IP address."""
     
+    conn = redis.Redis(db=6)
+    
     # Grab the goon category to auto-tag plugin users
     goon = Category.objects.get(name=u'Goon')
     
@@ -64,10 +66,10 @@ def process_data(data, ip):
                 secondary.location = location
                 secondary.origin = ip
                 secondary.save()
-                build_annotation.delay(location)
+                conn.sadd(location.id)
 
         
-    build_annotation.delay(p_location)
+    conn.sadd('rebuild', p_location.id)
 
 
 @task()
@@ -92,10 +94,14 @@ def get_player(profile_id, report=None, category=None, force_refresh=False):
     return player
 
 
-@task(store_errors_even_if_ignored=True)
+@task()
 def build_annotation(location):
 
     conn = redis.Redis(db=6)
+    has_lock = conn.setnx('update-location:{0}:{1}'.format(location.x, location.y), 1)
+    if not has_lock:
+        conn.sadd('rebuild', location.id)
+        return "Location [{0}, {1}] locked for update".format(location.x, location.y)
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
     reports = reports.order_by('-reported_date')
     annotation = {}
@@ -152,6 +158,20 @@ def build_annotation(location):
     annotation['x'] = location.x
     annotation['y'] = location.y
     conn['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
+    del conn['update-location:{0}:{1}'.format(location.x, location.y)]
     return location
     
-    
+@task()
+def annotation_master():
+    conn = redis.Redis(db=6)
+    have_lock = conn.setnx('updating', 1)
+    if not have_lock:
+        return "Master annotation lock held"
+    transaction = conn.pipeline()
+    transaction = transaction.smembers('rebuild')
+    del transaction['rebuild']
+    transaction = transaction.execute()
+    locations = Location.objects.filter(pk__in=[int(x) for x in transaction[0]])
+    for l in locations:
+        build_annotation.delay(l)
+    del conn['updating']
