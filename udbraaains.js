@@ -28,6 +28,8 @@
       preferences: {
          colorblind: false
       },
+      
+      errors: [],
 
       init: function () {
          var udb = this;
@@ -318,7 +320,11 @@
          var module;
          for( module in this.UI ) {
             if (this.UI.hasOwnProperty(module)) {
-               this.UI[module].init(this);                  
+               try {
+                  this.UI[module].init(this);                  
+               } catch (e) {
+                  this.errors.push({moduleFailed: {name: module, error: e}});
+               }
             }
          }
       }
