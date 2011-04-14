@@ -92,7 +92,7 @@ def get_player(profile_id, report=None, category=None, force_refresh=False):
     return player
 
 
-@task()
+@task(store_errors_even_if_ignored=True)
 def build_annotation(location):
 
     conn = redis.Redis(db=6)
