@@ -1,5 +1,5 @@
 # Django settings for brains project.
-
+import datetime
 import djcelery
 djcelery.setup_loader()
 
@@ -161,3 +161,11 @@ REDIS_PORT = 6379
 REDIS_DB = 0
 REDIS_CONNECT_RETRY = True
 CELERY_DISABLE_RATE_LIMITS=True
+
+CELERYBEAT_SCHEDULE = {
+    'annotation-builder': {
+        'task': 'mapping.tasks.annotation_master',
+        'schedule': datetime.timedelta(seconds=5),
+    }
+}
+
