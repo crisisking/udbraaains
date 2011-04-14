@@ -66,7 +66,7 @@ def process_data(data, ip):
                 secondary.location = location
                 secondary.origin = ip
                 secondary.save()
-                conn.sadd(location.id)
+                conn.sadd('rebuild', location.id)
 
         
     conn.sadd('rebuild', p_location.id)
