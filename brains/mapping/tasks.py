@@ -121,14 +121,13 @@ def build_annotation(location):
             annotation['zombies'] = outside_zombies[0].zombies_present
     except IndexError:
         pass
-    
-    annotation['zombies'] = reports[0].zombies_present if reports else None
+
 
     primaries = reports.filter(zombies_only=False)
     if primaries:
         inside = primaries.filter(inside=True)
         outside = primaries.filter(inside=False)
-    
+
         annotation['barricades'] = primaries[0].barricade_level
         annotation['ruined'] = primaries[0].is_ruined
         annotation['illuminated'] = primaries[0].is_illuminated
