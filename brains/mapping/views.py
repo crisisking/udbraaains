@@ -1,6 +1,6 @@
 import datetime
 import json
-import math
+import cPickle as pickle
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from mapping.models import Location, Report
@@ -38,7 +38,14 @@ def receive_data(request):
             for y in y_range:
                 annotation = CONN.get('location:{0}:{1}'.format(x, y))
                 if annotation:
-                    payload['annotation'].append(json.loads(annotation))
+                    annotation = json.loads(annotation)
+                    annotation['report_date'] = pickle.loads(annotation['report_date'])
+                    try:
+                        annotation['report_age'] = unicode(datetime.datetime.now() - annotation['report_date'])
+                    except TypeError:
+                        annotation['report_age'] = None
+                    del annotation['report_date']
+                    payload['annotation'].append(annotation)
         
         
         return HttpResponse(json.dumps(payload), content_type='application/json', status=200)
