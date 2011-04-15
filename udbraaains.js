@@ -557,7 +557,7 @@
          map.find('#map-grids').css({
             'float': 'left'
          });
-         map.find('.pos').html('&bull');
+         map.find('.pos').html('&bull;');
       },
 
       scrapeTargets: function () {
