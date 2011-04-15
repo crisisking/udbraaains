@@ -491,8 +491,8 @@
                .bind('click', function () {
                   var selector;
                   grids.find('.minimap').hide();
-                  switcher.find('a').removeClass('active');
-                  localStorage.lastMinimap = selector = $(this).addClass('active').attr('href');
+                  switcher.find('a').removeClass('active').css({borderColor: '#556655'});
+                  localStorage.lastMinimap = selector = $(this).addClass('active').css({borderColor: '#BBCCBB'}).attr('href');
                   grids.find(selector).show();
                   return false;
                })
