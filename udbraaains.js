@@ -433,7 +433,7 @@
                   title = this.title(tile, title, '', data.report_age);
                   tile
                      .attr('title', title)
-                     .css({background: this.color( data.survivor_count)});
+                     .css({background: this.color( data.survivor_count )});
                }
             }).heatmap(1, 15, 4),
 
@@ -507,7 +507,7 @@
             defaultMap = localStorage.lastMinimap;
          };
          panel.find(defaultMap).show();
-         switcher.find('a[href*='+defaultMap+']').addClass('active');
+         switcher.find('a[href*='+defaultMap+']').addClass('active').css({borderColor: '#BBCCBB'});
 
          this.style(panel);
          $('.cp .gthome').before(panel);
@@ -587,7 +587,7 @@
 
       markTargets: function (targets) {
          // Temporary. Marks target tiles in pink on the targets map
-         this.maps.targetMap.getTilesByCoords(targets).forEach(function (tile) {
+         this.maps.targets.getTilesByCoords(targets).forEach(function (tile) {
             tile.css({
                background: "#FF9999"
             });
