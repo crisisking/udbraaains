@@ -83,13 +83,13 @@ def get_player(profile_id, report=None, category=None, force_refresh=False):
     if created or force_refresh:
         profile_data = scrape_profile(profile_id)
         player.name = profile_data[0]
-        player.group = profile_data[1]
+        player.group_name = profile_data[1]
         player.join_date = profile_data[2]
 
-    # Scrape player group info every 14 days
-    elif datetime.datetime.now() - player.scrape_date > datetime.timedelta(days=14):
+    # Scrape player group info every 2 days
+    elif datetime.datetime.now() - player.scrape_date > datetime.timedelta(days=2):
         profile_data = scrape_profile(profile_id)
-        player.group = profile_data[1]
+        player.group_name = profile_data[1]
     if report:
         report.players.add(player)
     if category and not player.category:
