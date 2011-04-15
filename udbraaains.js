@@ -425,22 +425,6 @@
                   .css({background: this.color( data.survivor_count )});
             }).heatmap(1, 15, 5),
 
-            barricades: this.grid(function (tile, data) {
-               if(data.barricades === null) {return};
-               var title = this.title(tile, 'barricades', data.barricades, data.report_age);
-               tile
-                  .attr('title', title)
-                  .css({background: this.color( data.barricades )});
-            }).heatmap(1, 9, 9),
-
-            zombies: this.grid(function (tile, data) {
-               if(data.zombies === null) {return};
-               var title = this.title(tile, 'zombies', data.zombies, data.report_age);
-               tile
-                  .attr('title', title)
-                  .css({background: this.color( data.zombies )});
-            }).heatmap(1, 15, 5),
-
             eats: this.grid(function (tile, data) {
                if(data.survivor_count === null || data.barricades === null) {return};
                if ( data.barricades < 2 && data.survivor_count > 0 ) {
@@ -453,11 +437,29 @@
                }
             }).heatmap(1, 15, 4),
 
+            barricades: this.grid(function (tile, data) {
+               if(data.barricades === null) {return};
+               var title = this.title(tile, 'barricades', data.barricades, data.report_age);
+               tile
+                  .attr('title', title)
+                  .css({background: this.color( data.barricades )});
+            }).heatmap(1, 9, 9),
+
             ruined: this.grid(function (tile, data) {
                if(data.ruined) {
                   tile.css({background: '#000'});
                }
-            })
+            }),
+            
+            zombies: this.grid(function (tile, data) {
+               if(data.zombies === null) {return};
+               var title = this.title(tile, 'zombies', data.zombies, data.report_age);
+               tile
+                  .attr('title', title)
+                  .css({background: this.color( data.zombies )});
+            }).heatmap(1, 15, 5)
+
+
 
          };
          $(udb).bind('ready', function () {
@@ -555,6 +557,7 @@
          map.find('#map-grids').css({
             'float': 'left'
          });
+         map.find('.pos').html('&bull');
       },
 
       scrapeTargets: function () {
