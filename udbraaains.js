@@ -405,88 +405,113 @@
       /*
          Creates and renders multiple minimaps populated with data about the surrounding area.
       */
+      
+      size: {x: 15, y: 15},
+      
       init: function (udb) {
-         var coords = udb.surroundings.position.coords;
-         this.colorblind = udb.preferences.colorblind;
-         var survivorColor = this.generateHeatmapColorizer(1, 15, 6);
-         var barricadeColor = this.generateHeatmapColorizer(1, 9, 9);
-         var zombieColor = this.generateHeatmapColorizer(1, 15, 6);
-         var minimap = this;
+         var coords, colorblind, self;
+         self = this;
+         this.coords = udb.surroundings.position.coords;
+         this.grid.prototype.colorblind = udb.preferences.colorblind;
          this.maps = {
-            targetMap: this.grid(15, 15, coords, 'targets'),
-            survivorMap: this.grid(15, 15, coords, 'survivors'),
-            barricadeMap: this.grid(15, 15, coords, 'barricades'),
-            zombieMap: this.grid(15, 15, coords, 'zombies')
+
+            targets: this.grid(),
+
+            survivors: this.grid(function (tile, data) {
+               if(data.survivor_count === null) {return};
+               var title = this.title(tile, 'survivors', data.survivor_count, data.report_age);
+               tile
+                  .attr('title', title)
+                  .css({background: this.color( data.survivor_count )});
+            }).heatmap(1, 15, 5),
+
+            barricades: this.grid(function (tile, data) {
+               if(data.barricades === null) {return};
+               var title = this.title(tile, 'barricades', data.barricades, data.report_age);
+               tile
+                  .attr('title', title)
+                  .css({background: this.color( data.barricades )});
+            }).heatmap(1, 9, 9),
+
+            zombies: this.grid(function (tile, data) {
+               if(data.zombies === null) {return};
+               var title = this.title(tile, 'zombies', data.zombies, data.report_age);
+               tile
+                  .attr('title', title)
+                  .css({background: this.color( data.zombies )});
+            }).heatmap(1, 15, 5),
+
+            eats: this.grid(function (tile, data) {
+               if(data.survivor_count === null || data.barricades === null) {return};
+               if ( data.barricades < 2 && data.survivor_count > 0 ) {
+                  var title = [data.survivor_count, 'survivors'].join(' ') + ' , ' +
+                              [data.barricades, 'barricades'].join(' ');
+                  title = this.title(tile, title, '', data.report_age);
+                  tile
+                     .attr('title', title)
+                     .css({background: this.color( data.survivor_count)});
+               }
+            }).heatmap(1, 15, 4),
+
+            ruined: this.grid(function (tile, data) {
+               if(data.ruined) {
+                  tile.css({background: '#000'});
+               }
+            })
+
          };
          $(udb).bind('ready', function () {
             udb.report.annotation.forEach(function (data) {
-               if (data.survivor_count) {
-                  minimap.maps.survivorMap.getTileByCoords(data.x, data.y).css({
-                     'background': survivorColor(data.survivor_count)
-                  }).addClass('color').attr('title', minimap.createTitleString(data, 'survivor_count', 'survivors'));
-               };
-               if (data.zombies) {
-                  minimap.maps.zombieMap.getTileByCoords(data.x, data.y).css({
-                     'background': zombieColor(data.zombies)
-                  }).addClass('color').attr('title', minimap.createTitleString(data, 'zombies'));
-               };
-               if (data.barricades) {
-                  minimap.maps.barricadeMap.getTileByCoords(data.x, data.y).css({
-                     'background': barricadeColor(data.barricades)
-                  }).addClass('color').attr('title', minimap.createTitleString(data, 'barricades'));
-               };
+               $.each(self.maps, function (name, mmap) {
+                  mmap.dataHandler(data);
+               });
             });
-
-            minimap.render();
          });
-         this.scrapeTargets(coords);
+         this.render();
+         this.scrapeTargets();
       },
 
-      grid: function (xsize, ysize, coords, name) {
-         return new UDBrains.UI.minimap.grid.fn.init(xsize, ysize, coords, name);
+      grid: function (callback) {
+         return new UDBrains.UI.minimap.grid.fn.init(this.size.x, this.size.y, this.coords, callback);
       },
 
       render: function () {
-         var mapPanel = $('<div>').attr('id', 'map-panel').addClass('gt');
-         var mapSwitcher = $('<div>').attr('id', 'map-switcher');
-         var gridContainer = $('<div>').attr('id', 'map-grids');
-         var defaultMap = "#targets-map";
-         var map;
-         for( gridName in this.maps ) {
-            var grid = this.maps[gridName];
-            var mapLink = $('<a>').attr('href', '#'+grid.name+'-map').bind('click', function () {
-               $('.minimap').hide();
-               mapSwitcher.find('a').css({borderColor: '#556655'});
-               $(this).css({borderColor: '#BBCCBB'});
-               gridID = $(this).attr('href');
-               localStorage.lastMinimap = gridID;
-               $(gridID).show();
-               return false;
-            }).text( grid.name );
-            mapSwitcher.append(mapLink)
-            gridContainer.append(grid.render().hide());
-         }
-         mapPanel.append(gridContainer);
-         mapPanel.append(mapSwitcher);
+         var panel, switcher, grids, defaultMap; 
+         panel = $('<div>').attr('id', 'map-panel').addClass('gt');
+         switcher = $('<div>').attr('id', 'map-switcher');
+         grids = $('<div>').attr('id', 'map-grids');
+         defaultMap = "#targets-map";
+         panel.append(grids);
+         panel.append(switcher);
+         
+         //Render the maps and add them in.
+         $.each(this.maps, function (name, grid) {
+            grids.append(grid.render().attr('id', name + '-map').hide());
+            switcher.append($("<a>")
+               .bind('click', function () {
+                  var selector;
+                  grids.find('.minimap').hide();
+                  switcher.find('a').removeClass('active');
+                  localStorage.lastMinimap = selector = $(this).addClass('active').attr('href');
+                  grids.find(selector).show();
+                  return false;
+               })
+               .attr('href', '#'+name+'-map')
+               .text(name));
+         });
+         
+         // Enable default map.
          if (localStorage.lastMinimap) {
             defaultMap = localStorage.lastMinimap;
          };
-         mapPanel.find(defaultMap).show();
-         mapSwitcher.find('a[href*='+defaultMap+']').addClass('default');
-         this.makePretty(mapPanel);
-         $('.cp .gthome').before(mapPanel);
+         panel.find(defaultMap).show();
+         switcher.find('a[href*='+defaultMap+']').addClass('active');
+
+         this.style(panel);
+         $('.cp .gthome').before(panel);
       },
 
-      markTargets: function (targets) {
-         // Temporary. Marks target tiles in pink on the targets map
-         this.maps.targetMap.getTilesByCoords(targets).forEach(function (tile) {
-            tile.css({
-               background: "#FF9999"
-            });
-         });
-      },
-
-      makePretty: function (map) {
+      style: function (map) {
          // Should be moved into an injected CSS
          map.css({
             overflow: 'hidden'
@@ -532,10 +557,12 @@
          });
       },
 
-      scrapeTargets: function (coords) {
+      scrapeTargets: function () {
          // Temporary function for marking high-priority targets mentioned on the orders page.
          // UDBrains should be gathering this data instead.
-         var minimap = this;
+         var coords, minimap;
+         coords = this.coords;
+         minimap = this;
          $.ajax({
             type: 'GET',
             url: 'http://brains.somethingdead.com/orders/' + coords.x + '/' + coords.y + '/?' + new Date().getTime(),
@@ -555,101 +582,67 @@
 
       },
 
-      generateHeatmapColorizer: function (min, max, stages) {
-         var colorblind = this.colorblind;
-         if (colorblind === true){
-            var maxhue = 100;
-         } else {   
-            var maxhue = 200;
-         }
-         var colorIncrement = maxhue/stages;
-         var countIncrement = max/stages;
-         return function (count) {
-            var hue = maxhue - (Math.floor(count/countIncrement) * colorIncrement);
-            if (count < min) {
-               return false;
-            } else if ( count > max ) {
-               hue = 0;
-            }
-            if (colorblind) {
-               return "hsl(0, 0%, "+ hue +"%)";
-            } else {
-               return "hsl("+hue+", 75%, 65%)";               
-            }
-         };
-      },
-      
-      createTitleString: function (data, type, name) {
-         var name = name ? name : type;
-         var title = '['+data.x+','+data.y+'] ' + name + ': ' + data[type];
-         if (data.report_age === null) {
-            return title;
-         };
-         var ageString = data.report_age.split(',');
-         var timeWords = ['hours', 'minutes', 'seconds'];
-         var time = ageString.pop().split(':').map(function (num,i) {
-            return [Math.ceil(parseFloat(num, 10)), timeWords[i]];
+      markTargets: function (targets) {
+         // Temporary. Marks target tiles in pink on the targets map
+         this.maps.targetMap.getTilesByCoords(targets).forEach(function (tile) {
+            tile.css({
+               background: "#FF9999"
+            });
          });
-         var days = ageString.pop();
-         title = title + " (";
-         if (days) {
-            title = title + days;
-         } else {
-            // Drop any units that are 0;
-            time = time.filter(function (i){return i[0] > 0});
-            // Drop the least significant data when string is long
-            if (time.length > 2) {time.pop()};
-            time = time.map(function (i) {return i.join(' ')}).join(', ');
-            title = title + time;
-         }
-         title = title + " ago)";
-         return title;
-      }
+      },
 
    };
 
    UDBrains.UI.minimap.grid.prototype = UDBrains.UI.minimap.grid.fn = {
       /*
          Creates grid objects of arbitrary size for displaying information about the area around the player.
+         Takes an optional callback to run when recieving report data. Callback has two arguments, the
+         map tile and the report data.
       */
-      init: function (xsize, ysize, coords, name) {
-         this.name = name;
+      init: function (xsize, ysize, coords, callback) {
          this.coords = coords;
          this.xsize = xsize;
          this.ysize = ysize;
-         this.origin = this.calculateOrigin(xsize,ysize);
-         this.tiles = this.createTileArray(xsize,ysize);
+         this.callback = callback || function (tile, data) {};
+         this.setOrigin();
+         this.createTiles();
          // Mark the player position
-         this.getTileByCoords(this.coords.x, this.coords.y).addClass('pos').html('&bull;');
+         this.getTileByCoords(this.coords.x, this.coords.y).addClass('pos');
          this.markOOB();
          this.markBorders();
          return this;
       },
-
-      calculateOrigin: function (x, y) {
+      
+      dataHandler: function (data) {
+         var tile = this.getTileByCoords(data.x, data.y);
+         return this.callback(tile, data);
+      },
+      
+      setOrigin: function () {
          // Calculates the coordinates of the top-left tile.
-         return {
-            x: this.coords.x - Math.floor(x/2),
-            y: this.coords.y - Math.floor(y/2)
+         this.origin = {
+            x: this.coords.x - Math.floor(this.xsize/2),
+            y: this.coords.y - Math.floor(this.ysize/2)
          };
       },
 
-      createTileArray: function (x, y) {
-         var arr = new Array(y);
-         var coords = $.extend({}, this.origin);
-         var origin = this.origin;
-         $.each(arr, function (row) {
-            arr[row] = new Array(x);
-            $.each(arr[row], function (col) {
-               arr[row][col] = $('<td>').data({
-                  coords: $.extend({}, coords),
-               }).attr('title', '['+coords.x+','+coords.y+']');
-               coords.x++;
-            });
-            coords.x = origin.x;
-            coords.y++;
+      createTiles: function () {
+         var arr, coords, origin;
+         var xsize = this.xsize, ysize = this.ysize;
+         arr = new Array(ysize);
+         origin = this.origin;
+         //Initialize first with jQuery map() since it doesnt skip over arrays with undefined values.
+         this.tiles = $.map(arr, function () {
+            // .map apparently tries to flatten arrays.
+            return [$.map(new Array(xsize), function () { return false })];
          });
-         return arr;
+         this.map(function (tile, x, y) {
+            var coords = {x: x + origin.x, y: y + origin.y};
+            return $('<td>')
+               .attr('title', '['+coords.x+','+coords.y+']')
+               .data({coords: coords});
+         });
+         
       },
 
       getTileByCoords: function (x, y) {
@@ -680,7 +673,7 @@
 
       markOOB: function () {
          // Adds a class to any tile that falls outside of Malton.
-         this.forEveryTile(function (tile) {
+         this.each(function (tile) {
             var coords = tile.data().coords;
             if ( coords.x < 0 || coords.y < 0 || coords.x > 99 || coords.y > 99 ) {
                tile.addClass('oob');
@@ -690,7 +683,7 @@
 
       markBorders: function () {
          // Adds classes to tiles on suburb borders.
-         this.forEveryTile(function (tile) {
+         this.each(function (tile) {
             var coords = tile.data().coords;
             if ( (coords.x % 10) === 0 ) {
                tile.addClass('xborder');
@@ -701,11 +694,75 @@
          });
       },
 
-      forEveryTile: function (func) {
+      each: function (func) {
          // Runs a function once for every tile in the grid.
-         this.tiles.forEach(function (row) {
-            row.forEach(func);
+         this.tiles.forEach(function (row, y, rows) {
+            row.forEach(function (col, x, cols){
+               func(col, x, y, rows, cols);
+            });
          });
+      },
+      
+      map: function (func) {
+         // Replace each tile with the result of a function.
+         this.tiles = this.tiles.map(function (row, y, rows) {
+            return row.map(function (col, x, cols) {
+               return func(col, x, y, rows, cols);
+            });
+         });
+      },
+
+      heatmap: function (min, max, stages, colorblind) {
+         var maxhue, colorInc, countInc;
+         if (this.colorblind === true){
+            maxhue = 100;
+         } else {   
+            maxhue = 200;
+         }
+         colorInc = maxhue/stages;
+         countInc = max/stages;
+         this.color = function (count) {
+            var hue = maxhue - (Math.floor(count/countInc) * colorInc);
+            if (count < min) {
+               return false;
+            } else if ( count > max ) {
+               hue = 0;
+            }
+            if (this.colorblind) {
+               return "hsl(0, 0%, "+ hue +"%)";
+            } else {
+               return "hsl("+hue+", 75%, 65%)";               
+            }
+         };
+         return this;
+      },
+      
+      title: function (elem, name, val, age) {
+         var title, ageString, timewords, time, days;
+         // age format:  "[X days,]hh:mm:ss.ssss"
+         title = [elem.attr('title'), val + ' ' + name].join(' : ');
+         if (age === null) {
+            return title;
+         };
+         age = age.split(',');
+         units = ['hours', 'minutes', 'seconds'];
+         time = age.pop().split(':').map(function (num, i) {
+            return [Math.ceil(parseFloat(num, 10)), units[i]];
+         });
+         days = age.pop();
+         title = title + " (";
+         if (days) {
+            title = title + days;
+         } else {
+            // Drop any units that are 0;
+            time = time.filter(function (i){return i[0] > 0});
+            // Drop the least significant data when string is long
+            if (time.length > 2) {time.pop()};
+            time = time.map(function (i) {return i.join(' ')}).join(', ');
+            title = title + time;
+         }
+         title = title + " ago)";
+         return title;
       },
 
       render: function () {
@@ -717,7 +774,6 @@
             });
             table.append(tr);
          });
-         table.attr('id', this.name+'-map');
          return table;
       }
 
