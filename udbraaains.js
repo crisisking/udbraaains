@@ -138,7 +138,7 @@
 
       isInside: function () {
          //Check for the leave button to determine if we're inside a building.
-         return ($('.gp form[action$=out]').length === 1);
+         return ($('.gp form[action\\$=out]').length === 1);
       },
 
       isOutsideBuilding: function () {
