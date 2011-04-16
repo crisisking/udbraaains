@@ -164,6 +164,7 @@ def build_annotation(location):
 
     annotation['x'] = location.x
     annotation['y'] = location.y
+    annotation['building_type'] = location.building_type
     conn['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
     del conn['update-location:{0}:{1}'.format(location.x, location.y)]
     return location
