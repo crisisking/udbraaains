@@ -448,7 +448,7 @@
             ruined: this.grid(function (tile, data) {
                var unruinable_types = ['cprk', 'ceme', 'zoox', 'zooe', 'fexy', 'monu', 'park', 'opns', 'ftgr', 'wast', 'junk'];
                
-               if($.inArray(data.building_type, unruinable_types)) {
+               if($.inArray(data.building_type, unruinable_types) !== -1) {
                    return;
                }
                
