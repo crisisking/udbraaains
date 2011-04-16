@@ -14,7 +14,7 @@
     <div id="news">
         {% for order in orders %}
         <div id="newsitem">
-            <h1>{{ order.subject }} [{{ order.x }}, {{ order.y }}]{% if order.striketime %} in {{ orders.striketime|timeuntil }}{% endif %}</h1>
+            <h1>{{ order.subject }} [{{ order.x }}, {{ order.y }}]{% if order.striketime %} in {{ order.striketime|timeuntil }}{% endif %}</h1>
             <h2>Posted {{ order.date|timesince }} ago by {{ order.user.username }}</h2>
             {{ order.message|linebreaks}}
         </div>
