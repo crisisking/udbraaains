@@ -106,6 +106,9 @@ def build_annotation(location):
     if not has_lock:
         conn.sadd('rebuild', location.id)
         return "Location [{0}, {1}] locked for update".format(location.x, location.y)
+    
+    # Expire lock after five minutes, workers usually have twice that long to finish.
+    conn.expire('update-location:{0}:{1}'.format(location.x, location.y), 300)
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
     reports = reports.order_by('-reported_date')
     annotation = {}
@@ -172,6 +175,9 @@ def annotation_master():
     have_lock = conn.setnx('updating', 1)
     if not have_lock:
         return "Master annotation lock held"
+
+    # Break the lock in 45 seconds, in case something exceptional happens.
+    conn.expire('updating', 45)
     transaction = conn.pipeline()
     transaction = transaction.smembers('rebuild')
     del transaction['rebuild']
