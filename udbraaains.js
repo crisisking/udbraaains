@@ -427,7 +427,7 @@
 
             eats: this.grid(function (tile, data) {
                if(data.survivor_count === null || data.barricades === null) {return};
-               if ( data.barricades < 2 && data.survivor_count > 0 ) {
+               if ( data.barricades < 3 && data.survivor_count > 0 ) {
                   var title = [data.survivor_count, 'survivors'].join(' ') + ' , ' +
                               [data.barricades, 'barricades'].join(' ');
                   title = this.title(tile, title, '', data.report_age);
@@ -446,16 +446,16 @@
             }).heatmap(1, 9, 9),
 
             ruined: this.grid(function (tile, data) {
-               var unruinable_types = /cprk|ceme|zoox|zooe|fexy|monu|park|opns|ftgr|wast|junk/;
+               var unruinable_types = ['cprk', 'ceme', 'zoox', 'zooe', 'fexy', 'monu', 'park', 'opns', 'ftgr', 'wast', 'junk'];
                
-               if(data.building_type.search(unruinable_types) !== -1) {
+               if($.inArray(data.building_type, unruinable_types)) {
                    return;
                }
                
                if(data.ruined) {
                   tile.css({background: '#000'});
                } else {
-                   tile.css({background: '#FF9999'});
+                  tile.css({background: '#FF9999'});
                }
             }),
             
