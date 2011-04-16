@@ -446,8 +446,16 @@
             }).heatmap(1, 9, 9),
 
             ruined: this.grid(function (tile, data) {
+               var unruinable_types = /cprk|ceme|zoox|zooe|fexy|monu|park|opns|ftgr|wast|junk/;
+               
+               if(data.building_type.search(unruinable_types) !== -1) {
+                   return;
+               }
+               
                if(data.ruined) {
                   tile.css({background: '#000'});
+               } else {
+                   tile.css({background: '#FF9999'});
                }
             }),
             
