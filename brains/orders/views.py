@@ -6,7 +6,7 @@ from orders.models import Order
 
 def index(request, x, y):
 
-    if request.META['HTTP_REFERER'] not in ('http://www.urbandead.com/map.cgi', 'http://urbandead.com/map.cgi'):
+    if request.META.get('HTTP_REFERER', None) not in ('http://www.urbandead.com/map.cgi', 'http://urbandead.com/map.cgi'):
         return HttpResponseRedirect('http://www.youtube.com/watch?v=lWKQiZVBtu4')
 
     x = int(x)
