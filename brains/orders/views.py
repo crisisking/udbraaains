@@ -7,7 +7,7 @@ from orders.models import Order
 def index(request, x, y):
 
     referrer = request.META.get('HTTP_REFERER', '')
-    if not referrer.startswith('http://www.urbandead.com/map.cgi') and not referrer.startswith('http://urbandead.com/map.cgi'))
+    if not referrer.startswith('http://www.urbandead.com/map.cgi') and not referrer.startswith('http://urbandead.com/map.cgi')
         return HttpResponseRedirect('http://www.youtube.com/watch?v=lWKQiZVBtu4')
 
     x = int(x)
