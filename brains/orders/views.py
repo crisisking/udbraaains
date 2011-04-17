@@ -1,9 +1,13 @@
 import math
 from django.shortcuts import render
 from django.template import RequestContext
+from django.http import HttpResponseRedirect
 from orders.models import Order
 
 def index(request, x, y):
+
+    if request.META['HTTP_REFERER'] not in ('http://www.urbandead.com/map.cgi', 'http://urbandead.com/map.cgi'):
+        return HttpResponseRedirect('http://www.youtube.com/watch?v=lWKQiZVBtu4')
 
     x = int(x)
     y = int(y)
