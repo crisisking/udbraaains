@@ -8,7 +8,7 @@ class AccessControl(object):
 
         if not request.path.startswith('/admin/') and request.META.has_key('HTTP_ORIGIN'):
             origin = request.META['HTTP_ORIGIN']
-            if origin in ('http://urbandead.com', 'http://www.urbandead.com', 'http://localhost:8998'):
+            if origin in ('http://urbandead.com', 'http://www.urbandead.com', 'http://localhost:8002'):
                 response['Access-Control-Allow-Origin'] = origin
                 response['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
 
