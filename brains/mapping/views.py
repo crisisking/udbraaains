@@ -22,7 +22,7 @@ def receive_data(request):
         if origin_x < 0 or origin_x > 99 or origin_y < 0 or origin_y > 99:
             return HttpResponse('STOP IT', status=400)
 
-        ip = request.META['HTTP_X_REAL_IP']
+        ip = request.META['REMOTE_ADDR']
 
         process_data.delay(data, ip)
 
@@ -39,7 +39,7 @@ def receive_data(request):
                 annotation = CONN.get('location:{0}:{1}'.format(x, y))
                 if annotation:
                     annotation = json.loads(annotation)
-                    annotation['report_date'] = pickle.loads(annotation['report_date'])
+                    annotation['report_date'] = pickle.loads(annotation['report_date'].encode('ascii', 'ignore'))
                     try:
                         annotation['report_age'] = unicode(datetime.datetime.now() - annotation['report_date'])
                     except TypeError:

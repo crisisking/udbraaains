@@ -1,0 +1,3 @@
+[submodule "skybot"]
+	path = skybot
+	url = git://github.com/rmmh/skybot.git
