@@ -425,7 +425,11 @@
                   title = this.title(tile, names[rank], '', data.report_age);
                   tile
                      .attr('title', title)
-                     .css({background: this.color( rank+1 )});
+                     .css({background: this.color( targets.length - rank )});
+                  if( data.ruined ) {
+                     tile.css({background: "#000"});
+                  }
+                     
                }
             }).heatmap(1, 4, 4),
 
