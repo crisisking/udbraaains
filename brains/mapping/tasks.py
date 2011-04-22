@@ -7,11 +7,12 @@ from namelist.models import Player, Category
 from namelist.scrape import scrape_profile
 import redis
 
+CONN = redis.Redis(db=6)
+
 @task()
 def process_data(data, ip):
     """Processes a data set from the UD plugin for a given IP address."""
     
-    conn = redis.Redis(db=6)
     
     # Grab the goon category to auto-tag plugin users
     goon = Category.objects.get(name=u'Goon')
@@ -23,7 +24,7 @@ def process_data(data, ip):
     try:
         p_location = Location.objects.get(x=coords[0], y=coords[1])
     except Location.DoesNotExist:
-        conn.lpush('location-errors', json.dumps(dict(data=data, ip=ip)))
+        CONN.lpush('location-errors', json.dumps(dict(data=data, ip=ip)))
         raise
     
     # Grab the player object, update is dead flag
@@ -55,7 +56,7 @@ def process_data(data, ip):
             results.append(get_player.delay(profile['id'], report))
         except KeyError:
             print data, ip
-            conn.lpush('errors', json.dumps(dict(data=data, ip=ip)))
+            CONN.lpush('errors', json.dumps(dict(data=data, ip=ip)))
             raise
     
     if not report.inside:
@@ -70,10 +71,10 @@ def process_data(data, ip):
                 secondary.location = location
                 secondary.origin = ip
                 secondary.save()
-                conn.sadd('rebuild', location.id)
+                CONN.sadd('rebuild', location.id)
 
         
-    conn.sadd('rebuild', p_location.id)
+    CONN.sadd('rebuild', p_location.id)
 
 
 @task()
@@ -92,6 +93,7 @@ def get_player(profile_id, report=None, category=None, force_refresh=False):
         player.group_name = profile_data[1]
     if report:
         report.players.add(player)
+        CONN.sadd('rebuild', report.location_id)
     if category and not player.category:
         player.category = category
     player.save()
@@ -101,14 +103,13 @@ def get_player(profile_id, report=None, category=None, force_refresh=False):
 @task()
 def build_annotation(location):
 
-    conn = redis.Redis(db=6)
-    has_lock = conn.setnx('update-location:{0}:{1}'.format(location.x, location.y), 1)
+    has_lock = CONN.setnx('update-location:{0}:{1}'.format(location.x, location.y), 1)
     if not has_lock:
-        conn.sadd('rebuild', location.id)
+        CONN.sadd('rebuild', location.id)
         return "Location [{0}, {1}] locked for update".format(location.x, location.y)
     
     # Expire lock after five minutes, workers usually have twice that long to finish.
-    conn.expire('update-location:{0}:{1}'.format(location.x, location.y), 300)
+    CONN.expire('update-location:{0}:{1}'.format(location.x, location.y), 300)
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
     reports = reports.order_by('-reported_date')
     annotation = {}
@@ -149,9 +150,9 @@ def build_annotation(location):
             coords_y = location.y
             json_coords = json.dumps({'x': coords_x, 'y': coords_y})
             if report.has_tree:
-                conn.sadd('trees', json_coords)
+                CONN.sadd('trees', json_coords)
             else:
-                conn.srem('trees', json_coords)
+                CONN.srem('trees', json_coords)
         
         if outside:
             total = annotation['survivor_count'] or 0
@@ -165,25 +166,24 @@ def build_annotation(location):
     annotation['x'] = location.x
     annotation['y'] = location.y
     annotation['building_type'] = location.building_type
-    conn['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
-    del conn['update-location:{0}:{1}'.format(location.x, location.y)]
+    CONN['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
+    del CONN['update-location:{0}:{1}'.format(location.x, location.y)]
     return location
 
 
 @task()
 def annotation_master():
-    conn = redis.Redis(db=6)
-    have_lock = conn.setnx('updating', 1)
+    have_lock = CONN.setnx('updating', 1)
     if not have_lock:
         return "Master annotation lock held"
 
     # Break the lock in 45 seconds, in case something exceptional happens.
-    conn.expire('updating', 45)
-    transaction = conn.pipeline()
+    CONN.expire('updating', 45)
+    transaction = CONN.pipeline()
     transaction = transaction.smembers('rebuild')
     del transaction['rebuild']
     transaction = transaction.execute()
     locations = Location.objects.filter(pk__in=[int(x) for x in transaction[0]])
     for l in locations:
         build_annotation.delay(l)
-    del conn['updating']
+    del CONN['updating']
