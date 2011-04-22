@@ -415,7 +415,19 @@
          this.grid.prototype.colorblind = udb.preferences.colorblind;
          this.maps = {
 
-            targets: this.grid(),
+            targets: this.grid(function (tile, data) {
+               var targets, rank, title;
+               if(data.building_type == null) {return};
+               targets = ['ntbg', 'mall', 'hosp', 'pdep'];
+               names = ['NT Building', 'Mall', 'Hospital', 'Police Dept.']
+               rank = $.inArray(data.building_type, targets);
+               if(rank !== -1) {
+                  title = this.title(tile, names[rank], '', data.report_age);
+                  tile
+                     .attr('title', title)
+                     .css({background: this.color( rank+1 )});
+               }
+            }).heatmap(1, 4, 4),
 
             survivors: this.grid(function (tile, data) {
                if(data.survivor_count === null) {return};
@@ -435,7 +447,7 @@
                      .attr('title', title)
                      .css({background: this.color( data.survivor_count )});
                }
-            }).heatmap(1, 15, 4),
+            }).heatmap(1, 15, 5),
 
             barricades: this.grid(function (tile, data) {
                if(data.barricades === null) {return};
@@ -466,8 +478,6 @@
                   .attr('title', title)
                   .css({background: this.color( data.zombies )});
             }).heatmap(1, 15, 5)
-
-
 
          };
          $(udb).bind('ready', function () {
