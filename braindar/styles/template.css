@@ -1,0 +1,77 @@
+
+body {
+   background: #E9E9E7;
+}
+#wrapper {
+   width: 960px;
+   margin: 0 auto;
+   overflow: hidden;
+}
+
+#header {
+   
+}
+
+#main {
+   padding: 1em;
+   background: #757575;
+}
+#content {
+   
+}
+#sidebar {
+   
+}
+
+#footer {
+   
+}
+
+#navigation {
+   overflow: hidden;
+}
+#navigation ul,
+#navigation li {
+   margin: 0;
+   padding: 0;
+   list-style: none;
+}
+#navigation li {
+   float: left;
+}
+
+
+
+
+
+/* -- Headings -- */
+
+h1,h2,h3,h4,h5,h6 {}
+h1,h2,h3 {}
+h4,h5,h6 {}
+h1 {}
+h2 {}
+h3 {}
+h4 {}
+h5 {}
+h6 {}
+
+/* -- Text -- */
+
+body {
+   font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
+}
+
+#content {
+   line-height: 1.5em;
+}
+
+/* -- Links -- */
+
+a:link, a:visited,
+a:hover, a:focus {}
+a:link			  {}
+a:visited		  {}
+a:hover			  {}
+a:focus			  {}
+

@@ -1,0 +1,137 @@
+
+html,body,div,
+ul,ol,li,dl,dt,dd,
+h1,h2,h3,h4,h5,h6,
+pre,form,p,blockquote,fieldset,legend 
+{
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+h1,h2,h3,h4,h5,h6,
+pre,code,address,caption,
+cite,code,em,strong,th 
+{
+	font-size: 1em;
+	font-weight: normal;
+	font-style: normal;
+	line-height:1.2em;
+}
+
+ul,ol { list-style: none; }
+
+fieldset,img { border: none; }
+
+caption,th,td { text-align: left; font-weight:400; }
+
+table { border-collapse: collapse; border-spacing: 0; }
+
+/* Remove possible quote marks (") from <q>, <blockquote>. */
+blockquote:before, blockquote:after, q:before, q:after { content: ""; }
+blockquote, q { quotes: "" ""; }
+
+
+fieldset { margin: 0 0 1em; }
+legend { margin: 0 0 1em; font-weight: bold; }
+label { font-weight: bold; }
+input { margin: 0; }
+
+form ol, form ul, form dl { overflow: hidden; list-style: none; }
+form ol li, form ul li { overflow: hidden; margin: 0 0 1em; clear: both; list-style: none;}
+
+form li span label { width: auto; display: inline; font-weight: normal;  text-align: left;}
+form li button { float: right; }
+
+form li span span { display:block; float: none; }
+
+/* Two Column */
+form ol li, form ul li { padding-left: 120px; }
+form li label                 { width: 120px; 
+                         margin-left: -120px; }
+
+form li span { display: block; padding-left: 1em; float: left; }
+form li span span { padding-left: 0; }
+
+form li label { display: inline; position: relative; text-align: right; float: left; }
+form li span label { position: static; float: none; text-align: left; width: auto; margin: 0; }
+/* -- */
+
+/* Single Column *
+form li label { display: block; }
+form li span { display : block; margin-left: 1em; }
+/* -- */
+
+/* IE: */
+form ol li, form ul li, form li label { zoom:1; }
+/* -- */
+
+body {
+   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+	font-size: 0.75em;
+}
+
+/* -- Headings -- */
+
+h1,h2,h3,h4,h5,h6 { margin: 1em 0; font-weight: bold; font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif; clear: both; }
+h1 { font-size: 1.75em;}
+h2 { font-size: 1.5em; }
+h4,h5,h6 { margin: 0; }
+h3 { font-size: 1.35em; }
+h4 { font-size: 1.2em; }
+
+/* -- Text -- */
+
+p { margin:0 0 1em; }
+b, strong { font-weight:bold; }
+i, em { font-style:italic; }
+blockquote { margin: 1em; }
+pre, code { font-family: monospace; }
+
+/* -- Lists -- */
+
+ul,ol,dl { margin: 1em 1em 1em 2em; }
+ol li { list-style: decimal outside; }
+ul li { list-style: disc outside; }
+dl dd { margin-left: 1em; }
+
+/* -- Tables -- */
+
+table { border-collapse: collapse; }
+table caption { margin: 0 0 0.5em; }
+td,th { padding: 0.5em; border: 1px solid; }
+th { font-weight: bold; text-align: center; }
+
+/* -- Links -- */
+
+a:link, a:visited,
+a:hover, a:focus { color:#388CDB; text-decoration: underline; }
+a:link			  { }
+a:visited		  { font-style: italic; }
+a:hover			  { text-decoration: none; }
+a:focus			  { }
+
+
+/* Floated columns */
+
+.container { overflow: hidden; }
+.container .item { float: left; }
+.two .second, 
+.three .third,
+.four .fourth { float: none; }
+
+.two .first { width: 50%;}
+.two .second { margin-left: 50%; }
+
+.three .first,
+.three .second { width: 33%; }
+.three .third { margin-left: 66%; }
+
+.four .first,
+.four .second,
+.four .third { width: 25%; }
+.four .fourth { margin-left: 75%; }
+
+/* */
+
+

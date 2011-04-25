@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" href="/styles/base.css" type="text/css" charset="utf-8" />
+	<link rel="stylesheet" href="/styles/template.css" type="text/css" charset="utf-8" />
+	<script src="https://ajax.googleapis.com/ajax/libs/mootools/1.3/mootools.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/scripts/main.js" type="text/javascript" charset="utf-8"></script>
+	<style type="text/css" media="screen">
+		#main {
+/*			height: 600px;*/
+		}
+		#wrapper { width: auto;}
+	</style>
+	<script type="text/javascript" charset="utf-8">
+	window.addEvent('domready', function () {
+		var map, data, colormap;
+		map = new Malton({
+			elem: "#main"
+		});
+		heatmap = function (min, max, stages) {
+	      var maxhue, colorInc, countInc;
+			maxhue = 200;
+	      colorInc = maxhue/stages;
+	      countInc = max/stages;
+	      return function (count) {
+	         var hue = maxhue - (Math.floor(count/countInc) * colorInc);
+	         if (count < min) {
+	            return false;
+	         } else if ( count > max ) {
+	            hue = 0;
+	         }
+				return "hsl("+hue+", 75%, 65%)";               
+	      };
+	   }
+		
+		colormap = heatmap(1, 9, 9);
+		req = new Request.JSON({
+			url: "/scripts/test.json",
+			onSuccess: function (data) {
+				data.each(function (report) {
+					var tile;
+					tile = map.grid[report.y][report.x];
+					if(report.barricades) {
+						tile.color(colormap(report.barricades));
+					}
+				});
+			}
+		}).get();
+	});
+   
+	</script>
+</head>
+
+<body>
+
+<div id="wrapper" title="">
+	<div id="main">
+	</div>
+</div>
+	
+</body>
+</html>
