@@ -8,8 +8,8 @@ from mapping.tasks import process_data, get_player
 from namelist.models import Category, Player
 import redis
 
-CONN = redis.Redis(db=6)
 
+CONN = redis.Redis(db=6)
 
 @csrf_exempt
 def receive_data(request):
@@ -52,3 +52,17 @@ def receive_data(request):
 
     return HttpResponse(status=405)
 
+
+def map_data(request):
+    
+    data = []
+    for key in CONN.keys('location:*'):
+        annotation = json.loads(CONN[key])
+        try:
+            annotation['report_age'] = unicode(datetime.datetime.now() - pickle.loads(annotation['report_date']))
+        except TypeError:
+            annotation['report_age'] = None
+        del annotation['report_date']
+        data.append(annotation)
+
+    return HttpResponse(json.dumps(data), content_type='application/json', status=200)    
