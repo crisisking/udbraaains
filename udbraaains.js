@@ -443,7 +443,7 @@
 
             eats: this.grid(function (tile, data) {
                if(data.survivor_count === null || data.barricades === null) {return};
-               if ( data.barricades < 3 && data.survivor_count > 0 ) {
+               if ( data.barricades < 5 && data.survivor_count > 0 ) {
                   var title = [data.survivor_count, 'survivors'].join(' ') + ' , ' +
                               [data.barricades, 'barricades'].join(' ');
                   title = this.title(tile, title, '', data.report_age);
