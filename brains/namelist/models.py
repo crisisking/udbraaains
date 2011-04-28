@@ -27,23 +27,26 @@ class Player(models.Model):
 
     def last_known_position(self):
         """Grabs the player's last known location from the report set."""
-        reports = Report.objects.raw("""SELECT "mapping_report"."id",
-        "mapping_report"."location_id", "mapping_location"."id", 
-        "mapping_location"."x", "mapping_location"."y",
-        "mapping_location"."name", "mapping_location"."suburb"
-        FROM "mapping_report" 
-        INNER JOIN "namelist_player" 
-        ON ("mapping_report"."reported_by_id" = "namelist_player"."id") 
-        LEFT OUTER JOIN "mapping_report_players" 
-        ON ("mapping_report"."id" = "mapping_report_players"."report_id") 
-        INNER JOIN "mapping_location" ON ("mapping_report"."location_id" = "mapping_location"."id") 
-        WHERE ("mapping_report"."reported_by_id" = %s  OR "mapping_report_players"."player_id" = %s ) 
-        ORDER BY "mapping_report"."reported_date" DESC
-        LIMIT 1""", [self.id, self.id])
         try:
-            return reports[0].location
+            last_filed = self.report_set.filter(zombies_only=False).order_by('-reported_date')[0]
         except IndexError:
+            last_filed = None
+        try:
+            last_spotted = self.reported_at.order_by('-reported_date')[0]
+        except IndexError:
+            last_spotted = None
+        if last_filed is None and last_spotted is None:
             return u"Never seen"
+        else:
+            if last_filed is None:
+                return last_spotted
+            elif last_spotted is None:
+                return last_filed
+            else:
+                if last_filed >= last_spotted:
+                    return last_filed.location
+                else:
+                    return last_spotted.location
 
 
     def __unicode__(self):
