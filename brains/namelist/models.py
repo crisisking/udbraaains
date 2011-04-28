@@ -39,9 +39,9 @@ class Player(models.Model):
             return u"Never seen"
         else:
             if last_filed is None:
-                return last_spotted
+                return last_spotted.location
             elif last_spotted is None:
-                return last_filed
+                return last_filed.location
             else:
                 if last_filed >= last_spotted:
                     return last_filed.location
