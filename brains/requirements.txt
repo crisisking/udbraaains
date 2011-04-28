@@ -6,3 +6,4 @@ lxml==2.3
 requests
 django-celery
 redis
+http://cairographics.org/releases/py2cairo-1.8.10.tar.gz
