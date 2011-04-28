@@ -39,14 +39,14 @@ class Player(models.Model):
             return u"Never seen"
         else:
             if last_filed is None:
-                return last_spotted.location
+                return last_spotted
             elif last_spotted is None:
-                return last_filed.location
+                return last_filed
             else:
                 if last_filed >= last_spotted:
-                    return last_filed.location
+                    return last_filed
                 else:
-                    return last_spotted.location
+                    return last_spotted
 
 
     def __unicode__(self):
