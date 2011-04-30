@@ -43,7 +43,7 @@ class Player(models.Model):
             elif last_spotted is None:
                 return last_filed
             else:
-                if last_filed >= last_spotted:
+                if last_filed.reported_date >= last_spotted.reported_date:
                     return last_filed
                 else:
                     return last_spotted
