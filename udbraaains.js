@@ -390,7 +390,7 @@
 
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
-         var link = $('<a>').attr('href', this.mapURL + [coords.x, coords.y].join('-') + '/');
+         var link = $('<a>').attr('href', this.mapURL + [coords.x, coords.y].join('-'));
          link.attr('target', '_blank');
          $('.sb').append(' - ['+coords.x+','+coords.y+']').wrapInner(link);
       }
