@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 
 class Location(models.Model):
     
@@ -78,7 +79,7 @@ class Report(models.Model):
 
     
     def __unicode__(self):
-        return u'{location} by {player} at {date}'.format(location=self.location, 
+        return u'{location} by {player}, {date} ago'.format(location=self.location, 
             player=self.reported_by, 
-            date=self.reported_date.strftime('%B %d, %Y, %I:%M %p'))
+            date=datetime.datetime.now() - self.reported_date)
 
