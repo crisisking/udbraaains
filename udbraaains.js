@@ -386,17 +386,13 @@
 
    UDBrains.UI.suburbTitle = {
 
-      mapURL: 'http://map.aypok.co.uk/index.php?suburb=',
+      mapURL: 'http://dssrzs.org/map/location/',
 
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
-         var link = $('<a>').attr('href', this.mapURL+this.calculateSuburb(coords.x, coords.y));
+         var link = $('<a>').attr('href', this.mapURL + [coords.x, coords.y].join('-') + '/');
          link.attr('target', '_blank');
          $('.sb').append(' - ['+coords.x+','+coords.y+']').wrapInner(link);
-      },
-
-      calculateSuburb: function (x,y) {
-         return Math.ceil((x+1)/10) + Math.floor(y/10) * 10;
       }
 
    };
