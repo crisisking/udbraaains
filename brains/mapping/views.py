@@ -8,8 +8,19 @@ from mapping.tasks import process_data, get_player
 from namelist.models import Category, Player
 import redis
 
-
 CONN = redis.Redis(db=6)
+
+def process_annotation_timestamp(annotation, name_in, age_name, time) :
+    if annotation.has_key(name_in) :
+        annotation[name_in] = pickle.loads(str(annotation[name_in]));
+        try:
+            annotation[age_name] = unicode(time - annotation[name_in])
+        except TypeError:
+            annotation[age_name] = None
+        del annotation[name_in]
+    else :
+        annotation[age_name] = None
+
 
 @csrf_exempt
 def receive_data(request):
@@ -38,13 +49,11 @@ def receive_data(request):
             for y in y_range:
                 annotation = CONN.get('location:{0}:{1}'.format(x, y))
                 if annotation:
+                    now = datetime.datetime.now();
                     annotation = json.loads(annotation)
-                    annotation['report_date'] = pickle.loads(annotation['report_date'])
-                    try:
-                        annotation['report_age'] = unicode(datetime.datetime.now() - annotation['report_date'])
-                    except TypeError:
-                        annotation['report_age'] = None
-                    del annotation['report_date']
+                    process_annotation_timestamp(annotation, 'report_date', 'report_age', now)
+                    process_annotation_timestamp(annotation, 'inside_report_date', 'inside_age', now)
+                    process_annotation_timestamp(annotation, 'outside_report_date', 'outside_age', now)
                     payload['annotation'].append(annotation)
         
         

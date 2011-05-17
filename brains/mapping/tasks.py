@@ -146,6 +146,7 @@ def build_annotation(location):
         if inside:
             report = inside[0]
             annotation['survivor_count'] = report.players.count()
+            annotation['inside_report_date'] = pickle.dumps(report.reported_date);
             coords_x = location.x
             coords_y = location.y
             json_coords = json.dumps({'x': coords_x, 'y': coords_y})
@@ -157,7 +158,7 @@ def build_annotation(location):
         if outside:
             total = annotation['survivor_count'] or 0
             annotation['survivor_count'] = total + outside[0].players.count()
-        
+            annotation['outside_report_date'] = pickle.dumps(outside[0].reported_date);
     else:
         for key in ('barricades', 'ruined', 'illuminated', 'survivor_count'):
             annotation[key] = None
