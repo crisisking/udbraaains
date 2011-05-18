@@ -26,9 +26,9 @@ def process_data(data, ip):
     except Location.DoesNotExist:
         CONN.lpush('location-errors', json.dumps(dict(data=data, ip=ip)))
         raise
-    
-    # Grab the player object, update is dead flag
-    player = get_player(data['user']['id'], category=goon)
+
+    # Grab the player object, update is dead flag. We save right here, so avoid extra save
+    player = get_player(data['user']['id'], category=goon, save=False)
     player.is_dead = not data['user']['alive']
     player.save()
 
@@ -100,7 +100,7 @@ def set_reporter_blacklist(ip, blacklist=True):
     reporter.save()
 
 @task()
-def get_player(profile_id, report=None, category=None, force_refresh=False):
+def get_player(profile_id, report=None, category=None, force_refresh=False, save=True):
     profile_id = int(profile_id)
     player, created = Player.objects.get_or_create(profile_id=profile_id)
     if created or force_refresh:
@@ -118,7 +118,8 @@ def get_player(profile_id, report=None, category=None, force_refresh=False):
         CONN.sadd('rebuild', report.location_id)
     if category and not player.category:
         player.category = category
-    player.save()
+    if save :
+        player.save()
     return player
 
 
