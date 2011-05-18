@@ -485,6 +485,9 @@
                tile
                   .attr('title', title)
                   .css({background: this.color( data.barricades )});
+               if (data.ruined) // barricaded ruined buildings are rare
+                  tile.css({background: '#000'});
+
             }).heatmap(1, 9, 9),
 
             ruined: this.grid(function (tile, data) {
