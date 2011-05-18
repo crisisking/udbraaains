@@ -491,13 +491,15 @@
             }).heatmap(1, 9, 9),
 
             ruined: this.grid(function (tile, data) {
-               var unruinable_types = ['cprk', 'ceme', 'zoox', 'zooe', 'fexy', 'monu', 'park', 'opns', 'ftgr', 'wast', 'junk'];
+               var unruinable_types = ['cprk', 'ceme', 'zoox', 'zooe', 'fexy', 'monu', 'park', 'opns', 'ftgr', 'wast']; // Except junkyards
                
                if($.inArray(data.building_type, unruinable_types) !== -1) {
                    return;
                }
-               
-               if(data.ruined) {
+               if (data.building_type == 'junk') {                  
+                  tile.css({background: '#888800'})
+                      .attr('title', 'Junkyard');
+               } else if(data.ruined) {
                   tile.css({background: '#000'});
                } else {
                   tile.css({background: '#FF9999'});
