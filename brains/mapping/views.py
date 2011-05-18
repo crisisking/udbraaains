@@ -33,8 +33,10 @@ def receive_data(request):
         if origin_x < 0 or origin_x > 99 or origin_y < 0 or origin_y > 99:
             return HttpResponse('STOP IT', status=400)
 
-        ip = request.META['HTTP_X_REAL_IP']
-
+        if request.META.has_key('HTTP_X_REAL_IP') :
+            ip = request.META['HTTP_X_REAL_IP']
+        else :
+            ip = request.META['REMOTE_ADDR']
         process_data.delay(data, ip)
 
         payload = {}
