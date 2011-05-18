@@ -453,7 +453,7 @@
 
             survivors: this.grid(function (tile, data) {
                if(data.survivor_count === null) {return};
-               var title = this.title(tile, 'survivors', data.survivor_count, data.report_age);
+               var title = this.title(tile, 'survivors', data.survivor_count, data.inside_age);
                tile
                   .attr('title', title)
                   .css({background: this.color( data.survivor_count )});
@@ -504,6 +504,8 @@
          };
          $(udb).bind('ready', function () {
             udb.report.annotation.forEach(function (data) {
+               if (!data.hasOwnProperty('inside_age'))
+                  data.inside_age = data.report_age;
                $.each(self.maps, function (name, mmap) {
                   mmap.dataHandler(data);
                });
@@ -785,7 +787,7 @@
          var title, ageString, timewords, time, days;
          // age format:  "[X days,]hh:mm:ss.ssss"
          title = [elem.attr('title'), val + ' ' + name].join(' : ');
-         if (age === null) {
+         if (age === null || age === undefined) {
             return title;
          };
          age = age.split(',');
