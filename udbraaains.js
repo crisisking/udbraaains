@@ -155,7 +155,15 @@
          //.mr = ruined or inside dark
          if(this.isPositionElement(elem) && this.isInside() ){
             // when inside and on the current tile we have to scrape the description
-            return $('.gp .gt').text().search(/has fallen into ruin/) >= 0;
+            var txt = $('.gp .gt').text();
+            return txt.search(/has fallen into ruin/) >= 0 ||
+                   txt.search(/The laboratories have been ruined,/) >= 0 ||
+                   txt.search(/The walls are damp and crumbling, with pools of stagnant water gathering across the uneven floor/) >= 0 ||
+                   txt.search(/The machinery has been ruined, with dark oil pooling on the concrete floor./) >= 0 ||
+                   txt.search(/The lobby has been ruined, and debris trails down the staircases./) >= 0 ||
+                   txt.search(/Chairs and tables are strewn across the floor, and there is broken glass everywhere/) >= 0 ||
+                   txt.search(/The shops are ruined, broken glass covering the fallen shelves/) >= 0 ||
+                   txt.search(/Shelves and racks have been smashed and toppled, with torn books scattered out across the floor/) >= 0;
          } else {
             return $(elem).find('input[type=submit]').hasClass('mr');
          }
