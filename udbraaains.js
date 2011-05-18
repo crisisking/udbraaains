@@ -371,7 +371,7 @@
          var ids = udb.surroundings.position.survivors.map(function (survivor) {
             return survivor.id;
          });
-
+         min_id = Math.min.apply(Math, ids); // need this before own id
          ids.push(udb.user.id);
 
          $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
@@ -388,6 +388,17 @@
                }
             });
          }, 'json');
+         if (min_id) {
+            min_id_link = $('a[href="profile.cgi?id=' + min_id + '"]', 'div:.gt');
+            if (min_id_link.length) {
+               var p = $(document.createElement("p")).
+                  append(min_id_link.clone()).
+                  append(" has the oldest profile. Maybe you should kill them, like in Logan's run.");
+
+               $('div:.gt','td:.gp').append(p);
+            }
+         }
+
       }
 
    };
