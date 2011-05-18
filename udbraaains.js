@@ -7,8 +7,11 @@
    UDBrains.fn = UDBrains.prototype = {
 
       version: 2.0,
+      
+      brainsServer: 'http://brains.somethingdead.com',
 
-      reportURL: 'http://brains.somethingdead.com/map/collect/',
+      reportPath: '/map/collect/',
+
 
       surroundings: {
          inside: false,
@@ -296,7 +299,7 @@
          });
          $.ajax({
             type: "POST",
-            url: this.reportURL,
+            url: this.brainsServer + this.reportPath,
             data: {data: JSON.stringify({user: this.user, surroundings: surroundings})},
             dataType: 'json',
             success: this.receiveReport()
@@ -344,7 +347,7 @@
 
    UDBrains.UI.ordersPane = {
 
-      url: 'http://brains.somethingdead.com/orders/',
+      url: UDBrains.fn.brainsServer + '/orders/',
 
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
@@ -373,8 +376,8 @@
          });
          min_id = Math.min.apply(Math, ids); // need this before own id
          ids.push(udb.user.id);
-
-         $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
+         
+         $.post(udb.brainsServer + '/names/colors/', {players:ids}, function (data) {
             $.each(data, function (index, elem) {
                $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code);
                //Goon color is the same as default, so check for that and use it as a background instead
@@ -603,9 +606,10 @@
          var coords, minimap;
          coords = this.coords;
          minimap = this;
+
          $.ajax({
             type: 'GET',
-            url: 'http://brains.somethingdead.com/orders/' + coords.x + '/' + coords.y + '/?' + new Date().getTime(),
+            url: UDBrains.brainsServer + '/orders/' + coords.x + '/' + coords.y + '/?' + new Date().getTime(),
             dataType: 'html',
             success: function (html) {
                var targets = html.match(/\[\d+\,\d+\]/g);
