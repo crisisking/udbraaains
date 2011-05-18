@@ -452,11 +452,19 @@
             }).heatmap(1, 4, 4),
 
             survivors: this.grid(function (tile, data) {
-               if(data.survivor_count === null) {return};
+               var outdoor_types = ['cprk', 'ceme', 'zoox', 'zooe', 'fexy', 'monu', 'park', 'opns', 'ftgr', 'wast'];
+               if ($.inArray(data.building_type, outdoor_types) === -1) {
+                  if (data.ruined)
+                     tile.css({background: '#000'});
+                  else
+                     tile.css({background: '#555'});
+               }
+               if(data.survivor_count === null) { return;  };
                var title = this.title(tile, 'survivors', data.survivor_count, data.inside_age);
-               tile
-                  .attr('title', title)
-                  .css({background: this.color( data.survivor_count )});
+
+               tile.attr('title', title)
+               data.survivor_count &&
+                  tile.css({background: this.color( data.survivor_count )});
             }).heatmap(1, 15, 5),
 
             eats: this.grid(function (tile, data) {
