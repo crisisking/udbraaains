@@ -10,15 +10,15 @@ import redis
 
 CONN = redis.Redis(db=6)
 
-def process_annotation_timestamp(annotation, name_in, age_name, time) :
-    if annotation.has_key(name_in) :
+def process_annotation_timestamp(annotation, name_in, age_name, time):
+    if annotation.has_key(name_in):
         annotation[name_in] = pickle.loads(str(annotation[name_in]))
         try:
             annotation[age_name] = unicode(time - annotation[name_in])
         except TypeError:
             annotation[age_name] = None
         del annotation[name_in]
-    else :
+    else:
         annotation[age_name] = None
 
 
@@ -33,9 +33,9 @@ def receive_data(request):
         if origin_x < 0 or origin_x > 99 or origin_y < 0 or origin_y > 99:
             return HttpResponse('STOP IT', status=400)
 
-        if request.META.has_key('HTTP_X_REAL_IP') :
+        if request.META.has_key('HTTP_X_REAL_IP'):
             ip = request.META['HTTP_X_REAL_IP']
-        else :
+        else:
             ip = request.META['REMOTE_ADDR']
         process_data.delay(data, ip)
 

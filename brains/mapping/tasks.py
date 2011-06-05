@@ -95,7 +95,7 @@ def get_player(profile_id, report=None, category=None, force_refresh=False, save
         CONN.sadd('rebuild', report.location_id)
     if category and not player.category:
         player.category = category
-    if save :
+    if save:
         player.save()
     return player
 
