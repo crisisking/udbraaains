@@ -184,7 +184,7 @@ def annotation_master():
     transaction = CONN.pipeline()
     transaction = transaction.sdiff(['rebuild', 'rebuild-scheduled'])
     del transaction['rebuild']
-    add_transaction = transaction.execute()
+    transaction = transaction.execute()
     add_transaction = CONN.pipeline()
     for i in transaction[0]:
         add_transaction.sadd('rebuild-scheduled', i)
