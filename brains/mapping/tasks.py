@@ -103,12 +103,12 @@ def get_player(profile_id, report=None, category=None, force_refresh=False, save
 @task()
 def build_annotation(location):
 
+    CONN.srem('rebuild-scheduled', location.id)
     has_lock = CONN.setnx('update-location:{0}:{1}'.format(location.x, location.y), 1)
     if not has_lock:
         CONN.sadd('rebuild', location.id)
         return "Location [{0}, {1}] locked for update".format(location.x, location.y)
     
-    CONN.srem('rebuild-scheduled', location.id)
     # Expire lock after five minutes, workers usually have twice that long to finish.
     CONN.expire('update-location:{0}:{1}'.format(location.x, location.y), 300)
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
@@ -195,3 +195,4 @@ def annotation_master():
     for l in locations:
         build_annotation.delay(l)
     del CONN['updating']
+
