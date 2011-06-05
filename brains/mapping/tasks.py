@@ -108,6 +108,7 @@ def build_annotation(location):
         CONN.sadd('rebuild', location.id)
         return "Location [{0}, {1}] locked for update".format(location.x, location.y)
     
+    CONN.srem('rebuild_scheduled', location.id)
     # Expire lock after five minutes, workers usually have twice that long to finish.
     CONN.expire('update-location:{0}:{1}'.format(location.x, location.y), 300)
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
@@ -180,10 +181,14 @@ def annotation_master():
 
     # Break the lock in 45 seconds, in case something exceptional happens.
     CONN.expire('updating', 45)
-    transaction = CONN.pipeline()
-    transaction = transaction.smembers('rebuild')
+    transaction = CONN.pipeline(use_transaction=True)
+    transaction = transaction.sdiff('rebuild', 'rebuild-scheduled')
     del transaction['rebuild']
-    transaction = transaction.execute()
+    add_transaction = transaction.execute()
+    add_transaction = CONN.pipeline(use_transaction=True)
+    for i in transaction[0]:
+        add_transaction.sadd('rebuild-scheduled', i)
+    add_transaction.execute()
     locations = Location.objects.filter(pk__in=[int(x) for x in transaction[0]])
     for l in locations:
         build_annotation.delay(l)
