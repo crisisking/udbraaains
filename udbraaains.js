@@ -7,8 +7,11 @@
    UDBrains.fn = UDBrains.prototype = {
 
       version: 2.0,
+      
+      brainsServer: 'http://brains.somethingdead.com',
 
-      reportURL: 'http://brains.somethingdead.com/map/collect/',
+      reportPath: '/map/collect/',
+
 
       surroundings: {
          inside: false,
@@ -155,7 +158,15 @@
          //.mr = ruined or inside dark
          if(this.isPositionElement(elem) && this.isInside() ){
             // when inside and on the current tile we have to scrape the description
-            return $('.gp .gt').text().search(/has fallen into ruin/) >= 0;
+            var txt = $('.gp .gt').text();
+            return txt.search(/has fallen into ruin/) >= 0 ||
+                   txt.search(/The laboratories have been ruined,/) >= 0 ||
+                   txt.search(/The walls are damp and crumbling, with pools of stagnant water gathering across the uneven floor/) >= 0 ||
+                   txt.search(/The machinery has been ruined, with dark oil pooling on the concrete floor./) >= 0 ||
+                   txt.search(/The lobby has been ruined, and debris trails down the staircases./) >= 0 ||
+                   txt.search(/Chairs and tables are strewn across the floor, and there is broken glass everywhere/) >= 0 ||
+                   txt.search(/The shops are ruined, broken glass covering the fallen shelves/) >= 0 ||
+                   txt.search(/Shelves and racks have been smashed and toppled, with torn books scattered out across the floor/) >= 0;
          } else {
             return $(elem).find('input[type=submit]').hasClass('mr');
          }
@@ -288,7 +299,7 @@
          });
          $.ajax({
             type: "POST",
-            url: this.reportURL,
+            url: this.brainsServer + this.reportPath,
             data: {data: JSON.stringify({user: this.user, surroundings: surroundings})},
             dataType: 'json',
             success: this.receiveReport()
@@ -336,7 +347,7 @@
 
    UDBrains.UI.ordersPane = {
 
-      url: 'http://brains.somethingdead.com/orders/',
+      url: UDBrains.fn.brainsServer + '/orders/',
 
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
@@ -363,10 +374,10 @@
          var ids = udb.surroundings.position.survivors.map(function (survivor) {
             return survivor.id;
          });
-
+         min_id = Math.min.apply(Math, ids); // need this before own id
          ids.push(udb.user.id);
-
-         $.post('http://brains.somethingdead.com/names/colors/', {players:ids}, function (data) {
+         
+         $.post(udb.brainsServer + '/names/colors/', {players:ids}, function (data) {
             $.each(data, function (index, elem) {
                $('a[href="profile.cgi?id=' + elem.id + '"]').css('color', elem.color_code);
                //Goon color is the same as default, so check for that and use it as a background instead
@@ -380,6 +391,17 @@
                }
             });
          }, 'json');
+         if (min_id) {
+            min_id_link = $('a[href="profile.cgi?id=' + min_id + '"]', 'div:.gt');
+            if (min_id_link.length) {
+               var p = $(document.createElement("p")).
+                  append(min_id_link.clone()).
+                  append(" has the oldest profile. Maybe you should kill them, like in Logan's run.");
+
+               $('div:.gt','td:.gp').append(p);
+            }
+         }
+
       }
 
    };
@@ -430,11 +452,19 @@
             }).heatmap(1, 4, 4),
 
             survivors: this.grid(function (tile, data) {
-               if(data.survivor_count === null) {return};
-               var title = this.title(tile, 'survivors', data.survivor_count, data.report_age);
-               tile
-                  .attr('title', title)
-                  .css({background: this.color( data.survivor_count )});
+               var outdoor_types = ['cprk', 'ceme', 'zoox', 'zooe', 'fexy', 'monu', 'park', 'opns', 'ftgr', 'wast'];
+               if ($.inArray(data.building_type, outdoor_types) === -1) {
+                  if (data.ruined)
+                     tile.css({background: '#000'});
+                  else
+                     tile.css({background: '#555'});
+               }
+               if(data.survivor_count === null) { return;  };
+               var title = this.title(tile, 'survivors', data.survivor_count, data.inside_age);
+
+               tile.attr('title', title)
+               data.survivor_count &&
+                  tile.css({background: this.color( data.survivor_count )});
             }).heatmap(1, 15, 5),
 
             eats: this.grid(function (tile, data) {
@@ -455,16 +485,21 @@
                tile
                   .attr('title', title)
                   .css({background: this.color( data.barricades )});
+               if (data.ruined) // barricaded ruined buildings are rare
+                  tile.css({background: '#000'});
+
             }).heatmap(1, 9, 9),
 
             ruined: this.grid(function (tile, data) {
-               var unruinable_types = ['cprk', 'ceme', 'zoox', 'zooe', 'fexy', 'monu', 'park', 'opns', 'ftgr', 'wast', 'junk'];
+               var unruinable_types = ['cprk', 'ceme', 'zoox', 'zooe', 'fexy', 'monu', 'park', 'opns', 'ftgr', 'wast']; // Except junkyards
                
                if($.inArray(data.building_type, unruinable_types) !== -1) {
                    return;
                }
-               
-               if(data.ruined) {
+               if (data.building_type == 'junk') {                  
+                  tile.css({background: '#888800'})
+                      .attr('title', 'Junkyard');
+               } else if(data.ruined) {
                   tile.css({background: '#000'});
                } else {
                   tile.css({background: '#FF9999'});
@@ -482,6 +517,8 @@
          };
          $(udb).bind('ready', function () {
             udb.report.annotation.forEach(function (data) {
+               if (!data.hasOwnProperty('inside_age'))
+                  data.inside_age = data.report_age;
                $.each(self.maps, function (name, mmap) {
                   mmap.dataHandler(data);
                });
@@ -584,9 +621,10 @@
          var coords, minimap;
          coords = this.coords;
          minimap = this;
+
          $.ajax({
             type: 'GET',
-            url: 'http://brains.somethingdead.com/orders/' + coords.x + '/' + coords.y + '/?' + new Date().getTime(),
+            url: UDBrains.brainsServer + '/orders/' + coords.x + '/' + coords.y + '/?' + new Date().getTime(),
             dataType: 'html',
             success: function (html) {
                var targets = html.match(/\[\d+\,\d+\]/g);
@@ -762,7 +800,7 @@
          var title, ageString, timewords, time, days;
          // age format:  "[X days,]hh:mm:ss.ssss"
          title = [elem.attr('title'), val + ' ' + name].join(' : ');
-         if (age === null) {
+         if (age === null || age === undefined) {
             return title;
          };
          age = age.split(',');

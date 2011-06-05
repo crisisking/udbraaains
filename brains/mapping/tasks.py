@@ -2,7 +2,7 @@ import json
 import datetime
 import cPickle as pickle
 from celery.task import task
-from mapping.models import Report, Location
+from mapping.models import Report, Location, Reporter
 from namelist.models import Player, Category
 from namelist.scrape import scrape_profile
 import redis
@@ -26,12 +26,18 @@ def process_data(data, ip):
     except Location.DoesNotExist:
         CONN.lpush('location-errors', json.dumps(dict(data=data, ip=ip)))
         raise
-    
-    # Grab the player object, update is dead flag
-    player = get_player(data['user']['id'], category=goon)
+
+    # Grab the player object, update is dead flag. We save right here, so avoid extra save
+    player = get_player(data['user']['id'], category=goon, save=False)
     player.is_dead = not data['user']['alive']
     player.save()
 
+    # Grab the reporter object
+    reporter = get_reporter(ip, rep_player=player, save=True)
+    if reporter.blacklisted :
+        # not sure how to log in this environment
+        print "Rejected a request from " + str(ip)
+        return;
 
     position = data['surroundings']['position']
     
@@ -47,6 +53,7 @@ def process_data(data, ip):
     report.zombies_only = False
     report.reported_by = player
     report.origin = ip
+    report.reporter = reporter;
     report.save()
     
     # Add players to the primary report
@@ -76,9 +83,24 @@ def process_data(data, ip):
         
     CONN.sadd('rebuild', p_location.id)
 
+@task()
+def get_reporter(ip, rep_player=None, save=True):
+    reporter, created = Reporter.objects.get_or_create(address = ip)
+    if rep_player :
+        reporter.known_players.add(rep_player)
+    if save :
+        reporter.save()
+
+    return reporter
 
 @task()
-def get_player(profile_id, report=None, category=None, force_refresh=False):
+def set_reporter_blacklist(ip, blacklist=True):
+    reporter, created = Reporter.objects.get_or_create(address = ip)
+    reporter.blacklisted = blacklist;
+    reporter.save()
+
+@task()
+def get_player(profile_id, report=None, category=None, force_refresh=False, save=True):
     profile_id = int(profile_id)
     player, created = Player.objects.get_or_create(profile_id=profile_id)
     if created or force_refresh:
@@ -96,7 +118,8 @@ def get_player(profile_id, report=None, category=None, force_refresh=False):
         CONN.sadd('rebuild', report.location_id)
     if category and not player.category:
         player.category = category
-    player.save()
+    if save :
+        player.save()
     return player
 
 
@@ -146,6 +169,7 @@ def build_annotation(location):
         if inside:
             report = inside[0]
             annotation['survivor_count'] = report.players.count()
+            annotation['inside_report_date'] = pickle.dumps(report.reported_date);
             coords_x = location.x
             coords_y = location.y
             json_coords = json.dumps({'x': coords_x, 'y': coords_y})
@@ -157,7 +181,7 @@ def build_annotation(location):
         if outside:
             total = annotation['survivor_count'] or 0
             annotation['survivor_count'] = total + outside[0].players.count()
-        
+            annotation['outside_report_date'] = pickle.dumps(outside[0].reported_date);
     else:
         for key in ('barricades', 'ruined', 'illuminated', 'survivor_count'):
             annotation[key] = None
