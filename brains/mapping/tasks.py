@@ -182,7 +182,7 @@ def annotation_master():
     # Break the lock in 45 seconds, in case something exceptional happens.
     CONN.expire('updating', 45)
     transaction = CONN.pipeline()
-    transaction = transaction.sdiff('rebuild', 'rebuild-scheduled')
+    transaction = transaction.sdiff(['rebuild', 'rebuild-scheduled'])
     del transaction['rebuild']
     add_transaction = transaction.execute()
     add_transaction = CONN.pipeline()
