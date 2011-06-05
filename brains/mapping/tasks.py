@@ -108,7 +108,7 @@ def build_annotation(location):
         CONN.sadd('rebuild', location.id)
         return "Location [{0}, {1}] locked for update".format(location.x, location.y)
     
-    CONN.srem('rebuild_scheduled', location.id)
+    CONN.srem('rebuild-scheduled', location.id)
     # Expire lock after five minutes, workers usually have twice that long to finish.
     CONN.expire('update-location:{0}:{1}'.format(location.x, location.y), 300)
     reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
