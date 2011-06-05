@@ -134,32 +134,34 @@ def build_annotation(location):
 
     primaries = reports.filter(zombies_only=False)
     if primaries:
+        primary = primaries[0]
         inside = primaries.filter(inside=True)
         outside = primaries.filter(inside=False)
 
-        annotation['barricades'] = primaries[0].barricade_level
-        annotation['ruined'] = primaries[0].is_ruined
-        annotation['illuminated'] = primaries[0].is_illuminated
+        annotation['barricades'] = primary.barricade_level
+        annotation['ruined'] = primary.is_ruined
+        annotation['illuminated'] = primary.is_illuminated
     
-        annotation['report_date'] = pickle.dumps(primaries[0].reported_date)
+        annotation['report_date'] = pickle.dumps(primary.reported_date)
         annotation['survivor_count'] = None
     
         if inside:
-            report = inside[0]
-            annotation['survivor_count'] = report.players.count()
-            annotation['inside_report_date'] = pickle.dumps(report.reported_date)
+            inside_report = inside[0]
+            annotation['survivor_count'] = inside_report.players.count()
+            annotation['inside_report_date'] = pickle.dumps(inside_report.reported_date)
             coords_x = location.x
             coords_y = location.y
             json_coords = json.dumps({'x': coords_x, 'y': coords_y})
-            if report.has_tree:
+            if inside_report.has_tree:
                 CONN.sadd('trees', json_coords)
             else:
                 CONN.srem('trees', json_coords)
         
         if outside:
+            outside_report = outside[0]
             total = annotation['survivor_count'] or 0
-            annotation['survivor_count'] = total + outside[0].players.count()
-            annotation['outside_report_date'] = pickle.dumps(outside[0].reported_date)
+            annotation['survivor_count'] = total + outside_report.players.count()
+            annotation['outside_report_date'] = pickle.dumps(outside_report.reported_date)
     else:
         for key in ('barricades', 'ruined', 'illuminated', 'survivor_count'):
             annotation[key] = None
