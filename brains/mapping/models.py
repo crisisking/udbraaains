@@ -62,10 +62,6 @@ class Location(models.Model):
     def __unicode__(self):
         return u'{name} [{x}, {y}]'.format(name=self.name, x=self.x, y=self.y)
 
-class Reporter(models.Model):
-    address = models.IPAddressField(primary_key = True)
-    blacklisted = models.BooleanField(db_index = True, default = False)
-    known_players = models.ManyToManyField('namelist.Player', related_name='reported_from')
 
 class Report(models.Model):
     location = models.ForeignKey(Location)
@@ -79,7 +75,6 @@ class Report(models.Model):
     reported_by = models.ForeignKey('namelist.Player')
     reported_date = models.DateTimeField(auto_now_add=True, db_index=True)
     origin = models.IPAddressField()
-    reporter = models.ForeignKey(Reporter, related_name='reported_at', null=True)
     has_tree = models.BooleanField(default=False, db_index=True)
 
     

@@ -2,7 +2,7 @@ import json
 import datetime
 import cPickle as pickle
 from celery.task import task
-from mapping.models import Report, Location, Reporter
+from mapping.models import Report, Location
 from namelist.models import Player, Category
 from namelist.scrape import scrape_profile
 import redis
@@ -32,13 +32,6 @@ def process_data(data, ip):
     player.is_dead = not data['user']['alive']
     player.save()
 
-    # Grab the reporter object
-    reporter = get_reporter(ip, rep_player=player, save=True)
-    if reporter.blacklisted :
-        # not sure how to log in this environment
-        print "Rejected a request from " + str(ip)
-        return;
-
     position = data['surroundings']['position']
     
     # Build primary report
@@ -53,7 +46,6 @@ def process_data(data, ip):
     report.zombies_only = False
     report.reported_by = player
     report.origin = ip
-    report.reporter = reporter;
     report.save()
     
     # Add players to the primary report
@@ -83,21 +75,6 @@ def process_data(data, ip):
         
     CONN.sadd('rebuild', p_location.id)
 
-@task()
-def get_reporter(ip, rep_player=None, save=True):
-    reporter, created = Reporter.objects.get_or_create(address = ip)
-    if rep_player :
-        reporter.known_players.add(rep_player)
-    if save :
-        reporter.save()
-
-    return reporter
-
-@task()
-def set_reporter_blacklist(ip, blacklist=True):
-    reporter, created = Reporter.objects.get_or_create(address = ip)
-    reporter.blacklisted = blacklist;
-    reporter.save()
 
 @task()
 def get_player(profile_id, report=None, category=None, force_refresh=False, save=True):
