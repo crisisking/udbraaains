@@ -12,7 +12,7 @@ CONN = redis.Redis(db=6)
 
 def process_annotation_timestamp(annotation, name_in, age_name, time) :
     if annotation.has_key(name_in) :
-        annotation[name_in] = pickle.loads(str(annotation[name_in]));
+        annotation[name_in] = pickle.loads(str(annotation[name_in]))
         try:
             annotation[age_name] = unicode(time - annotation[name_in])
         except TypeError:
@@ -51,7 +51,7 @@ def receive_data(request):
             for y in y_range:
                 annotation = CONN.get('location:{0}:{1}'.format(x, y))
                 if annotation:
-                    now = datetime.datetime.now();
+                    now = datetime.datetime.now()
                     annotation = json.loads(annotation)
                     process_annotation_timestamp(annotation, 'report_date', 'report_age', now)
                     process_annotation_timestamp(annotation, 'inside_report_date', 'inside_age', now)
