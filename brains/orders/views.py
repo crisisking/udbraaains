@@ -11,7 +11,7 @@ def index(request, x, y):
                             referrer.startswith('http://urbandead.com/map.cgi')))
 
     if not valid_referrer: 
-        return HttpResponseRedirect('http://www.youtube.com/watch?v=lWKQiZVBtu4')
+        return render(request, 'orders/orders.html', dict(slamjam=True))
 
     x = int(x)
     y = int(y)
