@@ -627,9 +627,9 @@
             url: UDBrains.brainsServer + '/orders/' + coords.x + '/' + coords.y + '/?' + new Date().getTime(),
             dataType: 'html',
             success: function (html) {
-               var targets = html.match(/\[\d+\,\d+\]/g);
+               var targets = html.match(/\[\d+\, \d+\]/g);
                targets = targets.map(function (targ) {
-                  var coords = targ.match(/\[(\d+\,\d+)\]/)[1].split(',');
+                  var coords = targ.match(/\[(\d+\, \d+)\]/)[1].split(',');
                   return {
                      x: coords[0],
                      y: coords[1]
