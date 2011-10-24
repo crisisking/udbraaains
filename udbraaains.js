@@ -353,7 +353,7 @@
          var coords = udb.surroundings.position.coords;
          var ordersContainer = $('<iframe>').attr('id', 'orders').attr('src', this.url + coords.x + '/' + coords.y + '/?' + new Date().getTime()).css({
             width: '100%',
-            height: '200px',
+            height: '250px',
             border: '4px solid #445544',
             scroll: 'auto'
          });
