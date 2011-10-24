@@ -34,7 +34,7 @@ Modified BSD License
 
 Contributors
 ------------
-butternbacon (garnet420)
-crisisking
-kimihia
-underisk
+* butternbacon (garnet420)
+* crisisking
+* kimihia
+* underisk
