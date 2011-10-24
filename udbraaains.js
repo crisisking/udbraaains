@@ -839,32 +839,6 @@
    };
 
    UDBrains.UI.minimap.grid.fn.init.prototype = UDBrains.UI.minimap.grid.fn;
-
-
-   UDBrains.UI.mibbit = {
-
-       channelURL: 'http://01.chat.mibbit.com/?server=irc.synirc.net&channel=%23urbandead',
-
-       init: function (udb) {
-           var header = $('<h2>').attr('id', 'irc-link');
-           var link = $('<a>').attr('href', this.channelURL).attr('target', '_blank');
-           link.text('Come hang out on IRC!');
-           var hide = $('<a>').attr('href','#').css({
-              'float': 'right',
-              fontSize: '10px'
-           }).text('[hide]').bind('click', function () {
-              header.hide();
-              localStorage.hideIRC = true;
-              return false;
-           });
-           hide.appendTo(header);
-           link.appendTo(header);
-           if(!localStorage.hideIRC || localStorage.hideIRC !== 'true') {
-              header.prependTo('.gp div.gt');
-           }
-       }
-
-   };
    
    UDBrains.UI.characterAlert = {
       
