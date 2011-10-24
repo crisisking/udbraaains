@@ -351,7 +351,7 @@
 
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
-         var iframe = $('<iframe>').attr('id', 'orders').attr('src', this.url + coords.x + '/' + coords.y + '/?' + new Date().getTime()).css({
+         var ordersContainer = $('<div>').attr('id', 'orders').load(this.url + coords.x + '/' + coords.y + '/?' + new Date().getTime()).css({
             width: '100%',
             height: '200px',
             border: '4px solid #445544'
@@ -360,9 +360,9 @@
             localStorage.ordersVisible = $('#orders').toggle().is(':visible');
          }).text('Click here to toggle orders.');
          $('.gp').append(ordersLink);
-         $('.gp').append(iframe);
+         $('.gp').append(ordersContainer);
          if (localStorage.ordersVisible === "false") {
-            iframe.hide();
+            ordersContainer.hide();
          }
       }
 
