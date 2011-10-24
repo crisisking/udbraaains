@@ -7,3 +7,4 @@ requests==0.7.3
 django-celery==2.3.3
 redis==2.4.9
 psycopg2==2.4.1
+setproctitle
