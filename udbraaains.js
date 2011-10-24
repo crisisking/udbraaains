@@ -351,10 +351,11 @@
 
       init: function (udb) {
          var coords = udb.surroundings.position.coords;
-         var ordersContainer = $('<div>').attr('id', 'orders').load(this.url + coords.x + '/' + coords.y + '/?' + new Date().getTime()).css({
+         var ordersContainer = $('<iframe>').attr('id', 'orders').attr('src', this.url + coords.x + '/' + coords.y + '/?' + new Date().getTime()).css({
             width: '100%',
             height: '200px',
-            border: '4px solid #445544'
+            border: '4px solid #445544',
+            scroll: 'auto'
          });
          var ordersLink = $('<a>').attr('href', '#orders').bind('click', function () {
             localStorage.ordersVisible = $('#orders').toggle().is(':visible');
