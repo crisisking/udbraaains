@@ -11,10 +11,13 @@
     </style>
 </head>
 <body>
-    {% if slamjam %}
-    <iframe width="640" height="480" src="http://www.youtube.com/embed/lWKQiZVBtu4?autoplay=1&amp;rel=0" frameborder="0" allowfullscreen></iframe>
-    {% else %}
     <div id="news">
+        {% if slamjam %}
+        <div style="text-align: center">
+            <h1>WELCOME TO THE JAM</h1>
+            <iframe width="640" height="480" src="http://www.youtube.com/embed/lWKQiZVBtu4?autoplay=1&amp;rel=0" frameborder="0" allowfullscreen></iframe>
+        </div>
+        {% else %}
         {% for order in orders %}
         <div class="newsitem">
             <h1>{{ order.subject }} [{{ order.x }}, {{ order.y }}]{% if order.striketime %} in {{ order.striketime|timeuntil }}{% endif %}</h1>
