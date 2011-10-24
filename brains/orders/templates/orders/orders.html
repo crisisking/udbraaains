@@ -11,9 +11,9 @@
     </style>
 </head>
 <body>
-    {{ if slamjam }}
+    {% if slamjam %}
     <iframe width="640" height="480" src="http://www.youtube.com/embed/lWKQiZVBtu4?autoplay=1&amp;rel=0" frameborder="0" allowfullscreen></iframe>
-    {{ else }}
+    {% else %}
     <div id="news">
         {% for order in orders %}
         <div id="newsitem">
@@ -26,6 +26,6 @@
     <div id="moreinfo">
         <p>For more information, please visit <a href="http://forums.somethingawful.com/showthread.php?threadid=3415090" target="_blank">the current PGS thread.</a></p>
     </div>
-    {{ endif }}
+    {% endif %}
 </body>
 </html>
