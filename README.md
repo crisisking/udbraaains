@@ -9,9 +9,10 @@ This project was designed, used, and hosted by members of the [Something Awful f
 Requirements
 ------------
 Python requirements can be found in requirements.txt. UDBraaains is based on the [Django web framework](http://djangoproject.com) and utilizes [jQuery](http://jquery.com) for its Javascript needs.
-We also use [Skybot](https://github.com/underisk/skybot) as our IRC bot. It's an out-of-date fork of the [Skybot Project](https://github.com/rmmh/skybot).
+Our [IRC bot](https://github.com/underisk/skybot) is an out-of-date fork of the [Skybot Project](https://github.com/rmmh/skybot).
 
-Redis is required to run the project, as it is used directly by Celery tasks and view code. Redis sets are used for tile update scheduling, so this wart is not likely to be removed in the near-future.
+[Redis](http://redis.io) is required to run the project, as it is used directly by [Celery](http://celeryproject.org) tasks and view code.
+Redis sets are used for tile update scheduling, so this wart is not likely to be removed in the near-future.
 
 Though not direct requirements, the Goon-run server uses [gunicorn](http://gunicorn.org) with [nginx](http://nginx.org) as a web server, and [PostgreSQL](http://www.postgresql.org) as a database.
 
