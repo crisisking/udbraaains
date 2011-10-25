@@ -2,7 +2,7 @@ import re
 from django.http import HttpResponse
 
 
-ALLOWED_PATTERN = re.compile(r'http://(www\.)urbandead\.com')
+ALLOWED_PATTERN = re.compile(r'http://(www\.)?urbandead\.com')
 
 
 class AccessControl(object):
