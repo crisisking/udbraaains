@@ -13,11 +13,17 @@ class NotFound(Exception):
     pass
 
 
-def get_user_profile_id(name):
+def parse_page(url, **kwargs):
     io = StringIO.StringIO()
-    io.write(requests.get(PROFILES_URL, params={'name': name}).content)
+    content = requests.get(url, params=kwargs).content
+    io.write(content.encode('utf8'))
     io.seek(0)
     xml = lxml.html.parse(io)
+    return xml
+
+
+def get_user_profile_id(name):
+    xml = parse_page(PROFILES_URL, name=name)
     try:
         return int(xml.xpath('//table/tbody/tr/td[1]/a')[0].attrib['href'][40:])
     except (IndexError, ValueError) as e:
@@ -27,10 +33,7 @@ def get_user_profile_id(name):
 
 
 def scrape_profile(profile_id):
-    io = StringIO.StringIO()
-    io.write(requests.get(PROFILE_URL, params={'id': profile_id}).content)
-    io.seek(0)
-    profile_xml = lxml.html.parse(io)
+    profile_xml = parse_page(PROFILE_URL, id=profile_id)
     name = profile_xml.xpath('/html/body/div/h1/span')[0].text_content()
     group = profile_xml.xpath('/html/body/div/table/tr[3]/td[4]')[0].text_content()
     join_date = profile_xml.xpath('/html/body/div/table/tr[4]/td[2]')[0].text_content()
