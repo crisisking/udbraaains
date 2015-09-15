@@ -6,6 +6,10 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (
+        ('mapping', '0011_player_locations'),
+    )
+
     def forwards(self, orm):
         
         # Deleting field 'Player.location'
