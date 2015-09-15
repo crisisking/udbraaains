@@ -87,7 +87,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'q!*2$0ep#g!w_rym79^!-h%p3ckgj*t30ela&tfu79m583!rfp'
+SECRET_KEY = 'change-me'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -168,4 +168,3 @@ CELERYBEAT_SCHEDULE = {
         'schedule': datetime.timedelta(seconds=5),
     }
 }
-
