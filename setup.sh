@@ -59,10 +59,18 @@ virtualenv udbraaains
 . udbraaains/bin/activate
 
 popd
-pushd projects/udbraaains/brains
+pushd projects/udbraaains
+pushd brains
 
 pip install -r requirements.txt
 python manage.py syncdb --noinput --migrate
+deactivate
+
+popd
+
+mkdir -p /var/www/scripts
+cp *.js /var/www/scripts
+chown -R www-data /var/www
 
 touch $lockfile
 
