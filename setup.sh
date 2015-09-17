@@ -3,6 +3,7 @@ export LC_ALL=en_US.UTF-8
 export DEBIAN_FRONTEND=noninteractive
 export PATH="/usr/local/bin:$PATH"
 export PYTHONDONTWRITEBYTECODE=1
+export MAKEFLAGS="-j 4"
 
 lockfile='/var/tmp/.brains_install'
 
@@ -43,7 +44,7 @@ echo "building python 2.7 from source because we're cool and good"
 build_dir=`mktemp -d` && pushd $build_dir
 curl -sS "https://www.python.org/ftp/python/2.7.10/Python-2.7.10.tgz" | tar xz
 pushd Python-2.7.10
-./configure && make -j 3 && make install
+./configure && make && make install
 popd
 
 echo "Installing pip and virtualenv goodness..."
