@@ -24,7 +24,7 @@ popd () {
 echo "Installing base dependencies..."
 
 sudo apt-get update
-sudo apt-get install -y postgresql redis-server nginx build-essential libpq-dev libxslt-dev
+sudo apt-get install -y postgresql redis-server nginx build-essential libpq-dev libxslt-dev htop vim tmux
 sudo apt-get dist-upgrade
 
 echo "Creating brains database..."
