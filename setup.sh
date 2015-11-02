@@ -44,7 +44,7 @@ echo "building python 2.7 from source because we're cool and good"
 build_dir=`mktemp -d` && pushd $build_dir
 curl -sS "https://www.python.org/ftp/python/2.7.10/Python-2.7.10.tgz" | tar xz
 pushd Python-2.7.10
-./configure && make && make install
+./configure --enable-unicode=ucs4 && make && make install
 popd
 
 echo "Installing pip and virtualenv goodness..."
