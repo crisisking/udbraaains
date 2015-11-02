@@ -3,6 +3,8 @@ import datetime
 import djcelery
 djcelery.setup_loader()
 
+import os
+
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -15,12 +17,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'brains',                      # Or path to database file if using sqlite3.
-        'USER': 'brainsuser',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'brains',
+        'USER': 'brainsuser',
+        'PASSWORD': '',
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', ''),
+        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', '')),
     }
 }
 

@@ -1,0 +1,9 @@
+FROM brains/base
+MAINTAINER Bryan Koroleski <bryan.koroleski@gmail.com>
+
+ADD . /opt/projects/udbraaains
+WORKDIR /opt/projects/udbraaains/brains
+ENV PATH "/opt/virtualenvs/brains/bin:$PATH"
+
+EXPOSE 8000
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
