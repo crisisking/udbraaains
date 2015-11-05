@@ -3,6 +3,7 @@ MAINTAINER Bryan Koroleski <bryan.koroleski@gmail.com>
 
 ADD brains/requirements.txt /tmp/brains/requirements.txt
 RUN virtualenv /opt/virtualenvs/brains
+RUN /opt/virtualenvs/brains/bin/pip uninstall -y wheel
 RUN /opt/virtualenvs/brains/bin/pip install -r /tmp/brains/requirements.txt
 
 VOLUME ["/usr/local"]
