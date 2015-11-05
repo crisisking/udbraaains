@@ -7,6 +7,7 @@ docker build -t brains/redis -f docker/redis.docker .
 docker build -t brains/python_base -f docker/build_python.docker .
 docker build -t brains/project_base -f docker/build_project.docker .
 docker build -t brains/django -f docker/django_app.docker .
+docker build -t brains/celery -f docker/celery.docker .
 
 docker run --name postgres_data brains/postgres echo 'Hello from postgres!'
 docker run -d --name db1 -p 5432:5432 --volumes-from postgres_data brains/postgres
