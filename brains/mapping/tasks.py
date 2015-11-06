@@ -7,7 +7,11 @@ from namelist.models import Player, Category
 from namelist.scrape import scrape_profile
 import redis
 
-CONN = redis.Redis(db=6)
+from django.conf import settings
+
+
+CONN = redis.Redis(host=settings.BROKER_HOST, port=settings.BROKER_PORT, db=6)
+
 
 @task()
 def process_data(data, ip):
