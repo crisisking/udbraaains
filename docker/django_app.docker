@@ -3,9 +3,10 @@ MAINTAINER Bryan Koroleski <bryan.koroleski@gmail.com>
 
 ADD . /opt/projects/udbraaains
 WORKDIR /opt/projects/udbraaains/brains
-ENV PATH "/opt/virtualenvs/brains/bin:$PATH"
+ENV PATH "/opt/virtualenvs/brains/bin:/opt/projects/udbraaains/brains:$PATH"
 
 EXPOSE 8000
 VOLUME ["/opt/projects/udbraaains/brains/static"]
 
+ENTRYPOINT ["management_commands.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
