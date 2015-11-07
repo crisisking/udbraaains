@@ -9,6 +9,8 @@ docker build -t brains/project_base -f docker/build_project.docker .
 docker build -t brains/django -f docker/django_app.docker .
 docker build -t brains/celery -f docker/celery.docker .
 
+docker volume create --name static_files
+
 docker run --name postgres_data brains/postgres echo 'Hello from postgres!'
 docker run -d --name db1 -p 5432:5432 --volumes-from postgres_data brains/postgres
 docker run -d --name redis -p 6379:6379 brains/redis

@@ -6,4 +6,6 @@ WORKDIR /opt/projects/udbraaains/brains
 ENV PATH "/opt/virtualenvs/brains/bin:$PATH"
 
 EXPOSE 8000
+VOLUME ["/opt/projects/udbraaains/brains/static"]
+
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
