@@ -1,11 +1,16 @@
 FROM brains/base
 MAINTAINER Bryan Koroleski <bryan.koroleski@gmail.com>
 
-ADD . /opt/projects/udbraaains
-WORKDIR /opt/projects/udbraaains/brains
 ENV PATH "/opt/virtualenvs/brains/bin:/opt/projects/udbraaains/brains:$PATH"
 
+RUN useradd django
+ADD . /opt/projects/udbraaains
+
+WORKDIR /opt/projects/udbraaains/brains
 EXPOSE 8000
+
+RUN mkdir static
+RUN chown -R django:django /opt/projects/udbraaains
 VOLUME ["/opt/projects/udbraaains/brains/static"]
 
 ENTRYPOINT ["management_commands.sh"]

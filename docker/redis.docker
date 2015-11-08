@@ -6,4 +6,5 @@ WORKDIR /etc/redis/
 RUN sed -e "s/daemonize yes/daemonize no/" redis.conf > redis.conf
 RUN sed -e "s/bind 127.0.0.1/bind 0.0.0.0/" redis.conf > redis.conf
 EXPOSE 6379
+USER redis
 CMD ["/usr/bin/redis-server", "/etc/redis/redis.conf"]
