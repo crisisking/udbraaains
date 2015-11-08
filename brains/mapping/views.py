@@ -1,14 +1,20 @@
+import cPickle as pickle
 import datetime
 import json
-import cPickle as pickle
+
+from django.conf import settings
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+
+import redis
+
 from mapping.models import Location, Report
 from mapping.tasks import process_data, get_player
 from namelist.models import Category, Player
-import redis
 
-CONN = redis.Redis(db=6)
+
+CONN = redis.Redis(host=settings.BROKER_HOST, port=settings.BROKER_PORT, db=6)
+
 
 def process_annotation_timestamp(annotation, name_in, age_name, time):
     if annotation.has_key(name_in):
