@@ -3,8 +3,10 @@ import datetime
 import djcelery
 djcelery.setup_loader()
 
+import os
 
-DEBUG = True
+
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -15,12 +17,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'brains',                      # Or path to database file if using sqlite3.
-        'USER': 'brainsuser',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'brains',
+        'USER': 'brainsuser',
+        'PASSWORD': '',
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', ''),
+        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', '')),
     }
 }
 
@@ -60,7 +62,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = 'static'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -152,15 +154,15 @@ LOGGING = {
 
 
 BROKER_BACKEND = "redis"
-BROKER_HOST = "127.0.0.1"
-BROKER_PORT = 6379
+BROKER_HOST = os.environ.get('REDIS_PORT_6379_TCP_ADDR', '127.0.0.1')
+BROKER_PORT = int(os.environ.get('REDIS_PORT_6379_TCP_PORT', 6379))
 BROKER_VHOST = "0"
 CELERY_IGNORE_RESULT = True
-REDIS_HOST = "127.0.0.1"
-REDIS_PORT = 6379
+REDIS_HOST = BROKER_HOST
+REDIS_PORT = BROKER_PORT
 REDIS_DB = 0
 REDIS_CONNECT_RETRY = True
-CELERY_DISABLE_RATE_LIMITS=True
+CELERY_DISABLE_RATE_LIMITS = True
 
 CELERYBEAT_SCHEDULE = {
     'annotation-builder': {

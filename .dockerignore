@@ -1,0 +1,6 @@
+/docker
+/.git
+/.gitignore
+/.gitmodules
+/setup_docker.sh
+/Vagrantfile

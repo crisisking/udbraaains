@@ -1,0 +1,13 @@
+FROM brains/base
+MAINTAINER Bryan Koroleski <bryan.koroleski@gmail.com>
+
+RUN apt-get install -y nginx
+ADD nginx/gen_config.sh /usr/local/bin
+ADD nginx/nginx.conf /etc/nginx/
+RUN mkdir -p /var/www/scripts && mkdir -p /var/www/brains
+ADD udbraaains*.js /var/www/scripts/
+
+VOLUME ["/var/www"]
+
+ENTRYPOINT ["gen_config.sh"]
+CMD ["nginx"]

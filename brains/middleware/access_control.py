@@ -2,11 +2,11 @@ import re
 from django.http import HttpResponse
 
 
-ALLOWED_PATTERN = re.compile(r'http://(www\.)?urbandead\.com')
+ALLOWED_PATTERN = re.compile(r'^http://(www\.)?urbandead\.com$')
 
 
 class AccessControl(object):
-    
+
     def process_response(self, request, response):
         if request.method == 'OPTIONS':
             response = HttpResponse(status=200)
@@ -18,4 +18,3 @@ class AccessControl(object):
                 response['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
 
         return response
-
