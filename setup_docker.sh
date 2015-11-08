@@ -1,3 +1,7 @@
+#!/bin/bash
+
+set -e
+
 docker build -t brains/base -f docker/base.docker .
 docker build -t brains/postgres -f docker/postgres.docker .
 docker build -t brains/redis -f docker/redis.docker .
