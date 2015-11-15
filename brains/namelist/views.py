@@ -10,7 +10,7 @@ def process_ids(request):
     if request.method != 'POST':
         return HttpResponse(status=405)
 
-    if 'players[]' not in request.POST and 'players' not in request.POST:
+    if not ('players[]' in request.POST or 'players' in request.POST):
         return HttpResponse(status=400)
 
     player_ids = request.POST.getlist('players[]')
