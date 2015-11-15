@@ -1,16 +1,16 @@
 import math
+import re
 from django.shortcuts import render
-from django.template import RequestContext
-from django.http import HttpResponseRedirect
 from orders.models import Order
+
+MAP_URL = re.compile(r'^http://(www\.)?urbandead\.com/map\.cgi')
+
 
 def index(request, x, y):
 
     referrer = request.META.get('HTTP_REFERER', '')
-    valid_referrer = any((referrer.startswith('http://www.urbandead.com/map.cgi'), 
-                            referrer.startswith('http://urbandead.com/map.cgi')))
 
-    if not valid_referrer: 
+    if not MAP_URL.search(referrer):
         return render(request, 'orders/orders.html', dict(slamjam=True))
 
     x = int(x)
@@ -22,7 +22,7 @@ def index(request, x, y):
     # Return orders sorted by distance
     return render(request, 'orders/orders.html', dict(orders=fresh_order))
 
+
 def user_coord_dist(x1, y1, x2, y2):
     # Pythagoras
-    return math.sqrt(math.pow(x2-x1,2)+math.pow(y2-y1,2))
-
+    return math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))

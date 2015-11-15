@@ -1,5 +1,6 @@
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls.defaults import patterns, url
 
-urlpatterns = patterns('namelist.views',
+urlpatterns = patterns(
+    'namelist.views',
     url(r'colors/$', 'process_ids'),
 )

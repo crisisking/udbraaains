@@ -1,6 +1,6 @@
 from celery.task import task
 from namelist.scrape import scrape_profile
-from namelist.models import Player, Category
+from namelist.models import Player
 
 
 @task()
@@ -9,7 +9,8 @@ def import_user(profile_name_or_id, category=None, user=None, join_date=None):
         profile_id = int(profile_name_or_id)
     except ValueError:
         if user:
-            user.message_set.create(message="Couldn't create {0}".format(profile_name_or_id))
+            message = "Couldn't create {}".format(profile_name_or_id)
+            user.message_set.create(message=message)
         return
 
     info = scrape_profile(profile_id)

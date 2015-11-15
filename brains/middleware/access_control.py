@@ -11,7 +11,8 @@ class AccessControl(object):
         if request.method == 'OPTIONS':
             response = HttpResponse(status=200)
 
-        if not request.path.startswith('/admin/') and 'HTTP_ORIGIN' in request.META:
+        if not request.path.startswith('/admin/') and \
+                'HTTP_ORIGIN' in request.META:
             origin = request.META['HTTP_ORIGIN']
             if ALLOWED_PATTERN.search(origin):
                 response['Access-Control-Allow-Origin'] = origin

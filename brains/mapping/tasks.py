@@ -16,14 +16,13 @@ CONN = redis.Redis(host=settings.BROKER_HOST, port=settings.BROKER_PORT, db=6)
 @task()
 def process_data(data, ip):
     """Processes a data set from the UD plugin for a given IP address."""
-    
-    
+
     # Grab the goon category to auto-tag plugin users
     goon = Category.objects.get(name=u'Goon')
-    
+
     # Get coordinates and location of the current player
-    coords = (data['surroundings']['position']['coords']['x'], 
-                data['surroundings']['position']['coords']['y'])
+    coords = (data['surroundings']['position']['coords']['x'],
+              data['surroundings']['position']['coords']['y'])
 
     try:
         p_location = Location.objects.get(x=coords[0], y=coords[1])
@@ -31,13 +30,14 @@ def process_data(data, ip):
         CONN.lpush('location-errors', json.dumps(dict(data=data, ip=ip)))
         raise
 
-    # Grab the player object, update is dead flag. We save right here, so avoid extra save
+    # Grab the player object, update is dead flag. We save right here,
+    # so avoid extra save
     player = get_player(data['user']['id'], category=goon, save=False)
     player.is_dead = not data['user']['alive']
     player.save()
 
     position = data['surroundings']['position']
-    
+
     # Build primary report
     report = Report()
     report.location = p_location
@@ -51,7 +51,7 @@ def process_data(data, ip):
     report.reported_by = player
     report.origin = ip
     report.save()
-    
+
     # Add players to the primary report
     results = []
     for profile in position['survivors']:
@@ -61,11 +61,12 @@ def process_data(data, ip):
             print data, ip
             CONN.lpush('errors', json.dumps(dict(data=data, ip=ip)))
             raise
-    
+
     if not report.inside:
         for row in data['surroundings']['map']:
             for col in row:
-                location = Location.objects.get(x=col['coords']['x'], y=col['coords']['y'])
+                location = Location.objects.get(x=col['coords']['x'],
+                                                y=col['coords']['y'])
                 if location == p_location:
                     continue
                 secondary = Report()
@@ -76,14 +77,15 @@ def process_data(data, ip):
                 secondary.save()
                 CONN.sadd('rebuild', location.id)
 
-        
     CONN.sadd('rebuild', p_location.id)
 
 
 @task()
-def get_player(profile_id, report=None, category=None, force_refresh=False, save=True):
+def get_player(profile_id, report=None, category=None,
+               force_refresh=False, save=True):
     profile_id = int(profile_id)
     player, created = Player.objects.get_or_create(profile_id=profile_id)
+    now = datetime.datetime.now()
     if created or force_refresh:
         profile_data = scrape_profile(profile_id)
         player.name = profile_data[0]
@@ -91,7 +93,7 @@ def get_player(profile_id, report=None, category=None, force_refresh=False, save
         player.join_date = profile_data[2]
 
     # Scrape player group info every 2 days
-    elif datetime.datetime.now() - player.scrape_date > datetime.timedelta(days=2):
+    elif now - player.scrape_date > datetime.timedelta(days=2):
         profile_data = scrape_profile(profile_id)
         player.group_name = profile_data[1]
     if report:
@@ -108,14 +110,16 @@ def get_player(profile_id, report=None, category=None, force_refresh=False, save
 def build_annotation(location):
 
     CONN.srem('rebuild-scheduled', location.id)
-    has_lock = CONN.setnx('update-location:{0}:{1}'.format(location.x, location.y), 1)
+    has_lock = CONN.setnx('update-location:{0.x}:{0.y}'.format(location), 1)
+    date_range = datetime.datetime.now() - datetime.timedelta(days=5)
     if not has_lock:
         CONN.sadd('rebuild', location.id)
-        return "Location [{0}, {1}] locked for update".format(location.x, location.y)
-    
-    # Expire lock after five minutes, workers usually have twice that long to finish.
-    CONN.expire('update-location:{0}:{1}'.format(location.x, location.y), 300)
-    reports = location.report_set.exclude(reported_date__lte=datetime.datetime.now() - datetime.timedelta(days=5))
+        return "Location [{0.x}, {0.y}] locked for update".format(location)
+
+    # Expire lock after five minutes,
+    # workers usually have twice that long to finish.
+    CONN.expire('update-location:{0.x}:{0.y}'.format(location), 300)
+    reports = location.report_set.exclude(reported_date__lte=date_range)
     reports = reports.order_by('-reported_date')
     annotation = {}
     inside_zombies = reports.filter(inside=True)
@@ -135,7 +139,6 @@ def build_annotation(location):
     except IndexError:
         pass
 
-
     primaries = reports.filter(zombies_only=False)
     if primaries:
         primary = primaries[0]
@@ -145,14 +148,15 @@ def build_annotation(location):
         annotation['barricades'] = primary.barricade_level
         annotation['ruined'] = primary.is_ruined
         annotation['illuminated'] = primary.is_illuminated
-    
+
         annotation['report_date'] = pickle.dumps(primary.reported_date)
         annotation['survivor_count'] = None
-    
+
         if inside:
             inside_report = inside[0]
+            inside_reported_date = pickle.dumps(inside_report.reported_date)
             annotation['survivor_count'] = inside_report.players.count()
-            annotation['inside_report_date'] = pickle.dumps(inside_report.reported_date)
+            annotation['inside_report_date'] = inside_reported_date
             coords_x = location.x
             coords_y = location.y
             json_coords = json.dumps({'x': coords_x, 'y': coords_y})
@@ -160,12 +164,14 @@ def build_annotation(location):
                 CONN.sadd('trees', json_coords)
             else:
                 CONN.srem('trees', json_coords)
-        
+
         if outside:
             outside_report = outside[0]
             total = annotation['survivor_count'] or 0
-            annotation['survivor_count'] = total + outside_report.players.count()
-            annotation['outside_report_date'] = pickle.dumps(outside_report.reported_date)
+            survivor_count = total + outside_report.players.count()
+            outside_reported_date = pickle.dumps(outside_report.reported_date)
+            annotation['survivor_count'] = survivor_count
+            annotation['outside_report_date'] = outside_reported_date
     else:
         for key in ('barricades', 'ruined', 'illuminated', 'survivor_count'):
             annotation[key] = None
@@ -174,8 +180,8 @@ def build_annotation(location):
     annotation['x'] = location.x
     annotation['y'] = location.y
     annotation['building_type'] = location.building_type
-    CONN['location:{0}:{1}'.format(location.x, location.y)] = json.dumps(annotation)
-    del CONN['update-location:{0}:{1}'.format(location.x, location.y)]
+    CONN['location:{0.x}:{0.y}'.format(location)] = json.dumps(annotation)
+    del CONN['update-location:{0.x}:{0.y}'.format(location)]
     return location
 
 
@@ -195,8 +201,8 @@ def annotation_master():
     for i in transaction[0]:
         add_transaction.sadd('rebuild-scheduled', i)
     add_transaction.execute()
-    locations = Location.objects.filter(pk__in=[int(x) for x in transaction[0]])
+    location_ids = [int(x) for x in transaction[0]]
+    locations = Location.objects.filter(pk__in=location_ids)
     for l in locations:
         build_annotation.delay(l)
     del CONN['updating']
-

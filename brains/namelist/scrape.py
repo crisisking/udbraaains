@@ -1,9 +1,7 @@
 import datetime
 import cStringIO as StringIO
-from django.conf import settings
 import requests
 import lxml.html
-from namelist.models import Player
 
 
 PROFILE_URL = 'http://urbandead.com/profile.cgi'
@@ -25,10 +23,12 @@ def parse_page(url, **kwargs):
 def scrape_profile(profile_id):
     profile_xml = parse_page(PROFILE_URL, id=profile_id)
     name = profile_xml.xpath('/html/body/div/h1/span')[0].text_content()
-    group = profile_xml.xpath('/html/body/div/table/tr[3]/td[4]')[0].text_content()
-    join_date = profile_xml.xpath('/html/body/div/table/tr[4]/td[2]')[0].text_content()
-    
+    group = profile_xml.xpath('/html/body/div/table/tr[3]/td[4]')[0]
+    group = group.text_content()
+    join_date = profile_xml.xpath('/html/body/div/table/tr[4]/td[2]')[0]
+    join_date = join_date.text_content()
+    join_date = datetime.datetime.strptime(join_date, '%Y-%m-%d %H:%M:%S')
+
     if not group:
         group = 'none'
-    return name, group, datetime.datetime.strptime(join_date, '%Y-%m-%d %H:%M:%S')
-
+    return name, group, join_date
