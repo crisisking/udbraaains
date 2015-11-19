@@ -1,7 +1,10 @@
-FROM brains/base
+FROM debian:jessie
 MAINTAINER Bryan Koroleski <bryan.koroleski@gmail.com>
 
-ENV PATH "/opt/virtualenvs/brains/bin:/opt/projects/udbraaains/brains:$PATH"
+ENV LC_LANG "en_US.UTF-8"
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libxslt-dev libssl-dev libsqlite3-dev libbz2-dev libncurses5-dev libncursesw5-dev libgdbm-dev libpq-dev wget
+
+ENV PATH "/opt/virtualenvs/brains/bin:/opt/projects/udbraaains/brains:/usr/local/bin:$PATH"
 
 RUN useradd django
 ADD . /opt/projects/udbraaains
@@ -11,7 +14,5 @@ EXPOSE 8000
 
 RUN mkdir static
 RUN chown -R django:django /opt/projects/udbraaains
-VOLUME ["/opt/projects/udbraaains/brains/static"]
 
 ENTRYPOINT ["management_commands.sh"]
-CMD ["python", "manage.py", "run_gunicorn", "-w", "4", "0.0.0.0:8000"]

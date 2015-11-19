@@ -1,7 +1,0 @@
-FROM debian:jessie
-MAINTAINER Bryan Koroleski <bryan.koroleski@gmail.com>
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y locales locales-all libxslt-dev libssl-dev libsqlite3-dev libbz2-dev libncurses5-dev libncursesw5-dev libgdbm-dev libpq-dev wget
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen && update-locale LC_ALL="en_US.UTF-8"
-RUN wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/1.6/gosu-$(dpkg --print-architecture)"
-RUN chmod +x /usr/local/bin/gosu

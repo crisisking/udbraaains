@@ -1,0 +1,2 @@
+CREATE USER brainsuser WITH CREATEDB;
+CREATE DATABASE brains WITH OWNER = brainsuser;

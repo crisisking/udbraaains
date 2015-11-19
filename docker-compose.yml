@@ -1,0 +1,50 @@
+db:
+  build: "."
+  dockerfile: "docker/postgres.docker"
+  volumes:
+    - "postgres_data:/var/lib/postgresql/data/pgdata"
+  environment:
+    PGDATA: "/var/lib/postgresql/data/pgdata"
+
+redis:
+  image: redis:3
+  command: redis-server --appendonly yes
+  volumes:
+    - redis_data:/data
+
+python:
+  build: .
+  dockerfile: docker/build.docker
+  command: echo "hi from python!"
+
+django:
+  build: .
+  dockerfile: docker/django_app.docker
+  volumes:
+    - static_files:/opt/projects/udbraaains/brains/static
+  volumes_from:
+    - python
+  links:
+    - redis:redis
+    - db:db
+  command: python manage.py run_gunicorn -w 4 0.0.0.0:8000
+
+celery:
+  build: .
+  dockerfile: docker/django_app.docker
+  volumes_from:
+    - python
+  links:
+    - redis:redis
+    - db:db
+  command: python manage.py celeryd -c 4 -B -l INFO
+
+nginx:
+  build: .
+  dockerfile: docker/nginx.docker
+  volumes:
+    - static_files:/var/www/brains
+  links:
+    - django:django
+  ports:
+    - "80:80"

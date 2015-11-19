@@ -1,18 +1,4 @@
-# mostly taken from https://docs.docker.com/examples/postgresql_service/
-# because I have no idea what I'm doing
-
-FROM brains/base
+FROM postgres:9.4
 MAINTAINER Bryan Koroleski <bryan.koroleski@gmail.com>
 
-RUN apt-get install -y postgresql-9.4
-
-USER postgres
-RUN /etc/init.d/postgresql start && psql --command "CREATE USER brainsuser WITH SUPERUSER;" && createdb -O brainsuser brains
-
-# lol
-RUN echo "host all  all    0.0.0.0/0  trust" >> /etc/postgresql/9.4/main/pg_hba.conf
-RUN echo "listen_addresses='*'" >> /etc/postgresql/9.4/main/postgresql.conf
-
-EXPOSE 5432
-VOLUME  ["/var/lib/postgresql"]
-CMD ["/usr/lib/postgresql/9.4/bin/postgres", "-D", "/var/lib/postgresql/9.4/main", "-c", "config_file=/etc/postgresql/9.4/main/postgresql.conf"]
+ADD sql/brains.sql /docker-entrypoint-initdb.d/

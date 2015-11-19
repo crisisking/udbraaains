@@ -5,4 +5,4 @@ echo "upstream brains {
 }
 " > /etc/nginx/django.conf
 
-exec $@
+gosu root $@
