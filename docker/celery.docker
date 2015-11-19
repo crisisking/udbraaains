@@ -1,3 +1,0 @@
-FROM brains/django
-
-CMD ["python", "manage.py", "celeryd", "-c", "4", "-B", "-l", "INFO"]
